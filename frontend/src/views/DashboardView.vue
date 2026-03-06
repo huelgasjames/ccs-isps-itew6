@@ -1,11 +1,5 @@
 <template>
   <div class="dashboard-root">
-    <!-- Background layers -->
-    <div class="bg-grid"></div>
-    <div class="bg-scanlines"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
 
     <!-- ── Navbar ── -->
     <nav class="topbar">
@@ -86,6 +80,24 @@
           </router-link>
         </div>
 
+        <!-- Theme Toggle -->
+        <button @click="themeStore.toggleTheme()" class="theme-toggle-btn">
+          <svg v-if="!themeStore.isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
         <!-- User menu -->
         <div class="topbar-user has-dropdown">
           <div class="user-avatar">{{ user?.name?.charAt(0) ?? 'U' }}</div>
@@ -135,6 +147,7 @@
             <div class="welcome-eyebrow">ACCESS GRANTED — IDENTITY VERIFIED</div>
             <h1 class="welcome-name">Welcome back, <span class="accent">{{ user?.name }}</span></h1>
             <p class="welcome-sub">
+              <span v-if="isDemoMode" class="demo-badge">🎯 DEMO MODE</span>
               <span class="tag-chip">{{ user?.role === 'admin' ? 'System Administrator' : user?.role === 'professor' ? 'Professor' : 'Student' }}</span>
               <span class="tag-chip">College of Computing Studies</span>
             </p>
@@ -145,6 +158,46 @@
             <div class="time-label">SYSTEM TIME</div>
             <div class="time-value">{{ currentTime }}</div>
             <div class="time-date">{{ currentDate }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo Credentials Panel -->
+      <div v-if="isDemoMode" class="panel mb-section">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-8 0c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-8 0c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/></svg>
+            DEMO MODE INFORMATION
+          </div>
+          <span class="demo-badge">🎯 DEMO</span>
+        </div>
+        <div class="panel-body">
+          <div class="demo-info-panel">
+            <div class="demo-message">
+              <p><strong>You are currently in Demo Mode</strong></p>
+              <p>This is a demonstration version of the CCS Comprehensive Profiling System. All data shown is simulated for demonstration purposes.</p>
+            </div>
+            <div class="demo-credentials-show">
+              <div class="demo-cred-title">Current Demo Credentials:</div>
+              <div class="demo-cred-item">
+                <span class="demo-cred-label">Email:</span>
+                <code class="demo-cred-value">{{ user?.email }}</code>
+              </div>
+              <div class="demo-cred-item">
+                <span class="demo-cred-label">Password:</span>
+                <code class="demo-cred-value">demo123</code>
+              </div>
+              <div class="demo-cred-item">
+                <span class="demo-cred-label">Role:</span>
+                <code class="demo-cred-value">{{ user?.role?.toUpperCase() }}</code>
+              </div>
+            </div>
+            <div class="demo-actions">
+              <button @click="handleLogout" class="demo-logout-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Exit Demo Mode
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -232,7 +285,15 @@
             </button>
           </div>
           <div class="panel-body">
-            <div v-for="i in 3" :key="i" class="activity-row">
+            <div v-for="(activity, index) in (isDemoMode ? mockActivities : [])" :key="index" class="activity-row">
+              <div class="activity-dot" :style="`--dot-color: ${activity.color}`"></div>
+              <div class="activity-info">
+                <div class="activity-title">{{ activity.title }}</div>
+                <div class="activity-sub">{{ activity.sub }}</div>
+              </div>
+              <div class="activity-time">{{ activity.time }}</div>
+            </div>
+            <div v-if="!isDemoMode" v-for="i in 3" :key="i" class="activity-row">
               <div class="activity-dot" :style="`--dot-color: ${['#00c8ff','#00ff88','#ffb800'][i-1]}`"></div>
               <div class="activity-info">
                 <div class="activity-title">New student registered</div>
@@ -250,29 +311,35 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               SYSTEM STATUS
             </div>
-            <span class="status-badge">ALL SYSTEMS NOMINAL</span>
+            <span class="status-badge" :class="{ 'demo-status': isDemoMode }">
+              {{ isDemoMode ? 'DEMO MODE ACTIVE' : 'ALL SYSTEMS NOMINAL' }}
+            </span>
           </div>
           <div class="panel-body">
             <div class="sys-row">
               <div class="sys-info">
-                <span class="sys-dot online"></span>
-                <span class="sys-name">API Server</span>
+                <span class="sys-dot" :class="isDemoMode ? 'demo' : 'online'"></span>
+                <span class="sys-name">{{ isDemoMode ? 'Demo Server' : 'API Server' }}</span>
               </div>
-              <span class="sys-status online">OPERATIONAL</span>
+              <span class="sys-status" :class="isDemoMode ? 'demo' : 'online'">
+                {{ isDemoMode ? 'SIMULATED' : 'OPERATIONAL' }}
+              </span>
             </div>
             <div class="sys-row">
               <div class="sys-info">
                 <span class="sys-dot online"></span>
-                <span class="sys-name">Database</span>
+                <span class="sys-name">Frontend</span>
               </div>
-              <span class="sys-status online">CONNECTED</span>
+              <span class="sys-status online">ACTIVE</span>
             </div>
             <div class="sys-row">
               <div class="sys-info">
-                <span class="sys-dot warn"></span>
-                <span class="sys-name">Storage</span>
+                <span class="sys-dot" :class="isDemoMode ? 'demo' : 'warn'"></span>
+                <span class="sys-name">{{ isDemoMode ? 'Demo Data' : 'Storage' }}</span>
               </div>
-              <span class="sys-status warn">78% FULL</span>
+              <span class="sys-status" :class="isDemoMode ? 'demo' : 'warn'">
+                {{ isDemoMode ? 'MOCK DATA' : '78% FULL' }}
+              </span>
             </div>
           </div>
         </div>
@@ -385,14 +452,17 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 import api from '@/services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 const user = computed(() => authStore.user)
 const isAdmin = computed(() => authStore.isAdmin)
 const isStudent = computed(() => authStore.isStudent)
 const isProfessor = computed(() => authStore.isProfessor)
+const isDemoMode = computed(() => authStore.token?.startsWith('demo-token') || user.value?.email === 'demo@ccs.edu')
 
 const now = ref(new Date())
 let timer: any
@@ -401,6 +471,13 @@ const currentDate = computed(() => now.value.toLocaleDateString('en-US', { weekd
 
 const stats = ref({ totalStudents: 0, totalProfessors: 0, pendingViolations: 0, atRiskStudents: 0 })
 
+// Mock data for demo mode
+const mockActivities = [
+  { title: 'New student registered', sub: 'BSIT-1A • Maria Santos', time: '1H AGO', color: '#00c8ff' },
+  { title: 'Violation reported', sub: 'BSCS-2B • John Cruz - Dress Code', time: '2H AGO', color: '#00ff88' },
+  { title: 'Professor added course', sub: 'Prof. Reyes • CS101', time: '3H AGO', color: '#ffb800' }
+]
+
 const handleLogout = async () => {
   await authStore.logout()
   router.push('/login')
@@ -408,6 +485,17 @@ const handleLogout = async () => {
 
 const fetchStats = async () => {
   try {
+    if (isDemoMode.value) {
+      // Use mock data for demo mode
+      stats.value = {
+        totalStudents: 156,
+        totalProfessors: 24,
+        pendingViolations: 8,
+        atRiskStudents: 12
+      }
+      return
+    }
+
     if (isAdmin.value) {
       const studentsRes = await api.get('/students')
       const professorsRes = await api.get('/professors')
@@ -434,6 +522,7 @@ const fetchStats = async () => {
 }
 
 onMounted(() => {
+  themeStore.initTheme()
   fetchStats()
   timer = setInterval(() => { now.value = new Date() }, 1000)
 })
@@ -448,51 +537,26 @@ onUnmounted(() => clearInterval(timer))
 /* ── Root & Background ── */
 .dashboard-root {
   min-height: 100vh;
-  background: #f8f9fa;
-  font-family: 'Rajdhani', sans-serif;
-  color: #333333;
-  position: relative;
+  background: #ffffff;
+  transition: background-color 0.3s;
 }
 
-.bg-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(253, 126, 20, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(253, 126, 20, 0.035) 1px, transparent 1px);
-  background-size: 40px 40px;
+.dark .dashboard-root {
+  background: #0f172a;
 }
-.bg-scanlines {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-}
-.orb { position: fixed; border-radius: 50%; filter: blur(90px); z-index: 0; pointer-events: none; }
-.orb-1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(253, 126, 20, 0.08), transparent 70%);
-  top: -150px; left: -150px;
-  animation: orbDrift 10s ease-in-out infinite alternate;
-}
-.orb-2 {
-  width: 350px; height: 350px;
-  background: radial-gradient(circle, rgba(255, 146, 43, 0.07), transparent 70%);
-  bottom: 0; right: 10%;
-  animation: orbDrift 14s ease-in-out infinite alternate-reverse;
-}
-.orb-3 {
-  width: 250px; height: 250px;
-  background: radial-gradient(circle, rgba(253, 126, 20, 0.05), transparent 70%);
-  top: 50%; left: 50%;
-  animation: orbDrift 18s ease-in-out infinite alternate;
-}
-@keyframes orbDrift { from { transform: translate(0,0); } to { transform: translate(50px, 30px); } }
 
 /* ── Topbar ── */
 .topbar {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(248, 249, 250, 0.95);
-  border-bottom: 1px solid rgba(253, 126, 20, 0.12);
-  backdrop-filter: blur(12px);
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
 }
+
+.dark .topbar {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
 .topbar-inner {
   display: flex; align-items: center; gap: 1.5rem;
   padding: 0 1.5rem; height: 60px;
@@ -526,13 +590,22 @@ onUnmounted(() => clearInterval(timer))
   display: flex; align-items: center; gap: 6px;
   padding: 6px 14px; border-radius: 4px;
   font-size: 0.82rem; font-weight: 600; letter-spacing: 0.1em;
-  color: rgba(51, 51, 51, 0.55); text-decoration: none;
+  color: #6b7280; text-decoration: none;
   transition: all 0.2s; cursor: pointer;
   position: relative;
 }
+
+.dark .nav-pill {
+  color: #9ca3af;
+}
+
 .nav-pill:hover, .nav-pill.active {
   background: rgba(253, 126, 20, 0.08);
   color: #fd7e14;
+}
+
+.dark .nav-pill:hover, .dark .nav-pill.active {
+  background: rgba(253, 126, 20, 0.15);
 }
 .nav-pill.active { border-bottom: 2px solid #fd7e14; border-radius: 4px 4px 0 0; }
 .nav-pill svg { width: 14px; height: 14px; }
@@ -542,11 +615,17 @@ onUnmounted(() => clearInterval(timer))
 .has-dropdown { position: relative; }
 .dropdown-panel {
   display: none; position: absolute; top: calc(100% + 4px); left: 0;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(253, 126, 20, 0.2);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 6px; min-width: 180px;
   padding: 6px; z-index: 200;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .dropdown-panel {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 .dropdown-right { left: auto; right: 0; }
 .has-dropdown:hover .dropdown-panel { display: block; }
@@ -554,10 +633,14 @@ onUnmounted(() => clearInterval(timer))
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px; border-radius: 4px;
   font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em;
-  color: rgba(51, 51, 51, 0.7); text-decoration: none;
+  color: #6b7280; text-decoration: none;
   transition: all 0.15s;
 }
-.dropdown-item svg { width: 14px; height: 14px; }
+
+.dark .dropdown-item {
+  color: #9ca3af;
+}
+
 .dropdown-item:hover { background: rgba(253, 126, 20, 0.1); color: #fd7e14; }
 .dropdown-item.danger:hover { background: rgba(255, 50, 50, 0.1); color: #ff6666; }
 .dropdown-divider { border-top: 1px solid rgba(253, 126, 20, 0.1); margin: 4px 0; }
@@ -579,8 +662,41 @@ onUnmounted(() => clearInterval(timer))
   font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.9rem; color: #fd7e14;
 }
 .user-info { display: flex; flex-direction: column; }
-.user-name { font-size: 0.85rem; font-weight: 700; color: #333333; letter-spacing: 0.05em; }
-.user-role { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: rgba(253, 126, 20, 0.4); letter-spacing: 0.1em; }
+.user-name { font-size: 0.85rem; font-weight: 700; color: #111827; letter-spacing: 0.05em; }
+.dark .user-name { color: #f9fafb; }
+.user-role { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: #6b7280; letter-spacing: 0.1em; }
+.dark .user-role { color: #9ca3af; }
+
+/* Theme Toggle */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dark .theme-toggle-btn {
+  border-color: #334155;
+  color: #9ca3af;
+}
+
+.theme-toggle-btn:hover {
+  border-color: #f97316;
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.theme-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+}
 
 /* ── Main Content ── */
 .main-content { position: relative; z-index: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
@@ -601,11 +717,16 @@ onUnmounted(() => clearInterval(timer))
 /* Welcome Banner */
 .welcome-banner {
   position: relative; padding: 1.8rem 2rem;
-  background: linear-gradient(135deg, rgba(248, 249, 250, 0.85) 0%, rgba(233, 236, 239, 0.9) 100%);
-  border: 1px solid rgba(253, 126, 20, 0.12);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 6px; margin-bottom: 1.5rem;
   display: flex; align-items: center; justify-content: space-between; gap: 2rem;
   overflow: hidden;
+}
+
+.dark .welcome-banner {
+  background: #1e293b;
+  border-color: #334155;
 }
 .welcome-banner::before {
   content: ''; position: absolute; inset: 0;
@@ -687,13 +808,18 @@ onUnmounted(() => clearInterval(timer))
 }
 .stat-card {
   position: relative; overflow: hidden;
-  background: rgba(248, 249, 250, 0.7);
-  border: 1px solid rgba(253, 126, 20, 0.1);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 6px; padding: 1.4rem 1.2rem;
   display: flex; align-items: center; gap: 1rem;
   animation: fadeUp 0.4s ease both;
   animation-delay: var(--card-delay);
   transition: all 0.25s;
+}
+
+.dark .stat-card {
+  background: #1e293b;
+  border-color: #334155;
 }
 .stat-card:hover {
   border-color: color-mix(in srgb, var(--card-accent) 40%, transparent);
@@ -710,7 +836,8 @@ onUnmounted(() => clearInterval(timer))
 .stat-icon.amber { background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.25); color: #ffb800; }
 .stat-icon.red { background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.25); color: #ff4444; }
 .stat-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: rgba(253, 126, 20, 0.4); letter-spacing: 0.15em; margin-bottom: 4px; }
-.stat-value { font-size: 2rem; font-weight: 700; color: #333333; line-height: 1; margin-bottom: 6px; }
+.stat-value { font-size: 2rem; font-weight: 700; color: #111827; line-height: 1; margin-bottom: 6px; }
+.dark .stat-value { color: #f9fafb; }
 .stat-trend { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; letter-spacing: 0.06em; }
 .stat-trend.up { color: #00ff88; }
 .stat-trend.down { color: #ff4444; }
@@ -726,9 +853,14 @@ onUnmounted(() => clearInterval(timer))
 
 /* Panel */
 .panel {
-  background: rgba(248, 249, 250, 0.7);
-  border: 1px solid rgba(253, 126, 20, 0.1);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 6px; overflow: hidden;
+}
+
+.dark .panel {
+  background: #1e293b;
+  border-color: #334155;
 }
 .mb-section { margin-bottom: 1.5rem; }
 .panel-header {
@@ -738,7 +870,11 @@ onUnmounted(() => clearInterval(timer))
 }
 .panel-title {
   display: flex; align-items: center; gap: 8px;
-  font-size: 0.85rem; font-weight: 700; color: #333333; letter-spacing: 0.12em;
+  font-size: 0.85rem; font-weight: 700; color: #111827; letter-spacing: 0.12em;
+}
+
+.dark .panel-title {
+  color: #f9fafb;
 }
 .panel-title svg { width: 15px; height: 15px; }
 .panel-body { padding: 1rem 1.3rem; }
@@ -755,6 +891,10 @@ onUnmounted(() => clearInterval(timer))
   font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
   padding: 4px 10px; border-radius: 20px; letter-spacing: 0.1em;
   background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88;
+}
+.status-badge.demo-status {
+  background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.3); color: #ffb800;
+  animation: demoPulse 2s ease-in-out infinite;
 }
 .admin-badge {
   font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
@@ -775,7 +915,8 @@ onUnmounted(() => clearInterval(timer))
   box-shadow: 0 0 8px var(--dot-color);
 }
 .activity-info { flex: 1; }
-.activity-title { font-size: 0.85rem; font-weight: 600; color: #333333; margin-bottom: 2px; }
+.activity-title { font-size: 0.85rem; font-weight: 600; color: #111827; margin-bottom: 2px; }
+.dark .activity-title { color: #f9fafb; }
 .activity-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: rgba(253, 126, 20, 0.35); }
 .activity-time { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: rgba(51, 51, 51, 0.3); letter-spacing: 0.08em; }
 
@@ -793,14 +934,17 @@ onUnmounted(() => clearInterval(timer))
 }
 .sys-dot.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
 .sys-dot.warn { background: #ffb800; box-shadow: 0 0 8px #ffb800; }
+.sys-dot.demo { background: #fd7e14; box-shadow: 0 0 8px #fd7e14; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-.sys-name { font-size: 0.85rem; font-weight: 600; color: #333333; }
+.sys-name { font-size: 0.85rem; font-weight: 600; color: #111827; }
+.dark .sys-name { color: #f9fafb; }
 .sys-status {
   font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em;
   padding: 3px 10px; border-radius: 3px;
 }
 .sys-status.online { background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; }
 .sys-status.warn { background: rgba(255, 184, 0, 0.08); border: 1px solid rgba(255, 184, 0, 0.25); color: #ffb800; }
+.sys-status.demo { background: rgba(253, 126, 20, 0.08); border: 1px solid rgba(253, 126, 20, 0.25); color: #fd7e14; }
 
 /* Actions grid */
 .actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -825,11 +969,18 @@ onUnmounted(() => clearInterval(timer))
 .nav-card {
   display: flex; flex-direction: column; gap: 12px;
   padding: 1.2rem; border-radius: 5px; text-decoration: none;
-  background: rgba(248, 249, 250, 0.5);
-  border: 1px solid rgba(253, 126, 20, 0.1);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   transition: all 0.25s;
 }
-.nav-card:hover { border-color: rgba(253, 126, 20, 0.3); background: rgba(233, 236, 239, 0.5); transform: translateY(-3px); }
+
+.dark .nav-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.nav-card:hover { border-color: #f97316; background: #f8fafc; transform: translateY(-3px); }
+.dark .nav-card:hover { border-color: #f97316; background: #334155; }
 .nav-card-icon {
   width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -839,8 +990,10 @@ onUnmounted(() => clearInterval(timer))
 .nav-card-icon.green { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; }
 .nav-card-icon.amber { background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.25); color: #ffb800; }
 .nav-card-icon.blue { background: rgba(80, 150, 255, 0.1); border: 1px solid rgba(80, 150, 255, 0.25); color: #5096ff; }
-.nav-card-title { font-size: 0.95rem; font-weight: 700; color: #333333; letter-spacing: 0.06em; margin-bottom: 4px; }
-.nav-card-desc { font-size: 0.78rem; color: rgba(51, 51, 51, 0.45); line-height: 1.4; }
+.nav-card-title { font-size: 0.95rem; font-weight: 700; color: #111827; letter-spacing: 0.06em; margin-bottom: 4px; }
+.dark .nav-card-title { color: #f9fafb; }
+.nav-card-desc { font-size: 0.78rem; color: #6b7280; line-height: 1.4; }
+.dark .nav-card-desc { color: #9ca3af; }
 .nav-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .nav-badge {
   font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
@@ -852,6 +1005,118 @@ onUnmounted(() => clearInterval(timer))
 .nav-badge.blue { background: rgba(80, 150, 255, 0.08); border-color: rgba(80, 150, 255, 0.2); color: #5096ff; }
 .nav-arrow { width: 14px; height: 14px; color: rgba(253, 126, 20, 0.4); transition: transform 0.2s; }
 .nav-card:hover .nav-arrow { transform: translateX(3px); color: #fd7e14; }
+
+/* Demo Mode Styles */
+.demo-badge {
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.15), rgba(255, 146, 43, 0.1));
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  color: #ffb800;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  animation: demoPulse 2s ease-in-out infinite;
+}
+
+@keyframes demoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+.demo-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.demo-message p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(51, 51, 51, 0.7);
+}
+
+.demo-message p:first-child {
+  color: #ffb800;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.demo-credentials-show {
+  background: rgba(255, 184, 0, 0.05);
+  border: 1px solid rgba(255, 184, 0, 0.15);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.demo-cred-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: #ffb800;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8rem;
+}
+
+.demo-cred-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.demo-cred-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: rgba(51, 51, 51, 0.6);
+  min-width: 70px;
+}
+
+.demo-cred-value {
+  background: rgba(248, 249, 250, 0.8);
+  border: 1px solid rgba(253, 126, 20, 0.15);
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: #fd7e14;
+  flex: 1;
+}
+
+.demo-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.demo-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 50, 50, 0.1), rgba(255, 100, 100, 0.05));
+  border: 1px solid rgba(255, 50, 50, 0.3);
+  color: #ff6666;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.demo-logout-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 50, 50, 0.15), rgba(255, 100, 100, 0.08));
+  border-color: rgba(255, 50, 50, 0.5);
+  transform: translateY(-1px);
+}
+
+.demo-logout-btn svg {
+  width: 14px;
+  height: 14px;
+}
 
 /* Responsive */
 @media (max-width: 1100px) {

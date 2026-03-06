@@ -5,10 +5,12 @@ export const useThemeStore = defineStore('theme', () => {
   const isDark = ref(false)
 
   const toggleTheme = () => {
-    console.log('toggleTheme called, current isDark:', isDark.value)
+    console.log('=== TOGGLE THEME START ===')
+    console.log('Current isDark:', isDark.value)
     isDark.value = !isDark.value
-    console.log('toggleTheme new isDark:', isDark.value)
+    console.log('New isDark:', isDark.value)
     updateTheme()
+    console.log('=== TOGGLE THEME END ===')
   }
 
   const setTheme = (dark: boolean) => {
@@ -18,17 +20,22 @@ export const useThemeStore = defineStore('theme', () => {
 
   const updateTheme = () => {
     const root = document.documentElement
-    console.log('updateTheme called, isDark:', isDark.value)
+    console.log('UPDATE THEME - isDark:', isDark.value)
+    console.log('UPDATE THEME - root element:', root)
+    console.log('UPDATE THEME - current classes:', root.className)
+    
     if (isDark.value) {
       root.classList.add('dark')
       localStorage.setItem('theme', 'dark')
-      console.log('Added dark class to root')
+      console.log('UPDATE THEME - Added dark class')
     } else {
       root.classList.remove('dark')
       localStorage.setItem('theme', 'light')
-      console.log('Removed dark class from root')
+      console.log('UPDATE THEME - Removed dark class')
     }
-    console.log('Root classes after update:', root.className)
+    
+    console.log('UPDATE THEME - final classes:', root.className)
+    console.log('UPDATE THEME - computed style:', getComputedStyle(root).getPropertyValue('--login-bg'))
   }
 
   const initTheme = () => {

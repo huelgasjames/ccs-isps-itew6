@@ -84,6 +84,21 @@
             <a href="#" class="forgot-link">FORGOT CREDENTIALS?</a>
           </div>
 
+          <div class="demo-credentials">
+            <div class="demo-title">🎯 Demo Credentials (Vercel Demo)</div>
+            <div class="demo-info">
+              <div class="demo-item">
+                <span class="demo-label">Email:</span>
+                <code class="demo-value">demo@ccs.edu</code>
+                <button @click="fillDemoCredentials" class="demo-fill-btn">Fill</button>
+              </div>
+              <div class="demo-item">
+                <span class="demo-label">Password:</span>
+                <code class="demo-value">demo123</code>
+              </div>
+            </div>
+          </div>
+
           <div v-if="error" class="error-alert">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             {{ error }}
@@ -103,7 +118,7 @@
           <span>AUTHORIZED PERSONNEL ONLY</span>
           <span class="footer-dot">◆</span>
           <span>CCS // {{ currentYear }}</span>
-          <button @click="() => { console.log('Toggle clicked'); themeStore.toggleTheme(); console.log('Theme is now:', themeStore.isDark); }" class="theme-toggle" :title="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+          <button @click="themeStore.toggleTheme()" class="theme-toggle" :title="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'">
             <svg v-if="themeStore.isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="5"/>
               <line x1="12" y1="1" x2="12" y2="3"/>
@@ -118,6 +133,9 @@
             <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
+          </button>
+          <button @click="testTheme" class="test-btn" style="margin-left: 10px; padding: 5px 10px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            TEST
           </button>
         </div>
       </div>
@@ -157,6 +175,28 @@ const handleLogin = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const testTheme = () => {
+  console.log('=== TEST THEME ===')
+  console.log('themeStore:', themeStore)
+  console.log('isDark value:', themeStore.isDark)
+  console.log('document classes:', document.documentElement.className)
+  console.log('CSS variable --login-bg:', getComputedStyle(document.documentElement).getPropertyValue('--login-bg'))
+  
+  // Force toggle
+  themeStore.toggleTheme()
+  
+  console.log('After toggle:')
+  console.log('isDark value:', themeStore.isDark)
+  console.log('document classes:', document.documentElement.className)
+  console.log('CSS variable --login-bg:', getComputedStyle(document.documentElement).getPropertyValue('--login-bg'))
+}
+
+const fillDemoCredentials = () => {
+  form.value.email = 'demo@ccs.edu'
+  form.value.password = 'demo123'
+  error.value = ''
 }
 
 onMounted(() => {
@@ -497,6 +537,70 @@ onMounted(() => {
   display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 .footer-dot { color: var(--login-accent); }
+
+/* Demo Credentials */
+.demo-credentials {
+  background: var(--login-field-bg);
+  border: 1px solid var(--login-field-border);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 1.5rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.demo-title {
+  font-size: 0.65rem;
+  color: var(--login-accent);
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.demo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6rem;
+}
+
+.demo-label {
+  color: var(--login-text);
+  opacity: 0.7;
+  min-width: 60px;
+}
+
+.demo-value {
+  background: var(--login-field-focus-bg);
+  color: var(--login-accent);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--login-field-border);
+  font-family: 'Share Tech Mono', monospace;
+  flex: 1;
+}
+
+.demo-fill-btn {
+  background: var(--login-accent);
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.demo-fill-btn:hover {
+  background: var(--login-accent-hover);
+  transform: scale(1.05);
+}
 
 /* Theme Toggle */
 .theme-toggle {
