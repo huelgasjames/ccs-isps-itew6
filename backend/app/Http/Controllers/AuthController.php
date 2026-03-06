@@ -11,18 +11,26 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        \Log::info('Login attempt', ['data' => $request->all()]);
+        
         $request->validate([
-            'email' => 'required|email',
+            'email' => 'required_without:username|string',
+            'username' => 'required_without:email|string',
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $loginField = $request->email ?? $request->username;
+        $field = filter_var($loginField, FILTER_VALIDATE_EMAIL) ? 'email' : 'email';
+        
+        \Log::info('Attempting auth', ['field' => $field, 'value' => $loginField]);
+        
+        if (!Auth::attempt([$field => $loginField, 'password' => $request->password])) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $loginField)->first();
 
         return response()->json([
             'user' => $user,

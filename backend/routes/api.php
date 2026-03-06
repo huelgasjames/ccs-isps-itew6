@@ -11,6 +11,8 @@ use App\Http\Controllers\TalentController;
 use App\Http\Controllers\SportController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\EventController;
 
 Route::get('/test', function () {
     return response()->json([
@@ -31,9 +33,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('sports', SportController::class);
     Route::apiResource('certificates', CertificateController::class);
     Route::apiResource('organizations', OrganizationController::class);
+    Route::apiResource('courses', CourseController::class);
+    Route::apiResource('events', EventController::class);
     
     Route::get('/students/at-risk', [StudentController::class, 'getAtRiskStudents']);
     Route::post('/violations/{violation}/resolve', [ViolationController::class, 'resolveViolation']);
     Route::get('/students/{student}/violations', [ViolationController::class, 'getStudentViolations']);
     Route::get('/violations/pending', [ViolationController::class, 'getPendingViolations']);
+    
+    // Event specific routes
+    Route::post('/events/{event}/register', [EventController::class, 'register']);
+    Route::post('/events/{event}/unregister', [EventController::class, 'unregister']);
+    Route::get('/events/my-registrations', [EventController::class, 'myRegistrations']);
 });

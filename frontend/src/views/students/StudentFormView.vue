@@ -87,7 +87,7 @@
                 <label class="field-label">AGE</label>
                 <div class="field-wrap">
                   <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0m-5 0v4"/></svg>
-                  <input v-model="form.age" type="number" class="field-input" placeholder="16-100" min="16" max="100" required />
+                  <input v-model.number="form.age" type="number" class="field-input" placeholder="16-100" min="16" max="100" required />
                 </div>
               </div>
               <div class="field-group">
@@ -188,12 +188,15 @@ const form = ref({
   first_name: '',
   last_name: '',
   email: '',
-  age: '',
+  age: null,
   password: '',
   program: '',
   year_level: '',
   section: '',
-  academic_status: 'Regular'
+  academic_status: 'Regular',
+  disability_status: false,
+  scholar: false,
+  working_student: false
 })
 
 const handleSubmit = async () => {

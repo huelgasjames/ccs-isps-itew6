@@ -52,14 +52,14 @@
 
         <form @submit.prevent="handleLogin" novalidate class="login-form">
           <div class="field-group">
-            <label class="field-label">Username</label>
+            <label class="field-label">Email/Username</label>
             <div class="field-wrap">
               <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               <input
                 v-model="form.email"
                 type="text"
                 class="field-input"
-                placeholder="e.g. 2001746"
+                placeholder="e.g. admin@ccs.edu or 2001746"
                 autocomplete="off"
                 required
               />
@@ -103,6 +103,22 @@
           <span>AUTHORIZED PERSONNEL ONLY</span>
           <span class="footer-dot">◆</span>
           <span>CCS // {{ currentYear }}</span>
+          <button @click="() => { console.log('Toggle clicked'); themeStore.toggleTheme(); console.log('Theme is now:', themeStore.isDark); }" class="theme-toggle" :title="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+            <svg v-if="themeStore.isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -113,9 +129,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 const currentYear = new Date().getFullYear()
 
 const form = ref({ email: '', password: '' })
@@ -123,6 +141,12 @@ const loading = ref(false)
 const error = ref('')
 
 const handleLogin = async () => {
+  // Basic validation
+  if (!form.value.email.trim() || !form.value.password.trim()) {
+    error.value = 'Please enter both email/username and password.'
+    return
+  }
+
   loading.value = true
   error.value = ''
   try {
@@ -136,20 +160,33 @@ const handleLogin = async () => {
 }
 
 onMounted(() => {
+  themeStore.initTheme()
+  
   const commands = ['initializing system...', 'loading protocols...', 'awaiting credentials_']
   let ci = 0, ci2 = 0
-  const el = document.getElementById('typewriter')
+  let timeoutId: number | null = null
+  
   const type = () => {
+    const el = document.getElementById('typewriter')
     if (!el) return
+    
     const cmd = commands[ci % commands.length]
     if (ci2 <= cmd.length) {
       el.textContent = cmd.slice(0, ci2++)
-      setTimeout(type, 55)
+      timeoutId = setTimeout(type, 55)
     } else {
-      setTimeout(() => { ci++; ci2 = 0; type() }, 1800)
+      timeoutId = setTimeout(() => { ci++; ci2 = 0; type() }, 1800)
     }
   }
+  
   type()
+  
+  // Cleanup on unmount
+  return () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+  }
 })
 </script>
 
@@ -161,7 +198,7 @@ onMounted(() => {
 .login-container {
   min-height: 100vh;
   display: flex;
-  background: #f8f9fa;
+  background: var(--login-bg);
   font-family: 'Rajdhani', sans-serif;
   position: relative;
   overflow: hidden;
@@ -213,8 +250,8 @@ onMounted(() => {
   display: flex; align-items: center; justify-content: center;
   position: relative; z-index: 1;
   padding: 3rem;
-  border-right: 1px solid rgba(253, 126, 20, 0.15);
-  background: linear-gradient(160deg, rgba(248, 249, 250, 0.9) 0%, rgba(233, 236, 239, 0.95) 100%);
+  border-right: 1px solid var(--login-border);
+  background: var(--login-left-bg);
 }
 
 .left-content {
@@ -314,7 +351,7 @@ onMounted(() => {
   width: 460px; min-width: 420px;
   display: flex; align-items: center; justify-content: center;
   padding: 3rem 2.5rem;
-  background: rgba(248, 249, 250, 0.97);
+  background: var(--login-right-bg);
   position: relative; z-index: 1;
 }
 
@@ -325,7 +362,7 @@ onMounted(() => {
   display: flex; align-items: center; gap: 1rem;
   margin-bottom: 1.8rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(253, 126, 20, 0.1);
+  border-bottom: 1px solid var(--login-border);
 }
 .form-logo {
   width: 56px; height: 56px; object-fit: contain;
@@ -378,10 +415,10 @@ onMounted(() => {
 }
 .field-input {
   width: 100%; height: 50px;
-  background: rgba(233, 236, 239, 0.6);
-  border: 1px solid rgba(253, 126, 20, 0.2);
+  background: var(--login-field-bg);
+  border: 1px solid var(--login-field-border);
   border-radius: 4px;
-  color: #333333;
+  color: var(--login-text);
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.9rem;
   padding: 0 16px 0 44px;
@@ -390,8 +427,8 @@ onMounted(() => {
 }
 .field-input::placeholder { color: rgba(153, 153, 153, 0.3); }
 .field-input:focus {
-  border-color: rgba(253, 126, 20, 0.6);
-  background: rgba(248, 249, 250, 0.7);
+  border-color: var(--login-accent);
+  background: var(--login-field-focus-bg);
   box-shadow: 0 0 0 3px rgba(253, 126, 20, 0.08), inset 0 0 20px rgba(253, 126, 20, 0.03);
 }
 
@@ -407,9 +444,9 @@ onMounted(() => {
 /* Error */
 .error-alert {
   display: flex; align-items: center; gap: 10px;
-  background: rgba(255, 50, 50, 0.07);
-  border: 1px solid rgba(255, 50, 50, 0.3);
-  color: #ff8888;
+  background: var(--login-error-bg);
+  border: 1px solid var(--login-error-border);
+  color: var(--login-error-text);
   border-radius: 4px; padding: 12px 14px;
   font-size: 0.85rem; margin-bottom: 1.2rem;
 }
@@ -419,9 +456,9 @@ onMounted(() => {
 .submit-btn {
   width: 100%; height: 52px;
   background: linear-gradient(135deg, rgba(253, 126, 20, 0.15), rgba(255, 146, 43, 0.1));
-  border: 1px solid rgba(253, 126, 20, 0.4);
+  border: 1px solid var(--login-field-border);
   border-radius: 4px;
-  color: #fd7e14;
+  color: var(--login-accent);
   font-family: 'Rajdhani', sans-serif;
   font-size: 1rem; font-weight: 700;
   letter-spacing: 0.2em;
@@ -436,7 +473,7 @@ onMounted(() => {
   opacity: 0; transition: opacity 0.25s;
 }
 .submit-btn:hover:not(:disabled) {
-  border-color: rgba(253, 126, 20, 0.8);
+  border-color: var(--login-accent-hover);
   color: #fff;
   box-shadow: 0 0 25px rgba(253, 126, 20, 0.2), inset 0 0 20px rgba(253, 126, 20, 0.05);
 }
@@ -459,7 +496,43 @@ onMounted(() => {
   letter-spacing: 0.15em;
   display: flex; align-items: center; justify-content: center; gap: 10px;
 }
-.footer-dot { color: rgba(253, 126, 20, 0.3); }
+.footer-dot { color: var(--login-accent); }
+
+/* Theme Toggle */
+.theme-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid var(--login-border);
+  border-radius: 50%;
+  color: var(--login-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.theme-toggle:hover {
+  background: var(--login-field-bg);
+  border-color: var(--login-accent);
+  color: var(--login-accent);
+  transform: scale(1.1);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+  transform: rotate(20deg);
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
