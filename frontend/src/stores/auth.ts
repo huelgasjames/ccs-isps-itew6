@@ -15,34 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (credentials: LoginCredentials) => {
     loading.value = true
     try {
-      // Check for demo credentials first
-      if (credentials.email === 'demo@ccs.edu' && credentials.password === 'demo123') {
-        // Demo login for Vercel deployment
-        const demoUser: User = {
-          id: 1,
-          email: 'demo@ccs.edu',
-          name: 'Demo Admin',
-          role: 'admin',
-          department: 'Computer Science',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-        
-        const demoToken = 'demo-token-' + Date.now()
-        
-        user.value = demoUser
-        token.value = demoToken
-        
-        localStorage.setItem('auth_token', demoToken)
-        localStorage.setItem('user', JSON.stringify(demoUser))
-        
-        return {
-          user: demoUser,
-          token: demoToken
-        }
-      }
-      
-      // Try real backend login
+      // Real backend login only
       const response = await authService.login(credentials)
       user.value = response.user
       token.value = response.token

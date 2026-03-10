@@ -137,67 +137,20 @@
 
       <!-- Welcome Banner -->
       <div class="welcome-banner">
-        <div class="corner-deco tl"></div>
-        <div class="corner-deco tr"></div>
-        <div class="corner-deco bl"></div>
-        <div class="corner-deco br"></div>
         <div class="welcome-left">
           <div class="welcome-avatar">{{ user?.name?.charAt(0) ?? 'U' }}</div>
           <div>
-            <div class="welcome-eyebrow">ACCESS GRANTED — IDENTITY VERIFIED</div>
-            <h1 class="welcome-name">Welcome back, <span class="accent">{{ user?.name }}</span></h1>
+            <h1 class="welcome-name">Welcome, <span class="accent">{{ user?.name }}</span></h1>
             <p class="welcome-sub">
-              <span v-if="isDemoMode" class="demo-badge">🎯 DEMO MODE</span>
-              <span class="tag-chip">{{ user?.role === 'admin' ? 'System Administrator' : user?.role === 'professor' ? 'Professor' : 'Student' }}</span>
-              <span class="tag-chip">College of Computing Studies</span>
+              <span class="tag-chip">{{ user?.role === 'admin' ? 'Administrator' : user?.role === 'professor' ? 'Professor' : 'Student' }}</span>
+              <span class="tag-chip">CCS Department</span>
             </p>
           </div>
         </div>
         <div class="welcome-right">
           <div class="time-display">
-            <div class="time-label">SYSTEM TIME</div>
             <div class="time-value">{{ currentTime }}</div>
             <div class="time-date">{{ currentDate }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Demo Credentials Panel -->
-      <div v-if="isDemoMode" class="panel mb-section">
-        <div class="panel-header">
-          <div class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-8 0c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-8 0c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/></svg>
-            DEMO MODE INFORMATION
-          </div>
-          <span class="demo-badge">🎯 DEMO</span>
-        </div>
-        <div class="panel-body">
-          <div class="demo-info-panel">
-            <div class="demo-message">
-              <p><strong>You are currently in Demo Mode</strong></p>
-              <p>This is a demonstration version of the CCS Comprehensive Profiling System. All data shown is simulated for demonstration purposes.</p>
-            </div>
-            <div class="demo-credentials-show">
-              <div class="demo-cred-title">Current Demo Credentials:</div>
-              <div class="demo-cred-item">
-                <span class="demo-cred-label">Email:</span>
-                <code class="demo-cred-value">{{ user?.email }}</code>
-              </div>
-              <div class="demo-cred-item">
-                <span class="demo-cred-label">Password:</span>
-                <code class="demo-cred-value">demo123</code>
-              </div>
-              <div class="demo-cred-item">
-                <span class="demo-cred-label">Role:</span>
-                <code class="demo-cred-value">{{ user?.role?.toUpperCase() }}</code>
-              </div>
-            </div>
-            <div class="demo-actions">
-              <button @click="handleLogout" class="demo-logout-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Exit Demo Mode
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -205,69 +158,56 @@
       <!-- Page header -->
       <div class="section-header">
         <div>
-          <div class="section-eyebrow">REAL-TIME MONITORING & MANAGEMENT</div>
           <h2 class="section-title">Dashboard Overview</h2>
         </div>
         <div class="header-actions">
           <button class="action-btn" @click="fetchStats">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            REFRESH
-          </button>
-          <button class="action-btn secondary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            EXPORT
+            Refresh
           </button>
         </div>
       </div>
 
       <!-- Stat Cards -->
       <div class="stats-grid">
-        <div class="stat-card" style="--card-accent: #00c8ff; --card-delay: 0s">
+        <div class="stat-card">
           <div class="stat-icon cyan">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
           <div class="stat-body">
-            <div class="stat-label">TOTAL STUDENTS</div>
+            <div class="stat-label">Total Students</div>
             <div class="stat-value">{{ stats.totalStudents }}</div>
-            <div class="stat-trend up">▲ 12% from last month</div>
           </div>
-          <div class="stat-glow cyan"></div>
         </div>
 
-        <div class="stat-card" style="--card-accent: #00ff88; --card-delay: 0.08s">
+        <div class="stat-card">
           <div class="stat-icon green">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
           <div class="stat-body">
-            <div class="stat-label">TOTAL PROFESSORS</div>
+            <div class="stat-label">Total Professors</div>
             <div class="stat-value">{{ stats.totalProfessors }}</div>
-            <div class="stat-trend up">▲ 5% from last month</div>
           </div>
-          <div class="stat-glow green"></div>
         </div>
 
-        <div class="stat-card" style="--card-accent: #ffb800; --card-delay: 0.16s">
+        <div class="stat-card">
           <div class="stat-icon amber">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </div>
           <div class="stat-body">
-            <div class="stat-label">PENDING VIOLATIONS</div>
+            <div class="stat-label">Pending Violations</div>
             <div class="stat-value">{{ stats.pendingViolations }}</div>
-            <div class="stat-trend neutral">◆ No change</div>
           </div>
-          <div class="stat-glow amber"></div>
         </div>
 
-        <div class="stat-card" style="--card-accent: #ff4444; --card-delay: 0.24s">
+        <div class="stat-card">
           <div class="stat-icon red">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
           <div class="stat-body">
-            <div class="stat-label">AT RISK STUDENTS</div>
+            <div class="stat-label">At Risk Students</div>
             <div class="stat-value">{{ stats.atRiskStudents }}</div>
-            <div class="stat-trend down">▲ 8% increase</div>
           </div>
-          <div class="stat-glow red"></div>
         </div>
       </div>
 
@@ -276,30 +216,16 @@
         <!-- Recent Activity -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#00c8ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              RECENT ACTIVITY
-            </div>
-            <button class="icon-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-            </button>
+            <div class="panel-title">Recent Activity</div>
           </div>
           <div class="panel-body">
-            <div v-for="(activity, index) in (isDemoMode ? mockActivities : [])" :key="index" class="activity-row">
-              <div class="activity-dot" :style="`--dot-color: ${activity.color}`"></div>
-              <div class="activity-info">
-                <div class="activity-title">{{ activity.title }}</div>
-                <div class="activity-sub">{{ activity.sub }}</div>
-              </div>
-              <div class="activity-time">{{ activity.time }}</div>
-            </div>
-            <div v-if="!isDemoMode" v-for="i in 3" :key="i" class="activity-row">
+            <div v-for="i in 3" :key="i" class="activity-row">
               <div class="activity-dot" :style="`--dot-color: ${['#00c8ff','#00ff88','#ffb800'][i-1]}`"></div>
               <div class="activity-info">
                 <div class="activity-title">New student registered</div>
                 <div class="activity-sub">BSIT-1A • John Doe</div>
               </div>
-              <div class="activity-time">{{ i }}H AGO</div>
+              <div class="activity-time">{{ i }}h ago</div>
             </div>
           </div>
         </div>
@@ -307,39 +233,30 @@
         <!-- System Status -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              SYSTEM STATUS
-            </div>
-            <span class="status-badge" :class="{ 'demo-status': isDemoMode }">
-              {{ isDemoMode ? 'DEMO MODE ACTIVE' : 'ALL SYSTEMS NOMINAL' }}
-            </span>
+            <div class="panel-title">System Status</div>
+            <span class="status-badge">All Systems Nominal</span>
           </div>
           <div class="panel-body">
             <div class="sys-row">
               <div class="sys-info">
-                <span class="sys-dot" :class="isDemoMode ? 'demo' : 'online'"></span>
-                <span class="sys-name">{{ isDemoMode ? 'Demo Server' : 'API Server' }}</span>
+                <span class="sys-dot online"></span>
+                <span class="sys-name">API Server</span>
               </div>
-              <span class="sys-status" :class="isDemoMode ? 'demo' : 'online'">
-                {{ isDemoMode ? 'SIMULATED' : 'OPERATIONAL' }}
-              </span>
+              <span class="sys-status online">Operational</span>
             </div>
             <div class="sys-row">
               <div class="sys-info">
                 <span class="sys-dot online"></span>
                 <span class="sys-name">Frontend</span>
               </div>
-              <span class="sys-status online">ACTIVE</span>
+              <span class="sys-status online">Active</span>
             </div>
             <div class="sys-row">
               <div class="sys-info">
-                <span class="sys-dot" :class="isDemoMode ? 'demo' : 'warn'"></span>
-                <span class="sys-name">{{ isDemoMode ? 'Demo Data' : 'Storage' }}</span>
+                <span class="sys-dot warn"></span>
+                <span class="sys-name">Storage</span>
               </div>
-              <span class="sys-status" :class="isDemoMode ? 'demo' : 'warn'">
-                {{ isDemoMode ? 'MOCK DATA' : '78% FULL' }}
-              </span>
+              <span class="sys-status warn">78% Full</span>
             </div>
           </div>
         </div>
@@ -348,29 +265,26 @@
       <!-- Quick Actions (Admin only) -->
       <div v-if="isAdmin" class="panel mb-section">
         <div class="panel-header">
-          <div class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            QUICK ACTIONS
-          </div>
-          <span class="admin-badge">ADMIN ONLY</span>
+          <div class="panel-title">Quick Actions</div>
+          <span class="admin-badge">Admin Only</span>
         </div>
         <div class="panel-body">
           <div class="actions-grid">
             <router-link to="/students/create" class="action-card cyan">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
-              <span>ADD STUDENT</span>
+              <span>Add Student</span>
             </router-link>
             <router-link to="/professors/create" class="action-card green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
-              <span>ADD PROFESSOR</span>
+              <span>Add Professor</span>
             </router-link>
             <router-link to="/violations/create" class="action-card amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>ADD VIOLATION</span>
+              <span>Add Violation</span>
             </router-link>
             <router-link to="/students/at-risk" class="action-card red">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span>VIEW AT RISK</span>
+              <span>View At Risk</span>
             </router-link>
           </div>
         </div>
@@ -379,10 +293,7 @@
       <!-- Quick Navigation -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00c8ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            QUICK NAVIGATION
-          </div>
+          <div class="panel-title">Quick Navigation</div>
         </div>
         <div class="panel-body">
           <div class="nav-cards-grid">
@@ -392,7 +303,7 @@
               </div>
               <div class="nav-card-body">
                 <div class="nav-card-title">Students</div>
-                <div class="nav-card-desc">Manage student profiles and information</div>
+                <div class="nav-card-desc">Manage student profiles</div>
                 <div class="nav-card-footer">
                   <span class="nav-badge cyan">{{ stats.totalStudents }} Total</span>
                   <svg class="nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -406,7 +317,7 @@
               </div>
               <div class="nav-card-body">
                 <div class="nav-card-title">Professors</div>
-                <div class="nav-card-desc">Manage professor profiles and information</div>
+                <div class="nav-card-desc">Manage professor profiles</div>
                 <div class="nav-card-footer">
                   <span class="nav-badge green">{{ stats.totalProfessors }} Total</span>
                   <svg class="nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -420,7 +331,7 @@
               </div>
               <div class="nav-card-body">
                 <div class="nav-card-title">Violations</div>
-                <div class="nav-card-desc">Track and manage student violations</div>
+                <div class="nav-card-desc">Track student violations</div>
                 <div class="nav-card-footer">
                   <span class="nav-badge amber">{{ stats.pendingViolations }} Pending</span>
                   <svg class="nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -434,7 +345,7 @@
               </div>
               <div class="nav-card-body">
                 <div class="nav-card-title">My Profile</div>
-                <div class="nav-card-desc">View and update your profile information</div>
+                <div class="nav-card-desc">View and edit your profile</div>
                 <div class="nav-card-footer">
                   <span class="nav-badge blue">Personal</span>
                   <svg class="nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -462,7 +373,6 @@ const user = computed(() => authStore.user)
 const isAdmin = computed(() => authStore.isAdmin)
 const isStudent = computed(() => authStore.isStudent)
 const isProfessor = computed(() => authStore.isProfessor)
-const isDemoMode = computed(() => authStore.token?.startsWith('demo-token') || user.value?.email === 'demo@ccs.edu')
 
 const now = ref(new Date())
 let timer: any
@@ -471,13 +381,6 @@ const currentDate = computed(() => now.value.toLocaleDateString('en-US', { weekd
 
 const stats = ref({ totalStudents: 0, totalProfessors: 0, pendingViolations: 0, atRiskStudents: 0 })
 
-// Mock data for demo mode
-const mockActivities = [
-  { title: 'New student registered', sub: 'BSIT-1A • Maria Santos', time: '1H AGO', color: '#00c8ff' },
-  { title: 'Violation reported', sub: 'BSCS-2B • John Cruz - Dress Code', time: '2H AGO', color: '#00ff88' },
-  { title: 'Professor added course', sub: 'Prof. Reyes • CS101', time: '3H AGO', color: '#ffb800' }
-]
-
 const handleLogout = async () => {
   await authStore.logout()
   router.push('/login')
@@ -485,17 +388,6 @@ const handleLogout = async () => {
 
 const fetchStats = async () => {
   try {
-    if (isDemoMode.value) {
-      // Use mock data for demo mode
-      stats.value = {
-        totalStudents: 156,
-        totalProfessors: 24,
-        pendingViolations: 8,
-        atRiskStudents: 12
-      }
-      return
-    }
-
     if (isAdmin.value) {
       const studentsRes = await api.get('/students')
       const professorsRes = await api.get('/professors')
@@ -517,7 +409,7 @@ const fetchStats = async () => {
       }
     }
   } catch {
-    stats.value = { totalStudents: 2, totalProfessors: 1, pendingViolations: 3, atRiskStudents: 1 }
+    stats.value = { totalStudents: 0, totalProfessors: 0, pendingViolations: 0, atRiskStudents: 0 }
   }
 }
 
@@ -704,102 +596,72 @@ onUnmounted(() => clearInterval(timer))
 /* Breadcrumb */
 .breadcrumb-bar {
   display: flex; align-items: center; gap: 8px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.7rem; color: rgba(253, 126, 20, 0.4);
-  letter-spacing: 0.12em; margin-bottom: 1.5rem;
+  font-size: 0.8rem; color: #6b7280;
+  margin-bottom: 1.5rem;
 }
-.bc-prompt { color: #fd7e14; }
-.bc-item { color: rgba(253, 126, 20, 0.5); text-decoration: none; }
-.bc-item:hover { color: #fd7e14; }
-.bc-sep { color: rgba(253, 126, 20, 0.25); }
-.bc-current { color: rgba(253, 126, 20, 0.7); }
+.bc-prompt { color: #f97316; }
+.bc-item { color: #6b7280; text-decoration: none; }
+.bc-item:hover { color: #f97316; }
+.bc-sep { color: #d1d5db; }
+.bc-current { color: #374151; font-weight: 500; }
 
 /* Welcome Banner */
 .welcome-banner {
-  position: relative; padding: 1.8rem 2rem;
+  position: relative; padding: 1.5rem 1.5rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 6px; margin-bottom: 1.5rem;
+  border-radius: 8px; margin-bottom: 1.5rem;
   display: flex; align-items: center; justify-content: space-between; gap: 2rem;
-  overflow: hidden;
 }
 
 .dark .welcome-banner {
   background: #1e293b;
   border-color: #334155;
 }
-.welcome-banner::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(90deg, rgba(253, 126, 20, 0.04) 0%, transparent 60%);
-  pointer-events: none;
-}
-.corner-deco { position: absolute; width: 16px; height: 16px; border-color: rgba(253, 126, 20, 0.4); border-style: solid; }
-.corner-deco.tl { top: 10px; left: 10px; border-width: 1.5px 0 0 1.5px; }
-.corner-deco.tr { top: 10px; right: 10px; border-width: 1.5px 1.5px 0 0; }
-.corner-deco.bl { bottom: 10px; left: 10px; border-width: 0 0 1.5px 1.5px; }
-.corner-deco.br { bottom: 10px; right: 10px; border-width: 0 1.5px 1.5px 0; }
-.welcome-left { display: flex; align-items: center; gap: 1.2rem; }
+.welcome-left { display: flex; align-items: center; gap: 1rem; }
 .welcome-avatar {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg, rgba(253, 126, 20, 0.25), rgba(255, 146, 43, 0.1));
-  border: 1px solid rgba(253, 126, 20, 0.4);
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #f97316, #fb923c);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; font-weight: 700; color: #fd7e14;
-  box-shadow: 0 0 20px rgba(253, 126, 20, 0.1);
+  font-size: 1.25rem; font-weight: 600; color: white;
   flex-shrink: 0;
 }
-.welcome-eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.62rem; color: rgba(253, 126, 20, 0.45); letter-spacing: 0.18em; margin-bottom: 4px;
-}
-.welcome-name { font-size: 1.7rem; font-weight: 700; color: #333333; margin-bottom: 8px; }
-.welcome-name .accent {
-  color: transparent;
-  background: linear-gradient(90deg, #fd7e14, #ff922b);
-  -webkit-background-clip: text; background-clip: text;
-}
+.welcome-name { font-size: 1.5rem; font-weight: 600; color: #111827; margin-bottom: 4px; }
+.welcome-name .accent { color: #f97316; }
 .welcome-sub { display: flex; gap: 8px; flex-wrap: wrap; }
 .tag-chip {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.65rem; padding: 3px 10px; border-radius: 3px;
-  background: rgba(253, 126, 20, 0.07); border: 1px solid rgba(253, 126, 20, 0.2);
-  color: rgba(253, 126, 20, 0.6); letter-spacing: 0.08em;
+  font-size: 0.75rem; padding: 4px 10px; border-radius: 4px;
+  background: #f3f4f6; border: 1px solid #e5e7eb;
+  color: #6b7280;
 }
 .welcome-right { flex-shrink: 0; }
 .time-display {
   text-align: right;
-  background: rgba(253, 126, 20, 0.04);
-  border: 1px solid rgba(253, 126, 20, 0.1);
-  border-radius: 4px; padding: 12px 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px; padding: 10px 14px;
 }
-.time-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: rgba(253, 126, 20, 0.4); letter-spacing: 0.15em; margin-bottom: 4px; }
-.time-value { font-family: 'Share Tech Mono', monospace; font-size: 1.4rem; color: #fd7e14; letter-spacing: 0.08em; }
-.time-date { font-size: 0.72rem; color: rgba(51, 51, 51, 0.4); margin-top: 4px; }
+.time-value { font-size: 1.25rem; font-weight: 600; color: #111827; }
+.time-date { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
 
 /* Section header */
 .section-header {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 1.2rem;
 }
-.section-eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.62rem; color: rgba(253, 126, 20, 0.4); letter-spacing: 0.18em; margin-bottom: 4px;
-}
-.section-title { font-size: 1.4rem; font-weight: 700; color: #333333; letter-spacing: 0.06em; }
+.section-title { font-size: 1.25rem; font-weight: 600; color: #111827; }
 .header-actions { display: flex; gap: 8px; }
 .action-btn {
   display: flex; align-items: center; gap: 6px;
-  padding: 7px 16px; border-radius: 4px;
-  background: rgba(253, 126, 20, 0.08);
-  border: 1px solid rgba(253, 126, 20, 0.25);
-  color: #fd7e14;
-  font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em;
+  padding: 8px 16px; border-radius: 6px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.85rem; font-weight: 500;
   cursor: pointer; transition: all 0.2s;
 }
-.action-btn svg { width: 13px; height: 13px; }
-.action-btn:hover { background: rgba(253, 126, 20, 0.14); border-color: rgba(253, 126, 20, 0.5); }
-.action-btn.secondary { background: rgba(51, 51, 51, 0.04); border-color: rgba(51, 51, 51, 0.15); color: rgba(51, 51, 51, 0.5); }
-.action-btn.secondary:hover { color: rgba(51, 51, 51, 0.8); border-color: rgba(51, 51, 51, 0.35); }
+.action-btn svg { width: 14px; height: 14px; }
+.action-btn:hover { background: #f9fafb; border-color: #f97316; color: #f97316; }
 
 /* Stat cards */
 .stats-grid {
@@ -807,14 +669,11 @@ onUnmounted(() => clearInterval(timer))
   margin-bottom: 1.5rem;
 }
 .stat-card {
-  position: relative; overflow: hidden;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 6px; padding: 1.4rem 1.2rem;
+  border-radius: 8px; padding: 1.25rem;
   display: flex; align-items: center; gap: 1rem;
-  animation: fadeUp 0.4s ease both;
-  animation-delay: var(--card-delay);
-  transition: all 0.25s;
+  transition: all 0.2s;
 }
 
 .dark .stat-card {
@@ -822,31 +681,22 @@ onUnmounted(() => clearInterval(timer))
   border-color: #334155;
 }
 .stat-card:hover {
-  border-color: color-mix(in srgb, var(--card-accent) 40%, transparent);
-  transform: translateY(-3px);
+  border-color: #f97316;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
-@keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
 .stat-icon {
-  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
 .stat-icon svg { width: 20px; height: 20px; }
-.stat-icon.cyan { background: rgba(253, 126, 20, 0.1); border: 1px solid rgba(253, 126, 20, 0.25); color: #fd7e14; }
-.stat-icon.green { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; }
-.stat-icon.amber { background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.25); color: #ffb800; }
-.stat-icon.red { background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.25); color: #ff4444; }
-.stat-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: rgba(253, 126, 20, 0.4); letter-spacing: 0.15em; margin-bottom: 4px; }
-.stat-value { font-size: 2rem; font-weight: 700; color: #111827; line-height: 1; margin-bottom: 6px; }
+.stat-icon.cyan { background: #fef3c7; color: #f59e0b; }
+.stat-icon.green { background: #d1fae5; color: #10b981; }
+.stat-icon.amber { background: #ffedd5; color: #f97316; }
+.stat-icon.red { background: #fee2e2; color: #ef4444; }
+.stat-label { font-size: 0.75rem; color: #6b7280; margin-bottom: 4px; }
+.stat-value { font-size: 1.75rem; font-weight: 600; color: #111827; }
 .dark .stat-value { color: #f9fafb; }
-.stat-trend { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; letter-spacing: 0.06em; }
-.stat-trend.up { color: #00ff88; }
-.stat-trend.down { color: #ff4444; }
-.stat-trend.neutral { color: rgba(51, 51, 51, 0.35); }
-.stat-glow { position: absolute; bottom: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; filter: blur(30px); pointer-events: none; }
-.stat-glow.cyan { background: rgba(253, 126, 20, 0.12); }
-.stat-glow.green { background: rgba(0, 255, 136, 0.12); }
-.stat-glow.amber { background: rgba(255, 184, 0, 0.12); }
-.stat-glow.red { background: rgba(255, 68, 68, 0.12); }
 
 /* Two-col grid */
 .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
@@ -855,7 +705,7 @@ onUnmounted(() => clearInterval(timer))
 .panel {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 6px; overflow: hidden;
+  border-radius: 8px; overflow: hidden;
 }
 
 .dark .panel {
@@ -865,113 +715,98 @@ onUnmounted(() => clearInterval(timer))
 .mb-section { margin-bottom: 1.5rem; }
 .panel-header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 1.3rem 0.8rem;
-  border-bottom: 1px solid rgba(253, 126, 20, 0.07);
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
 }
+.dark .panel-header { border-color: #334155; }
 .panel-title {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.85rem; font-weight: 700; color: #111827; letter-spacing: 0.12em;
+  font-size: 0.95rem; font-weight: 600; color: #111827;
 }
 
 .dark .panel-title {
   color: #f9fafb;
 }
-.panel-title svg { width: 15px; height: 15px; }
-.panel-body { padding: 1rem 1.3rem; }
-.icon-btn {
-  background: none; border: 1px solid rgba(253, 126, 20, 0.12); border-radius: 4px;
-  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-  color: rgba(253, 126, 20, 0.4); cursor: pointer; transition: all 0.2s;
-}
-.icon-btn svg { width: 14px; height: 14px; }
-.icon-btn:hover { border-color: rgba(253, 126, 20, 0.35); color: #fd7e14; }
+.panel-body { padding: 1rem 1.25rem; }
 
 /* Status badge */
 .status-badge {
-  font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
-  padding: 4px 10px; border-radius: 20px; letter-spacing: 0.1em;
-  background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88;
-}
-.status-badge.demo-status {
-  background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.3); color: #ffb800;
-  animation: demoPulse 2s ease-in-out infinite;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 4px 10px; border-radius: 12px;
+  background: #d1fae5; color: #059669;
 }
 .admin-badge {
-  font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
-  padding: 4px 10px; border-radius: 20px; letter-spacing: 0.1em;
-  background: rgba(253, 126, 20, 0.1); border: 1px solid rgba(253, 126, 20, 0.3); color: #fd7e14;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 4px 10px; border-radius: 12px;
+  background: #fef3c7; color: #d97706;
 }
 
 /* Activity */
 .activity-row {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(253, 126, 20, 0.06);
+  border-bottom: 1px solid #f3f4f6;
 }
+.dark .activity-row { border-color: #374151; }
 .activity-row:last-child { border-bottom: none; }
 .activity-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   background: var(--dot-color);
-  box-shadow: 0 0 8px var(--dot-color);
 }
 .activity-info { flex: 1; }
-.activity-title { font-size: 0.85rem; font-weight: 600; color: #111827; margin-bottom: 2px; }
+.activity-title { font-size: 0.9rem; font-weight: 500; color: #111827; margin-bottom: 2px; }
 .dark .activity-title { color: #f9fafb; }
-.activity-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: rgba(253, 126, 20, 0.35); }
-.activity-time { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: rgba(51, 51, 51, 0.3); letter-spacing: 0.08em; }
+.activity-sub { font-size: 0.75rem; color: #9ca3af; }
+.activity-time { font-size: 0.75rem; color: #9ca3af; }
 
 /* System status */
 .sys-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(253, 126, 20, 0.06);
+  border-bottom: 1px solid #f3f4f6;
 }
+.dark .sys-row { border-color: #374151; }
 .sys-row:last-child { border-bottom: none; }
 .sys-info { display: flex; align-items: center; gap: 10px; }
 .sys-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
 }
-.sys-dot.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
-.sys-dot.warn { background: #ffb800; box-shadow: 0 0 8px #ffb800; }
-.sys-dot.demo { background: #fd7e14; box-shadow: 0 0 8px #fd7e14; }
-@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-.sys-name { font-size: 0.85rem; font-weight: 600; color: #111827; }
+.sys-dot.online { background: #10b981; }
+.sys-dot.warn { background: #f59e0b; }
+.sys-name { font-size: 0.9rem; font-weight: 500; color: #111827; }
 .dark .sys-name { color: #f9fafb; }
 .sys-status {
-  font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em;
-  padding: 3px 10px; border-radius: 3px;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 3px 8px; border-radius: 4px;
 }
-.sys-status.online { background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; }
-.sys-status.warn { background: rgba(255, 184, 0, 0.08); border: 1px solid rgba(255, 184, 0, 0.25); color: #ffb800; }
-.sys-status.demo { background: rgba(253, 126, 20, 0.08); border: 1px solid rgba(253, 126, 20, 0.25); color: #fd7e14; }
+.sys-status.online { background: #d1fae5; color: #059669; }
+.sys-status.warn { background: #fef3c7; color: #d97706; }
 
 /* Actions grid */
 .actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .action-card {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-  padding: 1.4rem 1rem; border-radius: 5px; text-decoration: none;
-  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em;
-  border: 1px solid; transition: all 0.25s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 1.25rem 1rem; border-radius: 8px; text-decoration: none;
+  font-size: 0.8rem; font-weight: 500;
+  border: 1px solid; transition: all 0.2s;
 }
-.action-card svg { width: 22px; height: 22px; }
-.action-card.cyan { background: rgba(253, 126, 20, 0.07); border-color: rgba(253, 126, 20, 0.2); color: #fd7e14; }
-.action-card.cyan:hover { background: rgba(253, 126, 20, 0.14); border-color: rgba(253, 126, 20, 0.5); transform: translateY(-3px); }
-.action-card.green { background: rgba(0, 255, 136, 0.07); border-color: rgba(0, 255, 136, 0.2); color: #00ff88; }
-.action-card.green:hover { background: rgba(0, 255, 136, 0.14); border-color: rgba(0, 255, 136, 0.5); transform: translateY(-3px); }
-.action-card.amber { background: rgba(255, 184, 0, 0.07); border-color: rgba(255, 184, 0, 0.2); color: #ffb800; }
-.action-card.amber:hover { background: rgba(255, 184, 0, 0.14); border-color: rgba(255, 184, 0, 0.5); transform: translateY(-3px); }
-.action-card.red { background: rgba(255, 68, 68, 0.07); border-color: rgba(255, 68, 68, 0.2); color: #ff4444; }
-.action-card.red:hover { background: rgba(255, 68, 68, 0.14); border-color: rgba(255, 68, 68, 0.5); transform: translateY(-3px); }
+.action-card svg { width: 20px; height: 20px; }
+.action-card.cyan { background: #fffbeb; border-color: #fcd34d; color: #d97706; }
+.action-card.cyan:hover { background: #fef3c7; transform: translateY(-2px); }
+.action-card.green { background: #ecfdf5; border-color: #6ee7b7; color: #059669; }
+.action-card.green:hover { background: #d1fae5; transform: translateY(-2px); }
+.action-card.amber { background: #fff7ed; border-color: #fdba74; color: #ea580c; }
+.action-card.amber:hover { background: #ffedd5; transform: translateY(-2px); }
+.action-card.red { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+.action-card.red:hover { background: #fee2e2; transform: translateY(-2px); }
 
 /* Nav cards */
 .nav-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .nav-card {
   display: flex; flex-direction: column; gap: 12px;
-  padding: 1.2rem; border-radius: 5px; text-decoration: none;
+  padding: 1.2rem; border-radius: 8px; text-decoration: none;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  transition: all 0.25s;
+  transition: all 0.2s;
 }
 
 .dark .nav-card {
@@ -979,144 +814,32 @@ onUnmounted(() => clearInterval(timer))
   border-color: #334155;
 }
 
-.nav-card:hover { border-color: #f97316; background: #f8fafc; transform: translateY(-3px); }
+.nav-card:hover { border-color: #f97316; background: #f9fafb; transform: translateY(-2px); }
 .dark .nav-card:hover { border-color: #f97316; background: #334155; }
 .nav-card-icon {
-  width: 38px; height: 38px; border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
 }
-.nav-card-icon svg { width: 16px; height: 16px; }
-.nav-card-icon.cyan { background: rgba(253, 126, 20, 0.1); border: 1px solid rgba(253, 126, 20, 0.25); color: #fd7e14; }
-.nav-card-icon.green { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; }
-.nav-card-icon.amber { background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.25); color: #ffb800; }
-.nav-card-icon.blue { background: rgba(80, 150, 255, 0.1); border: 1px solid rgba(80, 150, 255, 0.25); color: #5096ff; }
-.nav-card-title { font-size: 0.95rem; font-weight: 700; color: #111827; letter-spacing: 0.06em; margin-bottom: 4px; }
+.nav-card-icon svg { width: 18px; height: 18px; }
+.nav-card-icon.cyan { background: #fffbeb; color: #f59e0b; }
+.nav-card-icon.green { background: #ecfdf5; color: #10b981; }
+.nav-card-icon.amber { background: #fff7ed; color: #f97316; }
+.nav-card-icon.blue { background: #eff6ff; color: #3b82f6; }
+.nav-card-title { font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 4px; }
 .dark .nav-card-title { color: #f9fafb; }
-.nav-card-desc { font-size: 0.78rem; color: #6b7280; line-height: 1.4; }
+.nav-card-desc { font-size: 0.8rem; color: #6b7280; line-height: 1.4; }
 .dark .nav-card-desc { color: #9ca3af; }
 .nav-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .nav-badge {
-  font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
-  padding: 2px 8px; border-radius: 3px; border: 1px solid;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 3px 8px; border-radius: 4px;
 }
-.nav-badge.cyan { background: rgba(253, 126, 20, 0.08); border-color: rgba(253, 126, 20, 0.2); color: #fd7e14; }
-.nav-badge.green { background: rgba(0, 255, 136, 0.08); border-color: rgba(0, 255, 136, 0.2); color: #00ff88; }
-.nav-badge.amber { background: rgba(255, 184, 0, 0.08); border-color: rgba(255, 184, 0, 0.2); color: #ffb800; }
-.nav-badge.blue { background: rgba(80, 150, 255, 0.08); border-color: rgba(80, 150, 255, 0.2); color: #5096ff; }
-.nav-arrow { width: 14px; height: 14px; color: rgba(253, 126, 20, 0.4); transition: transform 0.2s; }
-.nav-card:hover .nav-arrow { transform: translateX(3px); color: #fd7e14; }
-
-/* Demo Mode Styles */
-.demo-badge {
-  background: linear-gradient(135deg, rgba(255, 184, 0, 0.15), rgba(255, 146, 43, 0.1));
-  border: 1px solid rgba(255, 184, 0, 0.3);
-  color: #ffb800;
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  animation: demoPulse 2s ease-in-out infinite;
-}
-
-@keyframes demoPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.02); }
-}
-
-.demo-info-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
-
-.demo-message p {
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: rgba(51, 51, 51, 0.7);
-}
-
-.demo-message p:first-child {
-  color: #ffb800;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.demo-credentials-show {
-  background: rgba(255, 184, 0, 0.05);
-  border: 1px solid rgba(255, 184, 0, 0.15);
-  border-radius: 4px;
-  padding: 1rem;
-}
-
-.demo-cred-title {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.7rem;
-  color: #ffb800;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.8rem;
-}
-
-.demo-cred-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 0.5rem;
-}
-
-.demo-cred-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.7rem;
-  color: rgba(51, 51, 51, 0.6);
-  min-width: 70px;
-}
-
-.demo-cred-value {
-  background: rgba(248, 249, 250, 0.8);
-  border: 1px solid rgba(253, 126, 20, 0.15);
-  border-radius: 3px;
-  padding: 2px 8px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.7rem;
-  color: #fd7e14;
-  flex: 1;
-}
-
-.demo-actions {
-  display: flex;
-  justify-content: center;
-}
-
-.demo-logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, rgba(255, 50, 50, 0.1), rgba(255, 100, 100, 0.05));
-  border: 1px solid rgba(255, 50, 50, 0.3);
-  color: #ff6666;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.demo-logout-btn:hover {
-  background: linear-gradient(135deg, rgba(255, 50, 50, 0.15), rgba(255, 100, 100, 0.08));
-  border-color: rgba(255, 50, 50, 0.5);
-  transform: translateY(-1px);
-}
-
-.demo-logout-btn svg {
-  width: 14px;
-  height: 14px;
-}
+.nav-badge.cyan { background: #fffbeb; color: #d97706; }
+.nav-badge.green { background: #ecfdf5; color: #059669; }
+.nav-badge.amber { background: #fff7ed; color: #c2410c; }
+.nav-badge.blue { background: #eff6ff; color: #2563eb; }
+.nav-arrow { width: 16px; height: 16px; color: #d1d5db; transition: transform 0.2s; }
+.nav-card:hover .nav-arrow { transform: translateX(3px); color: #f97316; }
 
 /* Responsive */
 @media (max-width: 1100px) {
