@@ -13,11 +13,6 @@
         <p class="brand-tagline">Comprehensive Profiling and Management System</p>
         <div class="brand-stats">
           <div class="stat-item">
-            <span class="stat-number">SYS</span>
-            <span class="stat-label">ONLINE</span>
-          </div>
-          <div class="stat-separator">|</div>
-          <div class="stat-item">
             <span class="stat-number">v2.0</span>
             <span class="stat-label">BUILD</span>
           </div>
