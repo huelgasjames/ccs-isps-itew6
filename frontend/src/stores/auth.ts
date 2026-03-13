@@ -15,6 +15,29 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (credentials: LoginCredentials) => {
     loading.value = true
     try {
+      // Check for hardcoded demo admin credentials
+      if (credentials.email === 'admin' && credentials.password === 'password') {
+        const demoUser: User = {
+          id: 1,
+          email: 'admin@ccs.edu',
+          name: 'Demo Admin',
+          role: 'admin',
+          department: 'College of Computing Studies',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+        
+        const demoToken = 'demo-admin-token-' + Date.now()
+        
+        user.value = demoUser
+        token.value = demoToken
+        
+        localStorage.setItem('auth_token', demoToken)
+        localStorage.setItem('user', JSON.stringify(demoUser))
+        
+        return { user: demoUser, token: demoToken }
+      }
+      
       // Real backend login only
       const response = await authService.login(credentials)
       user.value = response.user

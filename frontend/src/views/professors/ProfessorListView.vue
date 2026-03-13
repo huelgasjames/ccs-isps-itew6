@@ -432,6 +432,138 @@ onMounted(() => fetchProfessors())
 .page-btn.active { background: rgba(255,140,0,0.14); border-color: rgba(255,140,0,0.5); color: #ff8c00; }
 .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+/* Dark Mode Styles */
+.dark .page-root {
+  background: #0f172a;
+}
+
+.dark .bg-grid {
+  background-image: 
+    linear-gradient(rgba(249, 115, 22, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249, 115, 22, 0.03) 1px, transparent 1px);
+}
+
+.dark .topbar {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
+.dark .topbar-back {
+  color: #9ca3af;
+  border-color: #334155;
+}
+
+.dark .topbar-back:hover {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: #f97316;
+  color: #f97316;
+}
+
+.dark .title-name {
+  color: #f9fafb;
+}
+
+.dark .action-btn {
+  border-color: #334155;
+  color: #9ca3af;
+}
+
+.dark .action-btn.primary {
+  background: #f97316;
+  border-color: #f97316;
+  color: white;
+}
+
+.dark .action-btn.danger {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.dark .panel {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .panel-header {
+  border-bottom-color: #334155;
+}
+
+.dark .panel-title {
+  color: #f9fafb;
+}
+
+.dark .field-input {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.dark .field-input:focus {
+  border-color: rgba(249, 115, 22, 0.6);
+  background: rgba(55, 65, 81, 0.95);
+}
+
+.dark .field-select option {
+  background: #1e293b;
+}
+
+.dark .reset-btn {
+  background: rgba(249, 115, 22, 0.05);
+  border-color: rgba(249, 115, 22, 0.2);
+  color: rgba(249, 115, 22, 0.7);
+}
+
+.dark .reset-btn:hover {
+  border-color: rgba(249, 115, 22, 0.5);
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.dark .data-table thead tr {
+  background: rgba(249, 115, 22, 0.08);
+  border-bottom-color: rgba(249, 115, 22, 0.15);
+}
+
+.dark .data-row {
+  border-bottom-color: rgba(249, 115, 22, 0.08);
+}
+
+.dark .data-row:hover {
+  background: rgba(249, 115, 22, 0.04);
+}
+
+.dark .data-row td {
+  color: #f9fafb;
+}
+
+.dark .page-btn {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(249, 115, 22, 0.15);
+  color: rgba(249, 115, 22, 0.5);
+}
+
+.dark .page-btn:hover:not(:disabled) {
+  border-color: rgba(249, 115, 22, 0.45);
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.dark .page-btn.active {
+  background: rgba(249, 115, 22, 0.14);
+  border-color: rgba(249, 115, 22, 0.5);
+  color: #f97316;
+}
+
+.dark .pagination-bar {
+  border-top-color: rgba(249, 115, 22, 0.07);
+}
+
+.dark .loading-state,
+.dark .empty-state {
+  color: rgba(249, 115, 22, 0.4);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .filter-grid { grid-template-columns: 1fr 1fr; }
