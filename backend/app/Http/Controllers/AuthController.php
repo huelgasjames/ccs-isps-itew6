@@ -11,26 +11,31 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        \Log::info('Login attempt', ['data' => $request->all()]);
+        \Log::info('Login attempt', ['data' => $request->all(), 'headers' => $request->headers->all()]);
         
-        $request->validate([
-            'email' => 'required_without:username|string',
-            'username' => 'required_without:email|string',
-            'password' => 'required',
-        ]);
+        try {
+            $validated = $request->validate([
+                'email' => 'required|string|email',
+                'password' => 'required',
+            ]);
+            \Log::info('Validation passed', $validated);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed', ['errors' => $e->errors()]);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
-        $loginField = $request->email ?? $request->username;
-        $field = filter_var($loginField, FILTER_VALIDATE_EMAIL) ? 'email' : 'email';
+        \Log::info('Attempting auth', ['email' => $request->email]);
         
-        \Log::info('Attempting auth', ['field' => $field, 'value' => $loginField]);
-        
-        if (!Auth::attempt([$field => $loginField, 'password' => $request->password])) {
+        if (!Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
         }
 
-        $user = User::where('email', $loginField)->first();
+        $user = User::where('email', $request->email)->first();
 
         return response()->json([
             'user' => $user,

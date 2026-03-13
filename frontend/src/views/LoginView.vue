@@ -143,14 +143,19 @@ const error = ref('')
 const handleLogin = async () => {
   // Basic validation
   if (!form.value.email.trim() || !form.value.password.trim()) {
-    error.value = 'Please enter both email/username and password.'
+    error.value = 'Please enter both email and password.'
     return
   }
 
   loading.value = true
   error.value = ''
   try {
-    await authStore.login(form.value)
+    const credentials = {
+      email: form.value.email.trim(),
+      password: form.value.password
+    }
+    
+    await authStore.login(credentials)
     router.push('/dashboard')
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Authentication failed. Please try again.'
