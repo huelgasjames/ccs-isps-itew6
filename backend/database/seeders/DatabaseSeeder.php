@@ -11,6 +11,7 @@ use App\Models\Sport;
 use App\Models\Certificate;
 use App\Models\Violation;
 use App\Models\Organization;
+use App\Models\Announcement;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -227,6 +228,42 @@ class DatabaseSeeder extends Seeder
             'date_committed' => '2024-01-10',
             'status' => 'Resolved',
         ]);
+
+        // Create Sample Announcements
+        $announcement1 = Announcement::create([
+            'title' => 'Welcome to CCS-ISPS System',
+            'content' => 'We are excited to launch the new Integrated Student Profiling System! This platform will help us better track and support our students\' academic progress, talents, and overall development.',
+            'image' => 'announcements/welcome.jpg',
+            'user_id' => $admin->id,
+            'status' => 'published',
+            'target_type' => 'all',
+            'target_users' => null,
+        ]);
+
+        $announcement2 = Announcement::create([
+            'title' => 'Midterm Examination Schedule',
+            'content' => 'Please be reminded that midterm examinations will start next week. Make sure to review your schedules and prepare accordingly. Good luck to all students!',
+            'image' => 'announcements/exams.jpg',
+            'user_id' => $professorUser->id,
+            'status' => 'published',
+            'target_type' => 'students',
+            'target_users' => null,
+        ]);
+
+        $announcement3 = Announcement::create([
+            'title' => 'Faculty Development Workshop',
+            'content' => 'A professional development workshop on modern teaching methodologies will be held this Friday. All faculty members are required to attend.',
+            'image' => 'announcements/workshop.jpg',
+            'user_id' => $admin->id,
+            'status' => 'published',
+            'target_type' => 'professors',
+            'target_users' => null,
+        ]);
+
+        // Mark some announcements as viewed by users
+        $announcement1->markAsViewedBy($professorUser->id);
+        $announcement1->markAsViewedBy($studentUser->id);
+        $announcement2->markAsViewedBy($studentUser->id);
 
         $this->command->info('Database seeded successfully!');
         $this->command->info('Admin Login: admin@ccs.edu / password');

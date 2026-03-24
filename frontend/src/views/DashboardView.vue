@@ -1,129 +1,5 @@
-<template>
+﻿<template>
   <div class="dashboard-root">
-
-    <!-- ── Navbar ── -->
-    <nav class="topbar">
-      <div class="topbar-inner">
-        <!-- Brand -->
-        <router-link to="/dashboard" class="topbar-brand">
-          <div class="brand-icon">
-            <img src="/image-removebg-preview (1).png" alt="University Logo" class="brand-logo-img" />
-          </div>
-          <div class="brand-text">
-            <span class="brand-sys">SYS://CCS.EDU</span>
-            <span class="brand-name">CCS COMPREHENSIVE PROFILING</span>
-          </div>
-        </router-link>
-
-        <!-- Nav links -->
-        <div class="topbar-nav">
-          <router-link to="/dashboard" class="nav-pill active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </router-link>
-          <div v-if="isAdmin" class="nav-pill has-dropdown">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Users
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-            <div class="dropdown-panel">
-              <router-link to="/students" class="dropdown-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Students
-              </router-link>
-              <router-link to="/professors" class="dropdown-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                Professors
-              </router-link>
-            </div>
-          </div>
-          <div v-if="isAdmin" class="nav-pill has-dropdown">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            Instruction
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-            <div class="dropdown-panel">
-              <router-link to="/courses" class="dropdown-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                Courses
-              </router-link>
-              <router-link to="/syllabi" class="dropdown-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                Syllabi
-              </router-link>
-            </div>
-          </div>
-          <div v-if="isAdmin" class="nav-pill has-dropdown">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Scheduling
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-            <div class="dropdown-panel">
-              <router-link to="/schedules" class="dropdown-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Class Schedules
-              </router-link>
-              <router-link to="/rooms" class="dropdown-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Rooms
-              </router-link>
-            </div>
-          </div>
-          <router-link to="/events" class="nav-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Events
-          </router-link>
-          <router-link v-if="isAdmin" to="/violations" class="nav-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Violations
-          </router-link>
-          <router-link to="/profile" class="nav-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Profile
-          </router-link>
-        </div>
-
-        <!-- Theme Toggle -->
-        <button @click="themeStore.toggleTheme()" class="theme-toggle-btn">
-          <svg v-if="!themeStore.isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </button>
-
-        <!-- User menu -->
-        <div class="topbar-user has-dropdown">
-          <div class="user-avatar">{{ user?.name?.charAt(0) ?? 'U' }}</div>
-          <div class="user-info">
-            <span class="user-name">{{ user?.name }}</span>
-            <span class="user-role">{{ user?.role?.toUpperCase() ?? 'USER' }}</span>
-          </div>
-          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          <div class="dropdown-panel dropdown-right">
-            <router-link to="/profile" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              My Profile
-            </router-link>
-            <router-link to="/settings" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 2.93 19.07M4.93 4.93a10 10 0 0 0 14.14 14.14"/></svg>
-              Settings
-            </router-link>
-            <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item danger" @click.prevent="handleLogout">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Logout
-            </a>
-          </div>
-        </div>
-      </div>
-    </nav>
 
     <!-- ── Main Content ── -->
     <main class="main-content">
@@ -151,6 +27,110 @@
           <div class="time-display">
             <div class="time-value">{{ currentTime }}</div>
             <div class="time-date">{{ currentDate }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Announcements Section -->
+      <div class="panel mb-section">
+        <div class="panel-header">
+          <div class="panel-title">Latest Announcements</div>
+          <div class="header-actions">
+            <router-link to="/announcements" class="text-sm text-blue-600 hover:text-blue-800">View All</router-link>
+            <button 
+              @click="$router.push('/announcements')"
+              class="action-btn"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 4v16m8-8H4"/>
+              </svg>
+              Create Announcement
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <!-- Loading State -->
+          <div v-if="loadingAnnouncements" class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          </div>
+          
+          <!-- Announcements List -->
+          <div v-else-if="announcements.length > 0" class="space-y-4">
+            <div 
+              v-for="announcement in announcements" 
+              :key="announcement.id"
+              class="announcement-item"
+              :class="{ 'unread': !announcement.is_viewed }"
+            >
+              <div class="announcement-header">
+                <div class="flex items-start gap-3">
+                  <div class="announcement-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <h4 class="announcement-title">{{ announcement.title }}</h4>
+                      <div class="flex items-center gap-2">
+                        <span v-if="!announcement.is_viewed" class="unread-badge">New</span>
+                        <span class="announcement-time">{{ formatDate(announcement.created_at) }}</span>
+                      </div>
+                    </div>
+                    <p class="announcement-author">by {{ announcement.user?.name }}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="announcement-content">
+                <p>{{ announcement.content }}</p>
+              </div>
+              
+              <div v-if="announcement.image" class="announcement-image">
+                <img 
+                  :src="`http://127.0.0.1:8000/storage/${announcement.image}`" 
+                  :alt="announcement.title"
+                  class="w-full h-32 object-cover rounded-md"
+                  @error="handleImageError"
+                />
+              </div>
+              
+              <div class="announcement-footer">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span class="flex items-center gap-1">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      {{ announcement.view_count || 0 }} views
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                        <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                      </svg>
+                      {{ getTargetTypeLabel(announcement.target_type) }}
+                    </span>
+                  </div>
+                  
+                  <button 
+                    v-if="!announcement.is_viewed"
+                    @click="markAnnouncementAsViewed(announcement.id)"
+                    class="mark-read-btn"
+                  >
+                    Mark as read
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div v-else class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+            </svg>
+            <p class="text-gray-500 text-sm">No announcements available</p>
           </div>
         </div>
       </div>
@@ -365,6 +345,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import api from '@/services/api'
+import { announcementService, type Announcement } from '@/services/announcements'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -380,6 +361,8 @@ const currentTime = computed(() => now.value.toLocaleTimeString('en-US', { hour1
 const currentDate = computed(() => now.value.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
 
 const stats = ref({ totalStudents: 0, totalProfessors: 0, pendingViolations: 0, atRiskStudents: 0 })
+const announcements = ref<Announcement[]>([])
+const loadingAnnouncements = ref(true)
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -413,9 +396,83 @@ const fetchStats = async () => {
   }
 }
 
+const fetchAnnouncements = async () => {
+  try {
+    loadingAnnouncements.value = true
+    const allAnnouncements = await announcementService.getAnnouncements()
+    
+    // Filter announcements user can view and get only the latest 3
+    announcements.value = allAnnouncements
+      .filter(announcement => {
+        if (announcement.status !== 'published') return false
+        
+        if (!authStore.user) return false
+        
+        if (announcement.target_type === 'all') return true
+        if (announcement.target_type === 'students' && authStore.user.role === 'student') return true
+        if (announcement.target_type === 'professors' && authStore.user.role === 'professor') return true
+        if (announcement.target_type === 'specific' && announcement.target_users) {
+          return announcement.target_users.includes(authStore.user.id)
+        }
+        
+        return false
+      })
+      .slice(0, 3) // Show only latest 3 announcements
+  } catch (error) {
+    console.error('Error fetching announcements:', error)
+    announcements.value = []
+  } finally {
+    loadingAnnouncements.value = false
+  }
+}
+
+const markAnnouncementAsViewed = async (announcementId: number) => {
+  try {
+    await announcementService.markAsViewed(announcementId)
+    const announcement = announcements.value.find(a => a.id === announcementId)
+    if (announcement) {
+      announcement.is_viewed = true
+      announcement.view_count = (announcement.view_count || 0) + 1
+    }
+  } catch (error) {
+    console.error('Error marking announcement as viewed:', error)
+  }
+}
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const getTargetTypeLabel = (targetType: string) => {
+  switch (targetType) {
+    case 'all':
+      return 'All Users'
+    case 'students':
+      return 'Students'
+    case 'professors':
+      return 'Professors'
+    case 'specific':
+      return 'Specific Users'
+    default:
+      return targetType
+  }
+}
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  img.src = '/placeholder-announcement.jpg'
+}
+
 onMounted(() => {
   themeStore.initTheme()
   fetchStats()
+  fetchAnnouncements()
   timer = setInterval(() => { now.value = new Date() }, 1000)
 })
 onUnmounted(() => clearInterval(timer))
@@ -831,8 +888,10 @@ onUnmounted(() => clearInterval(timer))
 .dark .nav-card-desc { color: #9ca3af; }
 .nav-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .nav-badge {
-  font-size: 0.75rem; font-weight: 500;
-  padding: 3px 8px; border-radius: 4px;
+  font-size: 0.75rem; 
+  font-weight: 500;
+  padding: 3px 8px; 
+  border-radius: 4px;
 }
 .nav-badge.cyan { background: #fffbeb; color: #d97706; }
 .nav-badge.green { background: #ecfdf5; color: #059669; }
@@ -841,12 +900,140 @@ onUnmounted(() => clearInterval(timer))
 .nav-arrow { width: 16px; height: 16px; color: #d1d5db; transition: transform 0.2s; }
 .nav-card:hover .nav-arrow { transform: translateX(3px); color: #f97316; }
 
-/* Responsive */
-@media (max-width: 1100px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .actions-grid { grid-template-columns: repeat(2, 1fr); }
-  .nav-cards-grid { grid-template-columns: repeat(2, 1fr); }
+/* Announcements */
+.announcement-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: #ffffff;
+  transition: all 0.2s;
 }
+
+.dark .announcement-item {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.announcement-item.unread {
+  border-left: 3px solid #f97316;
+  background: #fffbeb;
+}
+
+.dark .announcement-item.unread {
+  background: rgba(249, 115, 22, 0.05);
+  border-left-color: #f97316;
+}
+
+.announcement-item:hover {
+  border-color: #f97316;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-header {
+  margin-bottom: 0.5rem;
+}
+
+.announcement-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.announcement-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.announcement-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.125rem;
+}
+
+.dark .announcement-title {
+  color: #f9fafb;
+}
+
+.announcement-author {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.dark .announcement-author {
+  color: #9ca3af;
+}
+
+.announcement-time {
+  font-size: 0.625rem;
+  color: #9ca3af;
+}
+
+.unread-badge {
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #f97316;
+  color: white;
+}
+
+.announcement-content {
+  margin-bottom: 0.5rem;
+}
+
+.announcement-content p {
+  font-size: 0.75rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.dark .announcement-content p {
+  color: #d1d5db;
+}
+
+.announcement-image {
+  margin-bottom: 0.5rem;
+}
+
+.announcement-image img {
+  height: 80px;
+}
+
+.announcement-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.dark .announcement-footer {
+  border-top-color: #374151;
+}
+
+.mark-read-btn {
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #f97316;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mark-read-btn:hover {
+  background: #ea580c;
+}
+
 @media (max-width: 768px) {
   .two-col-grid { grid-template-columns: 1fr; }
   .welcome-banner { flex-direction: column; }
