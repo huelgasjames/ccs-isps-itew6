@@ -238,12 +238,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .page-root {
   min-height: 100vh;
   background: #ffffff;
+  font-family: 'Inter', sans-serif;
   font-family: 'Rajdhani', sans-serif;
   color: #333333;
   position: relative;
