@@ -225,15 +225,15 @@ const handleLogout = async () => { await authStore.logout(); router.push('/login
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .page-root {
   min-height: 100vh;
-  background: #ffffff;
-  font-family: 'Rajdhani', sans-serif;
-  color: #333333;
+  background: #f9fafb;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
   position: relative;
 }
 
@@ -263,7 +263,7 @@ const handleLogout = async () => { await authStore.logout(); router.push('/login
 }
 .topbar-back {
   display: flex; align-items: center; gap: 6px;
-  font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+  font-family: 'Inter', monospace; font-size: 0.72rem;
   color: rgba(255,140,0,0.7); text-decoration: none; letter-spacing: 0.12em;
   padding: 6px 12px; border-radius: 4px;
   border: 1px solid rgba(255,140,0,0.2);
@@ -272,13 +272,13 @@ const handleLogout = async () => { await authStore.logout(); router.push('/login
 .topbar-back svg { width: 14px; height: 14px; }
 .topbar-back:hover { color: #ff8c00; border-color: rgba(255,140,0,0.5); background: rgba(255,140,0,0.08); }
 .topbar-title { flex: 1; }
-.title-sys { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: rgba(255,140,0,0.5); letter-spacing: 0.12em; }
+.title-sys { font-family: 'Inter', monospace; font-size: 0.58rem; color: rgba(255,140,0,0.5); letter-spacing: 0.12em; }
 .title-name { font-size: 1rem; font-weight: 700; color: #333333; letter-spacing: 0.14em; }
 .topbar-actions { display: flex; gap: 8px; }
 .action-btn {
   display: flex; align-items: center; gap: 7px;
   padding: 7px 16px; border-radius: 4px;
-  font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em;
+  font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em;
   cursor: pointer; transition: all 0.2s; text-decoration: none; border: 1px solid;
 }
 .action-btn svg { width: 14px; height: 14px; }
@@ -291,15 +291,36 @@ const handleLogout = async () => { await authStore.logout(); router.push('/login
 .main-content { position: relative; z-index: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
 
 .breadcrumb-bar {
-  display: flex; align-items: center; gap: 8px;
-  font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: rgba(255,140,0,0.5);
-  letter-spacing: 0.12em; margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
 }
-.bc-prompt { color: #ff8c00; }
-.bc-item { color: rgba(255,140,0,0.6); text-decoration: none; }
-.bc-item:hover { color: #ff8c00; }
-.bc-sep { color: rgba(255,140,0,0.3); }
-.bc-current { color: rgba(255,140,0,0.8); }
+
+.bc-prompt {
+  color: #f97316;
+  font-family: 'Inter', monospace;
+}
+
+.bc-item {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.bc-item:hover {
+  color: #f97316;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-current {
+  color: #374151;
+  font-weight: 500;
+}
 
 /* Panel */
 .panel {

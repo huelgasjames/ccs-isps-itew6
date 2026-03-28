@@ -479,7 +479,7 @@ onUnmounted(() => clearInterval(timer))
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -487,6 +487,7 @@ onUnmounted(() => clearInterval(timer))
 .dashboard-root {
   min-height: 100vh;
   background: #ffffff;
+  font-family: 'Inter', sans-serif;
   transition: background-color 0.3s;
 }
 
@@ -530,7 +531,7 @@ onUnmounted(() => clearInterval(timer))
   object-fit: contain;
 }
 .brand-text { display: flex; flex-direction: column; }
-.brand-sys { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: rgba(253, 126, 20, 0.45); letter-spacing: 0.1em; }
+.brand-sys { font-family: 'Inter', monospace; font-size: 0.58rem; color: rgba(253, 126, 20, 0.45); letter-spacing: 0.1em; }
 .brand-name { font-size: 0.95rem; font-weight: 700; color: #333333; letter-spacing: 0.12em; line-height: 1; }
 
 /* Nav pills */
@@ -608,12 +609,12 @@ onUnmounted(() => clearInterval(timer))
   background: linear-gradient(135deg, rgba(253, 126, 20, 0.3), rgba(255, 146, 43, 0.2));
   border: 1px solid rgba(253, 126, 20, 0.4);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.9rem; color: #fd7e14;
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.9rem; color: #fd7e14;
 }
 .user-info { display: flex; flex-direction: column; }
 .user-name { font-size: 0.85rem; font-weight: 700; color: #111827; letter-spacing: 0.05em; }
 .dark .user-name { color: #f9fafb; }
-.user-role { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: #6b7280; letter-spacing: 0.1em; }
+.user-role { font-family: 'Inter', monospace; font-size: 0.58rem; color: #6b7280; letter-spacing: 0.1em; }
 .dark .user-role { color: #9ca3af; }
 
 /* Theme Toggle */
@@ -652,15 +653,36 @@ onUnmounted(() => clearInterval(timer))
 
 /* Breadcrumb */
 .breadcrumb-bar {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.8rem; color: #6b7280;
-  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
 }
-.bc-prompt { color: #f97316; }
-.bc-item { color: #6b7280; text-decoration: none; }
-.bc-item:hover { color: #f97316; }
-.bc-sep { color: #d1d5db; }
-.bc-current { color: #374151; font-weight: 500; }
+
+.bc-prompt {
+  color: #f97316;
+  font-family: 'Inter', monospace;
+}
+
+.bc-item {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.bc-item:hover {
+  color: #f97316;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-current {
+  color: #374151;
+  font-weight: 500;
+}
 
 /* Welcome Banner */
 .welcome-banner {
