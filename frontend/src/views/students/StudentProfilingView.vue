@@ -493,15 +493,179 @@
         </div>
 
         <div class="modal-body">
-          <p>Would you like to create a new student profile?</p>
-          <p>This will open the student creation form where you can enter all required information.</p>
+          <form @submit.prevent="handleCreateStudent" class="create-student-form">
+            <!-- Personal Information Section -->
+            <div class="form-section">
+              <h3>Personal Information</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>First Name *</label>
+                  <input v-model="newStudent.firstName" type="text" required placeholder="Enter first name" />
+                </div>
+                <div class="form-group">
+                  <label>Last Name *</label>
+                  <input v-model="newStudent.lastName" type="text" required placeholder="Enter last name" />
+                </div>
+                <div class="form-group">
+                  <label>Middle Name</label>
+                  <input v-model="newStudent.middleName" type="text" placeholder="Enter middle name (optional)" />
+                </div>
+                <div class="form-group">
+                  <label>Student ID *</label>
+                  <input v-model="newStudent.studentId" type="text" required placeholder="e.g., 2024-001" />
+                </div>
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input v-model="newStudent.email" type="email" required placeholder="student@ccs.edu" />
+                </div>
+                <div class="form-group">
+                  <label>Phone *</label>
+                  <input v-model="newStudent.phone" type="tel" required placeholder="+63 XXX XXX XXXX" />
+                </div>
+                <div class="form-group">
+                  <label>Date of Birth *</label>
+                  <input v-model="newStudent.dateOfBirth" type="date" required />
+                </div>
+                <div class="form-group">
+                  <label>Age *</label>
+                  <input v-model.number="newStudent.age" type="number" required min="16" max="30" />
+                </div>
+                <div class="form-group">
+                  <label>Gender *</label>
+                  <select v-model="newStudent.gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group full-width">
+                  <label>Address *</label>
+                  <input v-model="newStudent.address" type="text" required placeholder="Enter address" />
+                </div>
+                <div class="form-group">
+                  <label>City *</label>
+                  <input v-model="newStudent.city" type="text" required placeholder="Enter city" />
+                </div>
+                <div class="form-group">
+                  <label>Province *</label>
+                  <input v-model="newStudent.province" type="text" required placeholder="Enter province" />
+                </div>
+                <div class="form-group">
+                  <label>Postal Code *</label>
+                  <input v-model="newStudent.postalCode" type="text" required placeholder="Enter postal code" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Emergency Contact Section -->
+            <div class="form-section">
+              <h3>Emergency Contact</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Contact Name *</label>
+                  <input v-model="newStudent.emergencyContact.name" type="text" required placeholder="Enter contact name" />
+                </div>
+                <div class="form-group">
+                  <label>Relationship *</label>
+                  <input v-model="newStudent.emergencyContact.relationship" type="text" required placeholder="e.g., Mother, Father" />
+                </div>
+                <div class="form-group">
+                  <label>Contact Phone *</label>
+                  <input v-model="newStudent.emergencyContact.phone" type="tel" required placeholder="+63 XXX XXX XXXX" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Academic Information Section -->
+            <div class="form-section">
+              <h3>Academic Information</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Current Year *</label>
+                  <select v-model.number="newStudent.academicStanding.currentYear" required>
+                    <option value="">Select Year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Semester *</label>
+                  <select v-model="newStudent.academicStanding.currentSemester" required>
+                    <option value="">Select Semester</option>
+                    <option value="first">First Semester</option>
+                    <option value="second">Second Semester</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Current GPA *</label>
+                  <input v-model.number="newStudent.academicStanding.currentGPA" type="number" step="0.01" min="0" max="4" required placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label>Total Units</label>
+                  <input v-model.number="newStudent.academicStanding.totalUnits" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label>Academic Standing *</label>
+                  <select v-model="newStudent.academicStanding.standing" required>
+                    <option value="">Select Standing</option>
+                    <option value="good">Good</option>
+                    <option value="warning">Warning</option>
+                    <option value="probation">Probation</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Advisor</label>
+                  <input v-model="newStudent.academicStanding.advisor" type="text" placeholder="Enter advisor name" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Academic History Section -->
+            <div class="form-section">
+              <h3>Academic History</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>School Name *</label>
+                  <input v-model="newStudent.schoolName" type="text" required placeholder="Enter school name" />
+                </div>
+                <div class="form-group">
+                  <label>Degree *</label>
+                  <input v-model="newStudent.degree" type="text" required placeholder="e.g., Bachelor of Science" />
+                </div>
+                <div class="form-group">
+                  <label>Major *</label>
+                  <input v-model="newStudent.major" type="text" required placeholder="e.g., Computer Science" />
+                </div>
+                <div class="form-group">
+                  <label>Start Date *</label>
+                  <input v-model="newStudent.startDate" type="date" required />
+                </div>
+                <div class="form-group">
+                  <label>GPA</label>
+                  <input v-model.number="newStudent.gpa" type="number" step="0.01" min="0" max="4" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label>Status *</label>
+                  <select v-model="newStudent.status" required>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="transferred">Transferred</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </form>
         </div>
 
         <div class="modal-footer">
           <button @click="closeCreateModal" class="btn btn-secondary">Cancel</button>
-          <router-link to="/students/create" class="btn btn-primary">
-            Create Student
-          </router-link>
+          <button @click="handleCreateStudent" class="btn btn-primary" :disabled="isCreating">
+            <span v-if="isCreating">Creating...</span>
+            <span v-else>Create Student</span>
+          </button>
         </div>
       </div>
     </div>
@@ -520,6 +684,7 @@ const studentStore = useStudentStore()
 // Local state
 const filterPanelOpen = ref(false)
 const showCreateModal = ref(false)
+const isCreating = ref(false)
 const localFilter = ref<StudentFilter>({
   search: '',
   skills: [],
@@ -530,6 +695,45 @@ const localFilter = ref<StudentFilter>({
   yearLevel: [],
   gpaRange: { min: 0, max: 4 },
   ageRange: { min: 16, max: 30 }
+})
+
+// New student form data
+const newStudent = ref({
+  // Personal Information
+  firstName: '',
+  lastName: '',
+  middleName: '',
+  studentId: '',
+  email: '',
+  phone: '',
+  dateOfBirth: '',
+  age: 0,
+  gender: '',
+  address: '',
+  city: '',
+  province: '',
+  postalCode: '',
+  emergencyContact: {
+    name: '',
+    relationship: '',
+    phone: ''
+  },
+  // Academic Standing
+  academicStanding: {
+    currentYear: 1,
+    currentSemester: 'first',
+    currentGPA: 0,
+    totalUnits: 0,
+    standing: 'good',
+    advisor: ''
+  },
+  // Academic History
+  schoolName: '',
+  degree: '',
+  major: '',
+  startDate: '',
+  gpa: 0,
+  status: 'ongoing'
 })
 
 // Available options for filters
@@ -701,11 +905,105 @@ const goToPage = (page: number) => {
 
 const closeCreateModal = () => {
   showCreateModal.value = false
+  resetForm()
 }
 
-const handleCreateStudent = () => {
-  // Implementation will be added
-  showCreateModal.value = false
+const resetForm = () => {
+  newStudent.value = {
+    // Personal Information
+    firstName: '',
+    lastName: '',
+    middleName: '',
+    studentId: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    age: 0,
+    gender: '',
+    address: '',
+    city: '',
+    province: '',
+    postalCode: '',
+    emergencyContact: {
+      name: '',
+      relationship: '',
+      phone: ''
+    },
+    // Academic Standing
+    academicStanding: {
+      currentYear: 1,
+      currentSemester: 'first',
+      currentGPA: 0,
+      totalUnits: 0,
+      standing: 'good',
+      advisor: ''
+    },
+    // Academic History
+    schoolName: '',
+    degree: '',
+    major: '',
+    startDate: '',
+    gpa: 0,
+    status: 'ongoing'
+  }
+}
+
+const handleCreateStudent = async () => {
+  try {
+    isCreating.value = true
+    
+    // Create student object matching the Student interface
+    const studentData: any = {
+      personalInfo: {
+        firstName: newStudent.value.firstName,
+        lastName: newStudent.value.lastName,
+        middleName: newStudent.value.middleName || undefined,
+        studentId: newStudent.value.studentId,
+        email: newStudent.value.email,
+        phone: newStudent.value.phone,
+        dateOfBirth: newStudent.value.dateOfBirth,
+        age: newStudent.value.age,
+        gender: newStudent.value.gender,
+        address: newStudent.value.address,
+        city: newStudent.value.city,
+        province: newStudent.value.province,
+        postalCode: newStudent.value.postalCode,
+        emergencyContact: newStudent.value.emergencyContact
+      },
+      academicStanding: newStudent.value.academicStanding,
+      academicHistory: [{
+        id: Date.now(),
+        schoolName: newStudent.value.schoolName,
+        degree: newStudent.value.degree,
+        major: newStudent.value.major,
+        startDate: newStudent.value.startDate,
+        gpa: newStudent.value.gpa || undefined,
+        status: newStudent.value.status
+      }],
+      activities: [],
+      violations: [],
+      skills: [],
+      affiliations: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isActive: true
+    }
+    
+    // Add the student to the store
+    await studentStore.createStudent(studentData)
+    
+    // Close modal and reset form
+    closeCreateModal()
+    
+    // Show success message (you could add a toast notification here)
+    console.log('Student created successfully!')
+    
+  } catch (error) {
+    console.error('Failed to create student:', error)
+    // You could show an error message here
+  } finally {
+    isCreating.value = false
+  }
 }
 
 const generateSampleData = () => {
@@ -731,7 +1029,7 @@ onMounted(() => {
 
 /* Header */
 .system-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f97316 0%, #fd7e14 100%);
   color: white;
   padding: 2rem;
   border-radius: 12px;
@@ -771,12 +1069,12 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: #f97316;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: #ea580c;
 }
 
 .btn-secondary {
@@ -839,7 +1137,7 @@ onMounted(() => {
 .stat-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f97316 0%, #fd7e14 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -934,8 +1232,8 @@ onMounted(() => {
 
 .filter-select:focus, .search-input input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 .range-inputs {
@@ -992,8 +1290,8 @@ onMounted(() => {
 }
 
 .quick-filter-btn:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: #f97316;
+  color: #f97316;
 }
 
 .quick-filter-btn.active {
@@ -1360,8 +1658,8 @@ onMounted(() => {
 }
 
 .pagination-btn:hover:not(:disabled) {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: #f97316;
+  color: #f97316;
 }
 
 .pagination-btn:disabled {
@@ -1386,14 +1684,14 @@ onMounted(() => {
 }
 
 .page-number:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: #f97316;
+  color: #f97316;
 }
 
 .page-number.active {
-  background: #3b82f6;
+  background: #f97316;
   color: white;
-  border-color: #3b82f6;
+  border-color: #f97316;
 }
 
 /* Modal */
@@ -1414,10 +1712,92 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  max-width: 800px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+/* Create Student Form Styles */
+.create-student-form {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 1rem;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-section h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: #f97316;
+  border-radius: 2px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.form-group input:invalid {
+  border-color: #ef4444;
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
 }
 
 .modal-header {

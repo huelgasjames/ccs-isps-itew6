@@ -1,17 +1,4 @@
-<<<<<<< HEAD
 <template>
-  <!-- Breadcrumb -->
-    <div class="breadcrumb-bar">
-      <span class="bc-prompt">$</span>
-      <router-link to="/dashboard" class="bc-item">HOME</router-link>
-      <span class="bc-sep">›</span>
-      <span class="bc-current">DASHBOARD</span>
-    </div>
-
-    <!-- Welcome Banner -->
-    <div class="welcome-banner">
-=======
-﻿<template>
   <div class="dashboard-root">
 
     <!-- ── Main Content ── -->
@@ -26,7 +13,6 @@
 
       <!-- Welcome Banner -->
       <div class="welcome-banner">
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
         <div class="welcome-left">
           <div class="welcome-avatar">{{ user?.name?.charAt(0) ?? 'U' }}</div>
           <div>
@@ -375,6 +361,8 @@
           </div>
         </div>
       </div>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -383,11 +371,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import api from '@/services/api'
-<<<<<<< HEAD
-import type { Announcement } from '@/types/announcement'
-=======
 import { announcementService, type Announcement } from '@/services/announcements'
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -404,15 +388,12 @@ const currentDate = computed(() => now.value.toLocaleDateString('en-US', { weekd
 
 const stats = ref({ totalStudents: 0, totalProfessors: 0, pendingViolations: 0, atRiskStudents: 0 })
 const announcements = ref<Announcement[]>([])
-<<<<<<< HEAD
-=======
 const loadingAnnouncements = ref(true)
 
 const handleLogout = async () => {
   await authStore.logout()
   router.push('/login')
 }
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 
 const fetchStats = async () => {
   try {
@@ -443,12 +424,6 @@ const fetchStats = async () => {
 
 const fetchAnnouncements = async () => {
   try {
-<<<<<<< HEAD
-    const response = await api.get('/announcements/recent?limit=3')
-    announcements.value = response.data
-  } catch (error) {
-    console.error('Error fetching announcements:', error)
-=======
     loadingAnnouncements.value = true
     const allAnnouncements = await announcementService.getAnnouncements()
     
@@ -487,28 +462,19 @@ const markAnnouncementAsViewed = async (announcementId: number) => {
     }
   } catch (error) {
     console.error('Error marking announcement as viewed:', error)
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
   }
 }
 
 const formatDate = (dateString: string) => {
-<<<<<<< HEAD
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-=======
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   })
 }
 
-<<<<<<< HEAD
-=======
 const getTargetTypeLabel = (targetType: string) => {
   switch (targetType) {
     case 'all':
@@ -529,7 +495,6 @@ const handleImageError = (event: Event) => {
   img.src = '/placeholder-announcement.jpg'
 }
 
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 onMounted(() => {
   fetchStats()
   fetchAnnouncements()
@@ -543,8 +508,6 @@ onUnmounted(() => clearInterval(timer))
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<<<<<<< HEAD
-=======
 /* ── Root & Background ── */
 .dashboard-root {
   min-height: 100vh;
@@ -713,7 +676,6 @@ onUnmounted(() => clearInterval(timer))
 /* ── Main Content ── */
 .main-content { position: relative; z-index: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
 
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 /* Breadcrumb */
 .breadcrumb-bar {
   display: flex;

@@ -335,27 +335,93 @@ export const useStudentStore = defineStore('student', () => {
 
   // Sample data generator for demo purposes
   const generateSampleData = () => {
-    const sampleStudents: Student[] = [
-      {
-        id: 1,
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Mary', 'William', 'Patricia', 'Richard', 'Jennifer', 'Charles', 'Linda']
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Wilson', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson']
+    const majors = ['Computer Science', 'Information Technology', 'Software Engineering', 'Data Science', 'Cybersecurity', 'Web Development', 'Network Engineering', 'Database Administration']
+    const skillOptions = ['Programming', 'Web Development', 'Database Management', 'Network Security', 'Data Analysis', 'Machine Learning', 'Cloud Computing', 'Mobile Development', 'UI/UX Design', 'Project Management']
+    const activityOptions = ['Basketball Varsity', 'Computer Science Society', 'Debate Club', 'Student Government', 'Drama Club', 'Music Club', 'Photography Club', 'Volunteer Corps', 'Robotics Club', 'Hackathon Team']
+    
+    const sampleStudents: Student[] = []
+    
+    for (let i = 1; i <= 20; i++) {
+      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]!
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]!
+      const major = majors[Math.floor(Math.random() * majors.length)]!
+      const year = Math.floor(Math.random() * 4) + 1
+      const gpa = (Math.random() * 2 + 2).toFixed(2) // GPA between 2.0 and 4.0
+      const age = Math.floor(Math.random() * 8) + 18 // Age between 18 and 25
+      
+      const studentSkills: any[] = []
+      const numSkills = Math.floor(Math.random() * 3) + 1
+      for (let j = 0; j < numSkills; j++) {
+        const skill = skillOptions[Math.floor(Math.random() * skillOptions.length)]!
+        if (!studentSkills.find((s: any) => s.name === skill)) {
+          studentSkills.push({
+            id: j + 1,
+            name: skill,
+            category: skill.includes('Programming') || skill.includes('Development') ? 'technical' : 'soft',
+            proficiency: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)] as any,
+            yearsExperience: Math.floor(Math.random() * 4) + 1,
+            lastUsed: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+          })
+        }
+      }
+      
+      const studentActivities: any[] = []
+      const numActivities = Math.floor(Math.random() * 2)
+      for (let j = 0; j < numActivities; j++) {
+        const activity = activityOptions[Math.floor(Math.random() * activityOptions.length)]!
+        if (!studentActivities.find((a: any) => a.name === activity)) {
+          studentActivities.push({
+            id: j + 1,
+            name: activity,
+            type: activity.includes('Club') ? 'organization' : activity.includes('Varsity') ? 'sports' : 'other',
+            role: ['Member', 'President', 'Vice President', 'Secretary', 'Treasurer'][Math.floor(Math.random() * 5)],
+            startDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            description: `Active participation in ${activity}`,
+            achievements: [],
+            level: ['local', 'regional', 'national'][Math.floor(Math.random() * 3)] as any
+          })
+        }
+      }
+      
+      const violations: any[] = []
+      if (Math.random() > 0.7) { // 30% chance of having violations
+        const numViolations = Math.floor(Math.random() * 2) + 1
+        for (let j = 0; j < numViolations; j++) {
+          violations.push({
+            id: j + 1,
+            type: ['Attendance', 'Academic', 'Conduct'][Math.floor(Math.random() * 3)],
+            severity: 'minor' as const,
+            description: 'Minor violation',
+            date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: 'resolved' as const,
+            points: Math.floor(Math.random() * 3) + 1,
+            reportedBy: 'System'
+          })
+        }
+      }
+      
+      sampleStudents.push({
+        id: i,
         personalInfo: {
-          firstName: 'John',
-          lastName: 'Doe',
-          middleName: 'Michael',
-          studentId: '2021-001',
-          email: 'john.doe@ccs.edu',
-          phone: '+63 912 345 6789',
-          dateOfBirth: '2000-05-15',
-          age: 23,
-          gender: 'male',
-          address: '123 University St',
-          city: 'Manila',
+          firstName,
+          lastName,
+          middleName: Math.random() > 0.5 ? ['A.', 'B.', 'C.', 'D.'][Math.floor(Math.random() * 4)] : undefined,
+          studentId: `202${Math.floor(Math.random() * 4) + 1}-${String(i).padStart(3, '0')}`,
+          email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@ccs.edu`,
+          phone: `+63 9${Math.floor(Math.random() * 900000000) + 100000000}`,
+          dateOfBirth: new Date(Date.now() - age * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          age,
+          gender: ['male', 'female'][Math.floor(Math.random() * 2)] as any,
+          address: `${Math.floor(Math.random() * 999) + 1} University St`,
+          city: ['Manila', 'Quezon City', 'Makati', 'Pasig', 'Mandaluyong'][Math.floor(Math.random() * 5)],
           province: 'Metro Manila',
-          postalCode: '1000',
+          postalCode: String(Math.floor(Math.random() * 9000) + 1000),
           emergencyContact: {
-            name: 'Jane Doe',
-            relationship: 'Mother',
-            phone: '+63 912 345 6788'
+            name: `${['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)]} ${lastName}`,
+            relationship: ['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)],
+            phone: `+63 9${Math.floor(Math.random() * 900000000) + 100000000}`
           }
         },
         academicHistory: [
@@ -363,66 +429,36 @@ export const useStudentStore = defineStore('student', () => {
             id: 1,
             schoolName: 'CCS University',
             degree: 'Bachelor of Science',
-            major: 'Computer Science',
+            major,
             startDate: '2021-08-01',
-            gpa: 3.8,
-            status: 'ongoing'
+            gpa: parseFloat(gpa),
+            status: 'ongoing' as const
           }
         ],
         academicStanding: {
-          currentYear: 3,
-          currentSemester: 'second',
-          currentGPA: 3.8,
-          totalUnits: 90,
-          standing: 'good',
-          advisor: 'Dr. Smith'
+          currentYear: year,
+          currentSemester: ['first', 'second'][Math.floor(Math.random() * 2)] as any,
+          currentGPA: parseFloat(gpa),
+          totalUnits: year * 24,
+          standing: parseFloat(gpa) >= 3.5 ? 'good' : parseFloat(gpa) >= 2.5 ? 'warning' : 'probation' as any,
+          advisor: ['Dr. Smith', 'Prof. Johnson', 'Dr. Williams', 'Prof. Brown'][Math.floor(Math.random() * 4)]
         },
-        activities: [
-          {
-            id: 1,
-            name: 'Basketball Varsity',
-            type: 'sports',
-            role: 'Team Captain',
-            startDate: '2021-09-01',
-            description: 'Leading the university basketball team',
-            achievements: ['MVP 2022', 'Champion 2023'],
-            level: 'regional'
-          }
-        ],
-        violations: [],
-        skills: [
-          {
-            id: 1,
-            name: 'Basketball',
-            category: 'sports',
-            proficiency: 'advanced',
-            yearsExperience: 8,
-            lastUsed: '2024-01-15'
-          },
-          {
-            id: 2,
-            name: 'Programming',
-            category: 'technical',
-            proficiency: 'intermediate',
-            certifications: ['Python Basic'],
-            yearsExperience: 2
-          }
-        ],
-        affiliations: [
-          {
-            id: 1,
-            name: 'Computer Science Society',
-            type: 'student_organization',
-            role: 'Member',
-            startDate: '2021-09-01',
-            position: 'Treasurer'
-          }
-        ],
+        activities: studentActivities,
+        violations,
+        skills: studentSkills,
+        affiliations: studentActivities.map((a: any) => ({
+          id: a.id,
+          name: a.name,
+          type: 'student_organization' as const,
+          role: a.role,
+          startDate: a.startDate,
+          position: a.role
+        })),
         createdAt: '2021-08-01T00:00:00Z',
-        updatedAt: '2024-01-15T00:00:00Z',
-        isActive: true
-      }
-    ]
+        updatedAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+        isActive: Math.random() > 0.1 // 90% active
+      })
+    }
     
     students.value = sampleStudents
     totalStudents.value = sampleStudents.length

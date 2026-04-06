@@ -107,7 +107,6 @@ const router = createRouter({
     {
       path: '/announcements',
       name: 'announcements',
-<<<<<<< HEAD
       component: () => import('../views/announcements/AnnouncementListView.vue'),
       meta: { requiresAuth: true }
     },
@@ -158,9 +157,6 @@ const router = createRouter({
       path: '/events',
       name: 'events',
       redirect: '/dashboard',
-=======
-      component: () => import('../views/AnnouncementsView.vue'),
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
       meta: { requiresAuth: true }
     },
     {
@@ -175,37 +171,7 @@ const router = createRouter({
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true }
     },
-    {
-      path: '/courses',
-      name: 'courses',
-      component: () => import('../views/CoursesView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/syllabi',
-      name: 'syllabi',
-      component: () => import('../views/SyllabiView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/schedules',
-      name: 'schedules',
-      component: () => import('../views/SchedulesView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/rooms',
-      name: 'rooms',
-      component: () => import('../views/RoomsView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events',
-      name: 'events',
-      component: () => import('../views/EventsView.vue'),
-      meta: { requiresAuth: true }
-    },
-  ],
+      ],
 })
 
 router.beforeEach((to, from) => {
