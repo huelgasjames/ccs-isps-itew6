@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <template>
   <!-- Breadcrumb -->
     <div class="breadcrumb-bar">
@@ -9,6 +10,23 @@
 
     <!-- Welcome Banner -->
     <div class="welcome-banner">
+=======
+﻿<template>
+  <div class="dashboard-root">
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-bar">
+        <span class="bc-prompt">$</span>
+        <router-link to="/dashboard" class="bc-item">HOME</router-link>
+        <span class="bc-sep">›</span>
+        <span class="bc-current">DASHBOARD</span>
+      </div>
+
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
         <div class="welcome-left">
           <div class="welcome-avatar">{{ user?.name?.charAt(0) ?? 'U' }}</div>
           <div>
@@ -23,6 +41,110 @@
           <div class="time-display">
             <div class="time-value">{{ currentTime }}</div>
             <div class="time-date">{{ currentDate }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Announcements Section -->
+      <div class="panel mb-section">
+        <div class="panel-header">
+          <div class="panel-title">Latest Announcements</div>
+          <div class="header-actions">
+            <router-link to="/announcements" class="text-sm text-blue-600 hover:text-blue-800">View All</router-link>
+            <button 
+              @click="$router.push('/announcements')"
+              class="action-btn"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 4v16m8-8H4"/>
+              </svg>
+              Create Announcement
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <!-- Loading State -->
+          <div v-if="loadingAnnouncements" class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          </div>
+          
+          <!-- Announcements List -->
+          <div v-else-if="announcements.length > 0" class="space-y-4">
+            <div 
+              v-for="announcement in announcements" 
+              :key="announcement.id"
+              class="announcement-item"
+              :class="{ 'unread': !announcement.is_viewed }"
+            >
+              <div class="announcement-header">
+                <div class="flex items-start gap-3">
+                  <div class="announcement-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <h4 class="announcement-title">{{ announcement.title }}</h4>
+                      <div class="flex items-center gap-2">
+                        <span v-if="!announcement.is_viewed" class="unread-badge">New</span>
+                        <span class="announcement-time">{{ formatDate(announcement.created_at) }}</span>
+                      </div>
+                    </div>
+                    <p class="announcement-author">by {{ announcement.user?.name }}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="announcement-content">
+                <p>{{ announcement.content }}</p>
+              </div>
+              
+              <div v-if="announcement.image" class="announcement-image">
+                <img 
+                  :src="`http://127.0.0.1:8000/storage/${announcement.image}`" 
+                  :alt="announcement.title"
+                  class="w-full h-32 object-cover rounded-md"
+                  @error="handleImageError"
+                />
+              </div>
+              
+              <div class="announcement-footer">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span class="flex items-center gap-1">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      {{ announcement.view_count || 0 }} views
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                        <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                      </svg>
+                      {{ getTargetTypeLabel(announcement.target_type) }}
+                    </span>
+                  </div>
+                  
+                  <button 
+                    v-if="!announcement.is_viewed"
+                    @click="markAnnouncementAsViewed(announcement.id)"
+                    class="mark-read-btn"
+                  >
+                    Mark as read
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div v-else class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+            </svg>
+            <p class="text-gray-500 text-sm">No announcements available</p>
           </div>
         </div>
       </div>
@@ -261,7 +383,11 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import api from '@/services/api'
+<<<<<<< HEAD
 import type { Announcement } from '@/types/announcement'
+=======
+import { announcementService, type Announcement } from '@/services/announcements'
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -278,6 +404,15 @@ const currentDate = computed(() => now.value.toLocaleDateString('en-US', { weekd
 
 const stats = ref({ totalStudents: 0, totalProfessors: 0, pendingViolations: 0, atRiskStudents: 0 })
 const announcements = ref<Announcement[]>([])
+<<<<<<< HEAD
+=======
+const loadingAnnouncements = ref(true)
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/login')
+}
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 
 const fetchStats = async () => {
   try {
@@ -308,23 +443,93 @@ const fetchStats = async () => {
 
 const fetchAnnouncements = async () => {
   try {
+<<<<<<< HEAD
     const response = await api.get('/announcements/recent?limit=3')
     announcements.value = response.data
   } catch (error) {
     console.error('Error fetching announcements:', error)
+=======
+    loadingAnnouncements.value = true
+    const allAnnouncements = await announcementService.getAnnouncements()
+    
+    // Filter announcements user can view and get only the latest 3
+    announcements.value = allAnnouncements
+      .filter(announcement => {
+        if (announcement.status !== 'published') return false
+        
+        if (!authStore.user) return false
+        
+        if (announcement.target_type === 'all') return true
+        if (announcement.target_type === 'students' && authStore.user.role === 'student') return true
+        if (announcement.target_type === 'professors' && authStore.user.role === 'professor') return true
+        if (announcement.target_type === 'specific' && announcement.target_users) {
+          return announcement.target_users.includes(authStore.user.id)
+        }
+        
+        return false
+      })
+      .slice(0, 3) // Show only latest 3 announcements
+  } catch (error) {
+    console.error('Error fetching announcements:', error)
+    announcements.value = []
+  } finally {
+    loadingAnnouncements.value = false
+  }
+}
+
+const markAnnouncementAsViewed = async (announcementId: number) => {
+  try {
+    await announcementService.markAsViewed(announcementId)
+    const announcement = announcements.value.find(a => a.id === announcementId)
+    if (announcement) {
+      announcement.is_viewed = true
+      announcement.view_count = (announcement.view_count || 0) + 1
+    }
+  } catch (error) {
+    console.error('Error marking announcement as viewed:', error)
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
   }
 }
 
 const formatDate = (dateString: string) => {
+<<<<<<< HEAD
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', { 
     month: 'short', 
+=======
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   })
 }
 
+<<<<<<< HEAD
+=======
+const getTargetTypeLabel = (targetType: string) => {
+  switch (targetType) {
+    case 'all':
+      return 'All Users'
+    case 'students':
+      return 'Students'
+    case 'professors':
+      return 'Professors'
+    case 'specific':
+      return 'Specific Users'
+    default:
+      return targetType
+  }
+}
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  img.src = '/placeholder-announcement.jpg'
+}
+
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 onMounted(() => {
   fetchStats()
   fetchAnnouncements()
@@ -334,21 +539,213 @@ onUnmounted(() => clearInterval(timer))
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+<<<<<<< HEAD
+=======
+/* ── Root & Background ── */
+.dashboard-root {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s;
+}
+
+.dark .dashboard-root {
+  background: #0f172a;
+}
+
+/* ── Topbar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .topbar {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
+.topbar-inner {
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: 0 1.5rem; height: 60px;
+  max-width: 100%;
+}
+
+/* Brand */
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; flex-shrink: 0;
+}
+.brand-icon {
+  width: 36px; height: 36px; border-radius: 6px;
+  background: rgba(253, 126, 20, 0.1);
+  border: 1px solid rgba(253, 126, 20, 0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: #fd7e14;
+}
+.brand-logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.brand-text { display: flex; flex-direction: column; }
+.brand-sys { font-family: 'Inter', monospace; font-size: 0.58rem; color: rgba(253, 126, 20, 0.45); letter-spacing: 0.1em; }
+.brand-name { font-size: 0.95rem; font-weight: 700; color: #333333; letter-spacing: 0.12em; line-height: 1; }
+
+/* Nav pills */
+.topbar-nav { display: flex; align-items: center; gap: 4px; flex: 1; }
+.nav-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 4px;
+  font-size: 0.82rem; font-weight: 600; letter-spacing: 0.1em;
+  color: #6b7280; text-decoration: none;
+  transition: all 0.2s; cursor: pointer;
+  position: relative;
+}
+
+.dark .nav-pill {
+  color: #9ca3af;
+}
+
+.nav-pill:hover, .nav-pill.active {
+  background: rgba(253, 126, 20, 0.08);
+  color: #fd7e14;
+}
+
+.dark .nav-pill:hover, .dark .nav-pill.active {
+  background: rgba(253, 126, 20, 0.15);
+}
+.nav-pill.active { border-bottom: 2px solid #fd7e14; border-radius: 4px 4px 0 0; }
+.nav-pill svg { width: 14px; height: 14px; }
+.chevron { width: 12px; height: 12px; }
+
+/* Dropdowns */
+.has-dropdown { position: relative; }
+.dropdown-panel {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px; min-width: 140px;
+  padding: 4px; z-index: 200;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .dropdown-panel {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+.dropdown-right { left: auto; right: 0; }
+.has-dropdown:hover .dropdown-panel { display: block; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 4px;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+  color: #6b7280; text-decoration: none;
+  transition: all 0.15s;
+}
+
+.dark .dropdown-item {
+  color: #9ca3af;
+}
+
+.dropdown-item:hover { background: rgba(253, 126, 20, 0.1); color: #fd7e14; }
+.dropdown-item.danger:hover { background: rgba(255, 50, 50, 0.1); color: #ff6666; }
+.dropdown-divider { border-top: 1px solid rgba(253, 126, 20, 0.1); margin: 2px 0; }
+
+/* User */
+.topbar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px; border-radius: 6px;
+  cursor: pointer; transition: all 0.2s;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.topbar-user:hover { background: rgba(253, 126, 20, 0.06); border-color: rgba(253, 126, 20, 0.15); }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(253, 126, 20, 0.3), rgba(255, 146, 43, 0.2));
+  border: 1px solid rgba(253, 126, 20, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.9rem; color: #fd7e14;
+}
+.user-info { display: flex; flex-direction: column; }
+.user-name { font-size: 0.85rem; font-weight: 700; color: #111827; letter-spacing: 0.05em; }
+.dark .user-name { color: #f9fafb; }
+.user-role { font-family: 'Inter', monospace; font-size: 0.58rem; color: #6b7280; letter-spacing: 0.1em; }
+.dark .user-role { color: #9ca3af; }
+
+/* Theme Toggle */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dark .theme-toggle-btn {
+  border-color: #334155;
+  color: #9ca3af;
+}
+
+.theme-toggle-btn:hover {
+  border-color: #f97316;
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.theme-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Main Content ── */
+.main-content { position: relative; z-index: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+>>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 /* Breadcrumb */
 .breadcrumb-bar {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.8rem; color: #6b7280;
-  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
 }
-.bc-prompt { color: #f97316; }
-.bc-item { color: #6b7280; text-decoration: none; }
-.bc-item:hover { color: #f97316; }
-.bc-sep { color: #d1d5db; }
-.bc-current { color: #374151; font-weight: 500; }
+
+.bc-prompt {
+  color: #f97316;
+  font-family: 'Inter', monospace;
+}
+
+.bc-item {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.bc-item:hover {
+  color: #f97316;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-current {
+  color: #374151;
+  font-weight: 500;
+}
 
 /* Welcome Banner */
 .welcome-banner {
@@ -576,8 +973,10 @@ onUnmounted(() => clearInterval(timer))
 .dark .nav-card-desc { color: #9ca3af; }
 .nav-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .nav-badge {
-  font-size: 0.75rem; font-weight: 500;
-  padding: 3px 8px; border-radius: 4px;
+  font-size: 0.75rem; 
+  font-weight: 500;
+  padding: 3px 8px; 
+  border-radius: 4px;
 }
 .nav-badge.cyan { background: #fffbeb; color: #d97706; }
 .nav-badge.green { background: #ecfdf5; color: #059669; }
@@ -586,12 +985,140 @@ onUnmounted(() => clearInterval(timer))
 .nav-arrow { width: 16px; height: 16px; color: #d1d5db; transition: transform 0.2s; }
 .nav-card:hover .nav-arrow { transform: translateX(3px); color: #f97316; }
 
-/* Responsive */
-@media (max-width: 1100px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .actions-grid { grid-template-columns: repeat(2, 1fr); }
-  .nav-cards-grid { grid-template-columns: repeat(2, 1fr); }
+/* Announcements */
+.announcement-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: #ffffff;
+  transition: all 0.2s;
 }
+
+.dark .announcement-item {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.announcement-item.unread {
+  border-left: 3px solid #f97316;
+  background: #fffbeb;
+}
+
+.dark .announcement-item.unread {
+  background: rgba(249, 115, 22, 0.05);
+  border-left-color: #f97316;
+}
+
+.announcement-item:hover {
+  border-color: #f97316;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-header {
+  margin-bottom: 0.5rem;
+}
+
+.announcement-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.announcement-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.announcement-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.125rem;
+}
+
+.dark .announcement-title {
+  color: #f9fafb;
+}
+
+.announcement-author {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.dark .announcement-author {
+  color: #9ca3af;
+}
+
+.announcement-time {
+  font-size: 0.625rem;
+  color: #9ca3af;
+}
+
+.unread-badge {
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #f97316;
+  color: white;
+}
+
+.announcement-content {
+  margin-bottom: 0.5rem;
+}
+
+.announcement-content p {
+  font-size: 0.75rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.dark .announcement-content p {
+  color: #d1d5db;
+}
+
+.announcement-image {
+  margin-bottom: 0.5rem;
+}
+
+.announcement-image img {
+  height: 80px;
+}
+
+.announcement-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.dark .announcement-footer {
+  border-top-color: #374151;
+}
+
+.mark-read-btn {
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #f97316;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mark-read-btn:hover {
+  background: #ea580c;
+}
+
 @media (max-width: 768px) {
   .two-col-grid { grid-template-columns: 1fr; }
   .welcome-banner { flex-direction: column; }
