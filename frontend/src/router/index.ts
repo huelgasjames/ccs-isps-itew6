@@ -23,6 +23,12 @@ const router = createRouter({
     {
       path: '/students',
       name: 'students',
+      component: () => import('../views/students/StudentProfilingView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/students/list',
+      name: 'student-list',
       component: () => import('../views/students/StudentListView.vue'),
       meta: { requiresAuth: true, roles: ['admin'] }
     },
@@ -34,6 +40,12 @@ const router = createRouter({
     },
     {
       path: '/students/:id',
+      name: 'student-profile',
+      component: () => import('../views/students/StudentProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/students/:id/detail',
       name: 'student-detail',
       component: () => import('../views/students/StudentDetailView.vue'),
       meta: { requiresAuth: true }
@@ -91,6 +103,61 @@ const router = createRouter({
       name: 'violation-edit',
       component: () => import('../views/violations/ViolationFormView.vue'),
       meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/announcements',
+      name: 'announcements',
+      component: () => import('../views/announcements/AnnouncementListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/announcements/create',
+      name: 'announcement-create',
+      component: () => import('../views/announcements/AnnouncementFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/announcements/:id',
+      name: 'announcement-detail',
+      component: () => import('../views/announcements/AnnouncementDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/announcements/:id/edit',
+      name: 'announcement-edit',
+      component: () => import('../views/announcements/AnnouncementFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+    },
+    // Academic Management Routes (Temporary - redirect to dashboard until components are created)
+    {
+      path: '/courses',
+      name: 'courses',
+      redirect: '/dashboard',
+      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+    },
+    {
+      path: '/syllabi',
+      name: 'syllabi',
+      redirect: '/dashboard',
+      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+    },
+    {
+      path: '/schedules',
+      name: 'schedules',
+      redirect: '/dashboard',
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/rooms',
+      name: 'rooms',
+      redirect: '/dashboard',
+      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+    },
+    {
+      path: '/events',
+      name: 'events',
+      redirect: '/dashboard',
+      meta: { requiresAuth: true }
     },
     {
       path: '/profile',

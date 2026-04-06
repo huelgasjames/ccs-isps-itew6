@@ -22,9 +22,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
             ADD STUDENT
           </router-link>
-          <button @click="handleLogout" class="action-btn danger">
+          <button @click="goBack" class="action-btn danger">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            LOGOUT
+            BACK
           </button>
         </div>
       </div>
@@ -68,115 +68,111 @@
                 </select>
               </div>
             </div>
-            <div class="field-group">
-              <label class="field-label">YEAR LEVEL</label>
-              <div class="field-wrap">
-                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <select v-model="selectedYear" class="field-input field-select">
-                  <option value="">All Years</option>
-                  <option value="1">1st Year</option>
-                  <option value="2">2nd Year</option>
-                  <option value="3">3rd Year</option>
-                  <option value="4">4th Year</option>
-                </select>
-              </div>
-            </div>
-            <div class="field-group">
-              <label class="field-label">&nbsp;</label>
-              <button @click="resetFilters" class="reset-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                RESET
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Students Table -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ff8c00" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            STUDENT REGISTRY
-          </div>
-          <span class="count-badge">{{ filteredStudents.length }} RECORDS</span>
-        </div>
-        <div class="panel-body no-pad">
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>NAME</th>
-                  <th>EMAIL</th>
-                  <th>PROGRAM</th>
-                  <th>YEAR</th>
-                  <th>STATUS</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="paginatedStudents.length === 0">
-                  <td colspan="7" class="empty-row">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    NO RECORDS FOUND
-                  </td>
-                </tr>
-                <tr v-for="student in paginatedStudents" :key="student.id" class="data-row">
-                  <td class="id-cell">
-                    <span class="mono">{{ student.id }}</span>
-                  </td>
-                  <td>
-                    <div class="student-name">
-                      <div class="student-avatar">{{ student.name.charAt(0) }}</div>
-                      <span>{{ student.name }}</span>
-                    </div>
-                  </td>
-                  <td class="email-cell mono">{{ student.email }}</td>
-                  <td>
-                    <span class="prog-badge">{{ student.program }}</span>
-                  </td>
-                  <td class="mono">{{ student.year_level }}{{ getYearSuffix(student.year_level) }} YEAR</td>
-                  <td>
-                    <span :class="['status-badge', student.is_at_risk ? 'at-risk' : 'normal']">
-                      <span class="status-dot"></span>
-                      {{ student.is_at_risk ? 'AT RISK' : 'NORMAL' }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="row-actions">
-                      <router-link :to="`/students/${student.id}`" class="row-btn view" title="View">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </router-link>
-                      <router-link :to="`/students/${student.id}/edit`" class="row-btn edit" title="Edit">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      </router-link>
-                      <button @click="deleteStudent(student.id)" class="row-btn delete" title="Delete">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <!-- Error State -->
+      <div v-else-if="error" class="error-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <h3>Error Loading Students</h3>
+        <p>{{ error }}</p>
+        <button @click="fetchStudents" class="btn btn-primary">Retry</button>
+      </div>
 
-          <!-- Pagination -->
-          <div class="pagination-bar">
-            <div class="page-info">
-              SHOWING {{ ((currentPage - 1) * itemsPerPage) + 1 }}–{{ Math.min(currentPage * itemsPerPage, filteredStudents.length) }} OF {{ filteredStudents.length }}
-            </div>
-            <div class="page-controls">
-              <button class="page-btn" :disabled="currentPage === 1" @click.prevent="currentPage = 1">«</button>
-              <button class="page-btn" :disabled="currentPage === 1" @click.prevent="currentPage--">‹</button>
-              <button
-                v-for="page in totalPages" :key="page"
-                class="page-btn" :class="{ active: currentPage === page }"
-                @click.prevent="currentPage = page"
-              >{{ page }}</button>
-              <button class="page-btn" :disabled="currentPage === totalPages" @click.prevent="currentPage++">›</button>
-              <button class="page-btn" :disabled="currentPage === totalPages" @click.prevent="currentPage = totalPages">»</button>
-            </div>
+      <!-- Students Table -->
+      <div v-else class="students-table-container">
+        <table class="students-table">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Year</th>
+              <th>GPA</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="student in filteredStudents" :key="student.id">
+              <td>{{ student.personalInfo.studentId }}</td>
+              <td>
+                <div class="student-name">
+                  {{ student.personalInfo.firstName }} {{ student.personalInfo.lastName }}
+                </div>
+              </td>
+              <td>{{ student.personalInfo.email }}</td>
+              <td>{{ student.personalInfo.phone }}</td>
+              <td>Year {{ student.academicStanding.currentYear }}</td>
+              <td>
+                <span :class="['gpa-badge', getGPAClass(student.academicStanding.currentGPA)]">
+                  {{ student.academicStanding.currentGPA.toFixed(2) }}
+                </span>
+              </td>
+              <td>
+                <span :class="['status-badge', getStandingClass(student.academicStanding.standing)]">
+                  {{ student.academicStanding.standing }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <router-link :to="`/students/${student.id}`" class="btn-icon" title="View Profile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </router-link>
+                  <router-link :to="`/students/${student.id}/edit`" class="btn-icon" title="Edit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </router-link>
+                  <button @click="deleteStudent(student.id)" class="btn-icon danger" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div v-if="filteredStudents.length === 0" class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+          </svg>
+          <h3>No students found</h3>
+          <p>{{ searchQuery ? 'No students match your search criteria.' : 'No students available.' }}</p>
+          <router-link v-if="!searchQuery" to="/students/create" class="btn btn-primary">
+            Add First Student
+          </router-link>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Total Students</span>
+            <span class="stat-value">{{ students.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Filtered Results</span>
+            <span class="stat-value">{{ filteredStudents.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Average GPA</span>
+            <span class="stat-value">{{ averageGPA.toFixed(2) }}</span>
           </div>
         </div>
       </div>
@@ -185,149 +181,212 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useStudentStore } from '@/stores/student'
+import type { Student } from '@/types/student'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const studentStore = useStudentStore()
 
+// Local state
 const searchQuery = ref('')
 const selectedProgram = ref('')
-const selectedYear = ref('')
-const currentPage = ref(1)
-const itemsPerPage = 10
 
-const students = ref([
-  { id: 2001746, name: 'John Doe',      email: 'john.doe@ccs.edu',      program: 'BSIT', year_level: 3, is_at_risk: false },
-  { id: 2001747, name: 'Jane Smith',    email: 'jane.smith@ccs.edu',    program: 'BSCS', year_level: 2, is_at_risk: true  },
-  { id: 2001748, name: 'Maria Santos',  email: 'maria.santos@ccs.edu',  program: 'BSIS', year_level: 4, is_at_risk: false },
-])
+// Computed properties
+const { students, loading, error } = studentStore
 
-const filteredStudents = computed(() => students.value.filter(s => {
-  const q = searchQuery.value.toLowerCase()
-  return (s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q))
-      && (!selectedProgram.value || s.program === selectedProgram.value)
-      && (!selectedYear.value || s.year_level.toString() === selectedYear.value)
-}))
-
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredStudents.value.length / itemsPerPage)))
-
-const paginatedStudents = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredStudents.value.slice(start, start + itemsPerPage)
+const averageGPA = computed(() => {
+  if (students.length === 0) return 0
+  const totalGPA = students.reduce((sum, student) => sum + student.academicStanding.currentGPA, 0)
+  return totalGPA / students.length
 })
 
-const getYearSuffix = (y: number) => (['st','nd','rd','th'])[y - 1] ?? 'th'
-const resetFilters = () => { searchQuery.value = ''; selectedProgram.value = ''; selectedYear.value = ''; currentPage.value = 1 }
-const deleteStudent = (id: number) => { if (confirm('Delete this student?')) students.value = students.value.filter(s => s.id !== id) }
-const handleLogout = async () => { await authStore.logout(); router.push('/login') }
+const filteredStudents = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return students
+  }
+
+  const query = searchQuery.value.toLowerCase()
+  return students.filter((student: Student) => 
+    student.personalInfo.firstName.toLowerCase().includes(query) ||
+    student.personalInfo.lastName.toLowerCase().includes(query) ||
+    student.personalInfo.studentId.toLowerCase().includes(query) ||
+    student.personalInfo.email.toLowerCase().includes(query) ||
+    student.personalInfo.phone.toLowerCase().includes(query)
+  )
+})
+
+// Methods
+const fetchStudents = () => {
+  studentStore.fetchStudents()
+}
+
+const goBack = () => {
+  router.go(-1)
+}
+
+const getGPAClass = (gpa: number) => {
+  if (gpa >= 3.5) return 'excellent'
+  if (gpa >= 3.0) return 'good'
+  if (gpa >= 2.5) return 'average'
+  return 'low'
+}
+
+const getStandingClass = (standing: string) => {
+  switch (standing) {
+    case 'excellent': return 'excellent'
+    case 'good': return 'good'
+    case 'average': return 'average'
+    case 'probation': return 'probation'
+    default: return 'average'
+  }
+}
+
+const deleteStudent = async (id: number) => {
+  if (confirm('Are you sure you want to delete this student?')) {
+    try {
+      await studentStore.deleteStudent(id)
+    } catch (error) {
+      console.error('Failed to delete student:', error)
+    }
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  fetchStudents()
+})
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+.student-list-view {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Header */
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
 
-.page-root {
-  min-height: 100vh;
-  background: #ffffff;
-  font-family: 'Rajdhani', sans-serif;
-  color: #333333;
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.header-left p {
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-icon {
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+  text-decoration: none;
+  display: inline-flex;
+}
+
+.btn-icon:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-icon.danger:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* Search Section */
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-input {
   position: relative;
+  max-width: 500px;
 }
 
-.bg-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image: linear-gradient(rgba(255,140,0,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,140,0,0.035) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-.bg-scanlines {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,140,0,0.08) 2px, rgba(255,140,0,0.08) 4px);
-}
-.orb { position: fixed; border-radius: 50%; filter: blur(90px); z-index: 0; pointer-events: none; }
-.orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,140,0,0.08), transparent 70%); top: -150px; left: -150px; }
-.orb-2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(255,165,0,0.07), transparent 70%); bottom: 0; right: 10%; }
-
-/* Topbar */
-.topbar {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(255,255,255,0.95);
-  border-bottom: 1px solid rgba(255,140,0,0.2);
-  backdrop-filter: blur(12px);
-}
-.topbar-inner {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 0 1.5rem; height: 60px;
-}
-.topbar-back {
-  display: flex; align-items: center; gap: 6px;
-  font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
-  color: rgba(255,140,0,0.7); text-decoration: none; letter-spacing: 0.12em;
-  padding: 6px 12px; border-radius: 4px;
-  border: 1px solid rgba(255,140,0,0.2);
-  transition: all 0.2s; flex-shrink: 0;
-}
-.topbar-back svg { width: 14px; height: 14px; }
-.topbar-back:hover { color: #ff8c00; border-color: rgba(255,140,0,0.5); background: rgba(255,140,0,0.08); }
-.topbar-title { flex: 1; }
-.title-sys { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: rgba(255,140,0,0.5); letter-spacing: 0.12em; }
-.title-name { font-size: 1rem; font-weight: 700; color: #333333; letter-spacing: 0.14em; }
-.topbar-actions { display: flex; gap: 8px; }
-.action-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 16px; border-radius: 4px;
-  font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em;
-  cursor: pointer; transition: all 0.2s; text-decoration: none; border: 1px solid;
-}
-.action-btn svg { width: 14px; height: 14px; }
-.action-btn.primary { background: rgba(255,140,0,0.1); border-color: rgba(255,140,0,0.35); color: #ff8c00; }
-.action-btn.primary:hover { background: rgba(255,140,0,0.18); border-color: #ff8c00; }
-.action-btn.danger { background: rgba(255,68,68,0.08); border-color: rgba(255,68,68,0.3); color: #ff4444; }
-.action-btn.danger:hover { background: rgba(255,68,68,0.16); border-color: #ff4444; }
-
-/* Main */
-.main-content { position: relative; z-index: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
-
-.breadcrumb-bar {
-  display: flex; align-items: center; gap: 8px;
-  font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: rgba(255,140,0,0.5);
-  letter-spacing: 0.12em; margin-bottom: 1.5rem;
-}
-.bc-prompt { color: #ff8c00; }
-.bc-item { color: rgba(255,140,0,0.6); text-decoration: none; }
-.bc-item:hover { color: #ff8c00; }
-.bc-sep { color: rgba(255,140,0,0.3); }
-.bc-current { color: rgba(255,140,0,0.8); }
-
-/* Panel */
-.panel {
-  background: rgba(255,255,255,0.9);
-  border: 1px solid rgba(255,140,0,0.15);
-  border-radius: 6px; overflow: hidden;
-}
-.mb-section { margin-bottom: 1.2rem; }
-.panel-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 1.3rem 0.8rem;
-  border-bottom: 1px solid rgba(255,140,0,0.1);
-}
-.panel-title {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.85rem; font-weight: 700; color: #333333; letter-spacing: 0.12em;
-}
-.panel-title svg { width: 15px; height: 15px; }
-.panel-body { padding: 1rem 1.3rem; }
-.panel-body.no-pad { padding: 0; }
-.count-badge {
-  font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em;
-  padding: 4px 12px; border-radius: 3px;
-  background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.25); color: #ff8c00;
+.search-input svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #6b7280;
 }
 
-/* Filter grid */
-.filter-grid { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end; }
+.search-input input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.search-input input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
 .field-group { display: flex; flex-direction: column; gap: 6px; }
 .field-label {
   font-family: 'Share Tech Mono', monospace; font-size: 0.62rem;

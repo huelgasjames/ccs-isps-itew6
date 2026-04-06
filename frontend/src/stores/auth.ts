@@ -15,27 +15,83 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (credentials: LoginCredentials) => {
     loading.value = true
     try {
-      // Check for hardcoded demo admin credentials
-      if (credentials.email === 'admin' && credentials.password === 'password') {
-        const demoUser: User = {
-          id: 1,
-          email: 'admin@ccs.edu',
-          name: 'Demo Admin',
-          role: 'admin',
-          department: 'College of Computing Studies',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+      // Check for hardcoded demo credentials for different roles
+      const demoCredentials = [
+        // Admin credentials
+        {
+          email: 'admin',
+          password: 'password',
+          user: {
+            id: 1,
+            email: 'admin@ccs.edu',
+            name: 'Demo Admin',
+            role: 'admin' as const,
+            department: 'College of Computing Studies',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          token: 'demo-admin-token-' + Date.now()
+        },
+        // Professor credentials
+        {
+          email: 'professor',
+          password: 'password',
+          user: {
+            id: 2,
+            email: 'professor@ccs.edu',
+            name: 'Demo Professor',
+            role: 'professor' as const,
+            department: 'College of Computing Studies',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          token: 'demo-professor-token-' + Date.now()
+        },
+        // Student credentials
+        {
+          email: 'student',
+          password: 'password',
+          user: {
+            id: 3,
+            email: 'student@ccs.edu',
+            name: 'Demo Student',
+            role: 'student' as const,
+            department: 'College of Computing Studies',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          token: 'demo-student-token-' + Date.now()
+        },
+        // Maria - Specific student account
+        {
+          email: 'maria',
+          password: 'password',
+          user: {
+            id: 4,
+            email: 'maria@ccs.edu',
+            name: 'Maria Santos',
+            role: 'student' as const,
+            department: 'College of Computing Studies',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          token: 'demo-maria-token-' + Date.now()
         }
+      ]
+
+      // Check if credentials match any demo account
+      const demoAccount = demoCredentials.find(
+        cred => cred.email === credentials.email && cred.password === credentials.password
+      )
+
+      if (demoAccount) {
+        user.value = demoAccount.user
+        token.value = demoAccount.token
         
-        const demoToken = 'demo-admin-token-' + Date.now()
+        localStorage.setItem('auth_token', demoAccount.token)
+        localStorage.setItem('user', JSON.stringify(demoAccount.user))
         
-        user.value = demoUser
-        token.value = demoToken
-        
-        localStorage.setItem('auth_token', demoToken)
-        localStorage.setItem('user', JSON.stringify(demoUser))
-        
-        return { user: demoUser, token: demoToken }
+        return { user: demoAccount.user, token: demoAccount.token }
       }
       
       // Real backend login only

@@ -36,7 +36,6 @@ class Student extends Model
         'disability_status' => 'boolean',
         'scholar' => 'boolean',
         'working_student' => 'boolean',
-        'birthday' => 'date',
     ];
 
     public function user()

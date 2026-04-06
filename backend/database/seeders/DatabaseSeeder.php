@@ -233,5 +233,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Professor Login: juan.professor@ccs.edu / password');
         $this->command->info('Student Login: maria.student@ccs.edu / password');
         $this->command->info('Student Login: jose.student@ccs.edu / password (At Risk Student)');
+        
+        // Seed announcements
+        $this->call(AnnouncementSeeder::class);
     }
 }

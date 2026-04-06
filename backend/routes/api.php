@@ -13,6 +13,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\AnnouncementController;
 
 Route::get('/test', function () {
     return response()->json([
@@ -45,4 +46,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{event}/register', [EventController::class, 'register']);
     Route::post('/events/{event}/unregister', [EventController::class, 'unregister']);
     Route::get('/events/my-registrations', [EventController::class, 'myRegistrations']);
+    
+    // Announcement routes
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::get('/announcements/recent', [AnnouncementController::class, 'recent']);
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::get('/announcements/{id}', [AnnouncementController::class, 'show']);
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+    
+    // Announcement comments
+    Route::get('/announcements/{id}/comments', [AnnouncementController::class, 'getComments']);
+    Route::post('/announcements/{id}/comments', [AnnouncementController::class, 'addComment']);
+    Route::delete('/announcements/{announcementId}/comments/{commentId}', [AnnouncementController::class, 'deleteComment']);
+    
+    // Announcement likes
+    Route::post('/announcements/{id}/like', [AnnouncementController::class, 'toggleLike']);
+    
+    // Announcement attachments
+    Route::get('/announcements/attachments/{id}/download', [AnnouncementController::class, 'downloadAttachment']);
 });

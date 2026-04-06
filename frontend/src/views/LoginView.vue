@@ -11,12 +11,6 @@
         </div>
         <h1 class="brand-title">College of <span class="accent">Computing</span> Studies</h1>
         <p class="brand-tagline">Comprehensive Profiling and Management System</p>
-        <div class="brand-stats">
-          <div class="stat-item">
-            <span class="stat-number">v2.0</span>
-            <span class="stat-label">BUILD</span>
-          </div>
-        </div>
       </div>
 
       <!-- Right Side - Login Card (like Facebook login card) -->
