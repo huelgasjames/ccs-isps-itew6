@@ -411,16 +411,16 @@ export const useStudentStore = defineStore('student', () => {
           studentId: `202${Math.floor(Math.random() * 4) + 1}-${String(i).padStart(3, '0')}`,
           email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@ccs.edu`,
           phone: `+63 9${Math.floor(Math.random() * 900000000) + 100000000}`,
-          dateOfBirth: new Date(Date.now() - age * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          dateOfBirth: new Date(Date.now() - age * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] || '',
           age,
           gender: ['male', 'female'][Math.floor(Math.random() * 2)] as any,
           address: `${Math.floor(Math.random() * 999) + 1} University St`,
-          city: ['Manila', 'Quezon City', 'Makati', 'Pasig', 'Mandaluyong'][Math.floor(Math.random() * 5)],
+          city: ['Manila', 'Quezon City', 'Makati', 'Pasig', 'Mandaluyong'][Math.floor(Math.random() * 5)] || '',
           province: 'Metro Manila',
           postalCode: String(Math.floor(Math.random() * 9000) + 1000),
           emergencyContact: {
             name: `${['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)]} ${lastName}`,
-            relationship: ['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)],
+            relationship: ['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)] || '',
             phone: `+63 9${Math.floor(Math.random() * 900000000) + 100000000}`
           }
         },
@@ -441,7 +441,7 @@ export const useStudentStore = defineStore('student', () => {
           currentGPA: parseFloat(gpa),
           totalUnits: year * 24,
           standing: parseFloat(gpa) >= 3.5 ? 'good' : parseFloat(gpa) >= 2.5 ? 'warning' : 'probation' as any,
-          advisor: ['Dr. Smith', 'Prof. Johnson', 'Dr. Williams', 'Prof. Brown'][Math.floor(Math.random() * 4)]
+          advisor: ['Dr. Smith', 'Prof. Johnson', 'Dr. Williams', 'Prof. Brown'][Math.floor(Math.random() * 4)] || ''
         },
         activities: studentActivities,
         violations,

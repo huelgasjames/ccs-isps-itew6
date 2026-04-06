@@ -72,6 +72,12 @@
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <h3>Loading Students...</h3>
+      </div>
+
       <!-- Error State -->
       <div v-else-if="error" class="error-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -260,115 +266,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-<<<<<<< HEAD
-.student-list-view {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-=======
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 
-/* Header */
-.page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-}
-
-<<<<<<< HEAD
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-left h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.header-left p {
-  margin: 0.5rem 0 0 0;
-  opacity: 0.9;
-}
-
-/* Buttons */
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-.btn-icon {
-  padding: 0.5rem;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
-  text-decoration: none;
-  display: inline-flex;
-}
-
-.btn-icon:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.btn-icon.danger:hover {
-  background: #fef2f2;
-  color: #ef4444;
-}
-
-/* Search Section */
-.search-section {
-  margin-bottom: 2rem;
-}
-
-.search-input {
-=======
 .page-root {
   min-height: 100vh;
   background: #f9fafb;
   font-family: 'Inter', sans-serif;
   color: #111827;
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
   position: relative;
   max-width: 500px;
 }
 
-<<<<<<< HEAD
-.search-input svg {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  color: #6b7280;
-=======
 .bg-grid {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image: linear-gradient(rgba(255,140,0,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,140,0,0.035) 1px, transparent 1px);
@@ -477,7 +385,14 @@ onMounted(() => {
   font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em;
   padding: 4px 12px; border-radius: 3px;
   background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.25); color: #ff8c00;
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
+}
+
+/* Filter Grid */
+.filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-label {
+  font-family: 'Share Tech Mono', monospace; font-size: 0.62rem;
+  color: rgba(255,140,0,0.6); letter-spacing: 0.18em;
 }
 
 .search-input input {
@@ -510,11 +425,8 @@ onMounted(() => {
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
-.field-group { display: flex; flex-direction: column; gap: 6px; }
-.field-label {
-  font-family: 'Share Tech Mono', monospace; font-size: 0.62rem;
-  color: rgba(255,140,0,0.6); letter-spacing: 0.18em;
 }
+
 .field-wrap { position: relative; }
 .field-icon {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
