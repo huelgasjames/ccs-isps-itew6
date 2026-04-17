@@ -2,66 +2,34 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-=======
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
 use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
-<<<<<<< HEAD
-    use HasFactory;
-
     protected $fillable = [
         'title',
         'excerpt',
         'content',
+        'image',
         'type',
         'priority',
         'status',
-        'author',
         'publish_date',
         'expires_at',
-        'views',
-        'likes',
-        'comments',
+        'user_id',
+        'target_users',
+        'target_type',
         'target_all',
         'target_students',
         'target_professors',
         'target_admins',
-        'user_id',
-    ];
-
-    protected $casts = [
-        'publish_date' => 'datetime',
-        'expires_at' => 'datetime',
-        'target_all' => 'boolean',
-        'target_students' => 'boolean',
-        'target_professors' => 'boolean',
-        'target_admins' => 'boolean',
-        'views' => 'integer',
-        'likes' => 'integer',
-        'comments' => 'integer',
-    ];
-
-    protected $dates = [
-        'publish_date',
-        'expires_at',
-=======
-    protected $fillable = [
-        'title',
-        'content',
-        'image',
-        'user_id',
-        'status',
-        'target_users',
-        'target_type',
+        'views',
+        'likes',
+        'comments_count',
     ];
 
     protected $casts = [
         'target_users' => 'array',
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
     ];
 
     public function user()
@@ -69,108 +37,6 @@ class Announcement extends Model
         return $this->belongsTo(User::class);
     }
 
-<<<<<<< HEAD
-    public function attachments()
-    {
-        return $this->hasMany(AnnouncementAttachment::class);
-    }
-
-    public function comments()
-    {
-        return $this->hasMany(AnnouncementComment::class);
-    }
-
-    public function isPublished()
-    {
-        return $this->status === 'published';
-    }
-
-    public function isExpired()
-    {
-        return $this->expires_at && now()->isAfter($this->expires_at);
-    }
-
-    public function isScheduled()
-    {
-        return $this->status === 'scheduled' && $this->publish_date && now()->isBefore($this->publish_date);
-    }
-
-    public function getPriorityColorAttribute()
-    {
-        return [
-            'low' => 'green',
-            'medium' => 'blue',
-            'high' => 'orange',
-            'urgent' => 'red',
-       ][$this->priority] ?? 'gray';
-    }
-
-    public function getStatusColorAttribute()
-    {
-        return [
-            'draft' => 'gray',
-            'published' => 'green',
-            'scheduled' => 'orange',
-            'archived' => 'gray',
-       ][$this->status] ?? 'gray';
-    }
-
-    public function getFormattedPublishDateAttribute()
-    {
-        return $this->publish_date ? $this->publish_date->format('M d, Y H:i') : null;
-    }
-
-    public function getFormattedExpiryDateAttribute()
-    {
-        return $this->expires_at ? $this->expires_at->format('M d, Y H:i') : null;
-    }
-
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published');
-    }
-
-    public function scopeVisibleTo($query, $user)
-    {
-        if (!$user) {
-            return $query->where('status', 'published');
-        }
-
-        if ($user->role === 'admin') {
-            return $query;
-        }
-
-        $query->where('status', 'published');
-
-        if ($user->role === 'student') {
-            $query->where(function ($q) {
-                $q->where('target_all', true)
-                  ->orWhere('target_students', true);
-            });
-        } elseif ($user->role === 'professor') {
-            $query->where(function ($q) {
-                $q->where('target_all', true)
-                  ->orWhere('target_professors', true);
-            });
-        }
-
-        return $query;
-    }
-
-    public function incrementViews()
-    {
-        $this->increment('views');
-    }
-
-    public function incrementLikes()
-    {
-        $this->increment('likes');
-    }
-
-    public function incrementComments()
-    {
-        $this->increment('comments');
-=======
     public function views()
     {
         return $this->hasMany(AnnouncementView::class);
@@ -219,6 +85,57 @@ class Announcement extends Model
     public function getViewCount()
     {
         return $this->views()->count();
->>>>>>> 25048deddd9a824e336580a4aceee5bd8dd08608
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(AnnouncementAttachment::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(AnnouncementComment::class);
+    }
+
+    public function incrementViews()
+    {
+        $this->increment('views');
+    }
+
+    public function incrementLikes()
+    {
+        $this->increment('likes');
+    }
+
+    public function incrementComments()
+    {
+        $this->increment('comments_count');
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published')
+                    ->where(function ($q) {
+                        $q->whereNull('publish_date')
+                          ->orWhere('publish_date', '<=', now());
+                    })
+                    ->where(function ($q) {
+                        $q->whereNull('expires_at')
+                          ->orWhere('expires_at', '>', now());
+                    });
+    }
+
+    public function scopeVisibleTo($query, $user)
+    {
+        return $query->where(function ($q) use ($user) {
+            $q->where('target_all', true)
+              ->orWhere('target_students', $user->role === 'student')
+              ->orWhere('target_professors', $user->role === 'professor')
+              ->orWhere('target_admins', $user->role === 'admin')
+              ->orWhere(function ($subQ) use ($user) {
+                  $subQ->where('target_type', 'specific')
+                        ->whereJsonContains('target_users', $user->id);
+              });
+        });
     }
 }

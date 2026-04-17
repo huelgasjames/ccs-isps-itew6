@@ -14,12 +14,24 @@ return new class extends Migration
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->text('excerpt')->nullable();
             $table->text('content');
             $table->string('image')->nullable();
+            $table->enum('type', ['System', 'Academic', 'Event', 'Feature', 'Policy', 'General'])->default('General');
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
+            $table->enum('status', ['draft', 'published', 'scheduled', 'archived'])->default('draft');
+            $table->timestamp('publish_date')->nullable();
+            $table->timestamp('expires_at')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['draft', 'published'])->default('draft');
             $table->json('target_users')->nullable();
             $table->enum('target_type', ['all', 'students', 'professors', 'specific'])->default('all');
+            $table->boolean('target_all')->default(true);
+            $table->boolean('target_students')->default(false);
+            $table->boolean('target_professors')->default(false);
+            $table->boolean('target_admins')->default(false);
+            $table->integer('views')->default(0);
+            $table->integer('likes')->default(0);
+            $table->integer('comments_count')->default(0);
             $table->timestamps();
         });
 

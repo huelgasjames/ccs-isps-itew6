@@ -17,38 +17,29 @@ class AnnouncementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Announcement::with(['attachments', 'comments']);
+        $query = Announcement::with(['user', 'views']);
 
         // Apply filters
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
-        if ($request->has('priority')) {
-            $query->where('priority', $request->priority);
+
+        if ($request->has('target_type')) {
+            $query->where('target_type', $request->target_type);
         }
-        if ($request->has('type')) {
-            $query->where('type', $request->type);
-        }
+
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%")
                   ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
-        // Filter by user role
-        $user = Auth::user();
-        if ($user && $user->role !== 'admin') {
-            // For demo purposes, show all announcements
-            // $query->visibleTo($user);
-        } else {
-            // For demo purposes, show all announcements including drafts
-            // $query->published();
-        }
+        // For public access, only show published announcements
+        $query->where('status', 'published');
 
-        $announcements = $query->orderBy('publish_date', 'desc')
+        $announcements = $query->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 10));
 
         return response()->json($announcements);
@@ -59,127 +50,57 @@ class AnnouncementController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate only the basic fields, no file validation
+        // Validate the new schema fields
         $request->validate([
             'title' => 'required|string|max:255',
-            'excerpt' => 'required|string|max:500',
+            'excerpt' => 'nullable|string|max:500',
             'content' => 'required|string',
             'type' => 'required|string|in:System,Academic,Event,Feature,Policy,General',
             'priority' => 'required|in:low,medium,high,urgent',
-            'status' => 'required|in:draft,published,scheduled',
+            'status' => 'required|in:draft,published,scheduled,archived',
             'publish_date' => 'nullable|date',
             'expires_at' => 'nullable|date|after:publish_date',
+            'target_type' => 'required|in:all,students,professors,specific',
+            'target_users' => 'nullable|array',
+            'target_users.*' => 'integer',
             'target_all' => 'boolean',
             'target_students' => 'boolean',
             'target_professors' => 'boolean',
             'target_admins' => 'boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $data = $request->except('attachments');
+        $data = $request->except('image');
         
-        // Handle demo authentication - use default user if not authenticated
-        $user = Auth::user();
-        if ($user) {
-            $data['user_id'] = $user->id;
-            $data['author'] = $user->name;
-        } else {
-            // Demo fallback
-            $data['user_id'] = 1;
-            $data['author'] = 'Demo User';
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $path = $image->store('announcements', 'public');
+            $data['image'] = $path;
+        }
+
+        // Set default values
+        $data['user_id'] = Auth::id();
+        
+        if (!isset($data['target_users'])) {
+            $data['target_users'] = null;
         }
 
         $announcement = Announcement::create($data);
 
-        // If this is an admin announcement, also store it in stored_announcements table
-        $user = Auth::user();
-        if ($user && $user->role === 'admin') {
-            $storedData = $data;
-            $storedData['author_role'] = 'admin';
-            
-            $storedAnnouncement = StoredAnnouncement::create($storedData);
-            $storedAnnouncement->storeToFile();
-        }
-
-        // Handle file attachments - completely manual
-        try {
-            $files = $request->allFiles();
-            if (isset($files['attachments']) && is_array($files['attachments'])) {
-                foreach ($files['attachments'] as $file) {
-                    if ($file instanceof \Illuminate\Http\UploadedFile) {
-                        // Manual validation
-                        if ($file->getSize() > 102400 * 1024) { // 100MB
-                            continue; // Skip oversized files
-                        }
-                        
-                        // Allowed mime types
-                        $allowedMimes = [
-                            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
-                            'image/webp', 'image/bmp', 'image/tiff', 'image/svg+xml',
-                            'application/pdf', 'application/msword', 
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                            'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                            'text/plain', 'application/zip', 'application/x-rar-compressed'
-                        ];
-                        
-                        if (!in_array($file->getMimeType(), $allowedMimes)) {
-                            continue; // Skip unsupported file types
-                        }
-                        
-                        $path = $file->store('announcements', 'public');
-                        
-                        AnnouncementAttachment::create([
-                            'announcement_id' => $announcement->id,
-                            'filename' => $file->hashName(),
-                            'original_name' => $file->getClientOriginalName(),
-                            'mime_type' => $file->getMimeType(),
-                            'file_size' => $file->getSize(),
-                            'file_path' => $path,
-                        ]);
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            // Log file upload error but don't fail the announcement creation
-            \Log::error('File upload error: ' . $e->getMessage());
-        }
-
-        return response()->json($announcement->load('attachments'), 201);
+        return response()->json($announcement, 201);
     }
 
     /**
      * Display the specified announcement.
      */
     public function show($id)
-    {
-        $announcement = Announcement::with(['attachments', 'comments.user'])
-            ->findOrFail($id);
+{
+    $announcement = Announcement::with(['user', 'views'])
+        ->findOrFail($id);
 
-        // Check visibility
-        $user = Auth::user();
-        if ($user && $user->role !== 'admin') {
-            if (!$announcement->isPublished() || $announcement->isExpired()) {
-                return response()->json(['message' => 'Announcement not found'], 404);
-            }
-            
-            // Check target audience
-            if (!$announcement->target_all) {
-                $canView = false;
-                if ($user->role === 'student' && $announcement->target_students) $canView = true;
-                if ($user->role === 'professor' && $announcement->target_professors) $canView = true;
-                if ($user->role === 'admin' && $announcement->target_admins) $canView = true;
-                
-                if (!$canView) {
-                    return response()->json(['message' => 'Unauthorized'], 403);
-                }
-            }
-        }
-
-        // Increment views
-        $announcement->incrementViews();
-
-        return response()->json($announcement);
-    }
+    return response()->json($announcement);
+}
 
     /**
      * Update the specified announcement.

@@ -1,4 +1,4 @@
-import api from './api'
+import api, { apiWithFallback } from './api'
 
 export interface Announcement {
   id: number
@@ -45,6 +45,7 @@ export interface CreateAnnouncementData {
 }
 
 class AnnouncementService {
+  // Original methods (keep existing functionality)
   async getAnnouncements(): Promise<Announcement[]> {
     const response = await api.get('/announcements')
     return response.data
@@ -52,6 +53,17 @@ class AnnouncementService {
 
   async getAnnouncement(id: number): Promise<Announcement> {
     const response = await api.get(`/announcements/${id}`)
+    return response.data
+  }
+
+  // Offline-enabled methods
+  async getAnnouncementsOffline(): Promise<Announcement[]> {
+    const response = await apiWithFallback.get('/announcements')
+    return response.data
+  }
+
+  async getAnnouncementOffline(id: number): Promise<Announcement> {
+    const response = await apiWithFallback.get(`/announcements/${id}`)
     return response.data
   }
 
@@ -107,6 +119,21 @@ class AnnouncementService {
     await api.delete(`/announcements/${id}`)
   }
 
+  // Offline CRUD operations
+  async createAnnouncementOffline(data: Omit<CreateAnnouncementData, 'image'>): Promise<Announcement> {
+    const response = await apiWithFallback.post('/announcements', data)
+    return response.data
+  }
+
+  async updateAnnouncementOffline(id: number, data: Partial<CreateAnnouncementData>): Promise<Announcement> {
+    const response = await apiWithFallback.put(`/announcements/${id}`, data)
+    return response.data
+  }
+
+  async deleteAnnouncementOffline(id: number): Promise<void> {
+    await apiWithFallback.delete(`/announcements/${id}`)
+  }
+
   async markAsViewed(announcementId: number): Promise<void> {
     await api.post(`/announcements/${announcementId}/view`)
   }
@@ -123,6 +150,26 @@ class AnnouncementService {
 
   async unpublishAnnouncement(id: number): Promise<Announcement> {
     const response = await api.patch(`/announcements/${id}/unpublish`)
+    return response.data
+  }
+
+  // Additional offline CRUD operations
+  async markAsViewedOffline(announcementId: number): Promise<void> {
+    await apiWithFallback.post(`/announcements/${announcementId}/view`)
+  }
+
+  async getAnnouncementViewsOffline(announcementId: number): Promise<AnnouncementView[]> {
+    const response = await apiWithFallback.get(`/announcements/${announcementId}/views`)
+    return response.data
+  }
+
+  async publishAnnouncementOffline(id: number): Promise<Announcement> {
+    const response = await apiWithFallback.patch(`/announcements/${id}/publish`)
+    return response.data
+  }
+
+  async unpublishAnnouncementOffline(id: number): Promise<Announcement> {
+    const response = await apiWithFallback.patch(`/announcements/${id}/unpublish`)
     return response.data
   }
 }

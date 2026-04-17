@@ -284,12 +284,12 @@
             <div v-for="announcement in announcements" :key="announcement.id" class="announcement-item">
               <div class="announcement-header">
                 <span class="announcement-title">{{ announcement.title }}</span>
-                <span class="announcement-priority" :class="announcement.priority">{{ announcement.priority }}</span>
+                <span class="announcement-status" :class="announcement.status">{{ announcement.status }}</span>
               </div>
-              <div class="announcement-excerpt">{{ announcement.excerpt }}</div>
+              <div class="announcement-excerpt">{{ announcement.content.substring(0, 100) }}...</div>
               <div class="announcement-meta">
-                <span class="announcement-date">{{ formatDate(announcement.publish_date) }}</span>
-                <span class="announcement-type">{{ announcement.type }}</span>
+                <span class="announcement-date">{{ formatDate(announcement.created_at) }}</span>
+                <span class="announcement-type">{{ announcement.target_type }}</span>
               </div>
             </div>
           </div>

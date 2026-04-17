@@ -312,6 +312,11 @@ watch(() => route.name, (newRoute) => {
   if (isInstructionActive.value) instructionDropdownOpen.value = true
   if (isSchedulingActive.value) schedulingDropdownOpen.value = true
 }, { immediate: true })
+
+// Expose isCollapsed to parent component
+defineExpose({
+  isCollapsed
+})
 </script>
 
 <style scoped>

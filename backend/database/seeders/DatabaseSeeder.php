@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $student1 = Student::create([
-            'student_unique_id' => 'STU-' . strtoupper(Str::random(8)),
+            'student_id' => 'STU-' . strtoupper(Str::random(8)),
             'user_id' => $studentUser1->id,
             'first_name' => 'Maria',
             'middle_name' => 'Reyes',
@@ -91,6 +91,9 @@ class DatabaseSeeder extends Seeder
             'program' => 'BSIT',
             'curriculum' => '2020-2024',
             'academic_status' => 'Regular',
+            'current_year' => 3,
+            'current_gpa' => 3.5,
+            'standing' => 'good',
         ]);
 
         $studentUser2 = User::create([
@@ -101,7 +104,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $student2 = Student::create([
-            'student_unique_id' => 'STU-' . strtoupper(Str::random(8)),
+            'student_id' => 'STU-' . strtoupper(Str::random(8)),
             'user_id' => $studentUser2->id,
             'first_name' => 'Jose',
             'middle_name' => 'Lopez',
@@ -120,6 +123,9 @@ class DatabaseSeeder extends Seeder
             'program' => 'BSCS',
             'curriculum' => '2020-2024',
             'academic_status' => 'Regular',
+            'current_year' => 2,
+            'current_gpa' => 2.8,
+            'standing' => 'average',
         ]);
 
         // Create Skills for Student 1
@@ -262,8 +268,8 @@ class DatabaseSeeder extends Seeder
 
         // Mark some announcements as viewed by users
         $announcement1->markAsViewedBy($professorUser->id);
-        $announcement1->markAsViewedBy($studentUser->id);
-        $announcement2->markAsViewedBy($studentUser->id);
+        $announcement1->markAsViewedBy($studentUser1->id);
+        $announcement2->markAsViewedBy($studentUser1->id);
 
         $this->command->info('Database seeded successfully!');
         $this->command->info('Admin Login: admin@ccs.edu / password');
@@ -273,5 +279,16 @@ class DatabaseSeeder extends Seeder
         
         // Seed announcements
         $this->call(AnnouncementSeeder::class);
+        
+        // Seed additional data
+        $this->call([
+            CourseSeeder::class,
+            EventSeeder::class,
+            StudentSkillSeeder::class,
+            StudentActivitySeeder::class,
+            StudentAcademicHistorySeeder::class,
+            StudentAffiliationSeeder::class,
+            StudentViolationSeeder::class,
+        ]);
     }
 }

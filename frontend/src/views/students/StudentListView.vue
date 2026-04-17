@@ -190,10 +190,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStudentStore } from '@/stores/student'
+import { useOfflineStore } from '@/stores/offline'
 import type { Student } from '@/types/student'
 
 const router = useRouter()
 const studentStore = useStudentStore()
+const offlineStore = useOfflineStore()
 
 // Local state
 const searchQuery = ref('')
@@ -225,7 +227,7 @@ const filteredStudents = computed(() => {
 
 // Methods
 const fetchStudents = () => {
-  studentStore.fetchStudents()
+  studentStore.fetchStudentsOffline()
 }
 
 const goBack = () => {
@@ -252,7 +254,7 @@ const getStandingClass = (standing: string) => {
 const deleteStudent = async (id: number) => {
   if (confirm('Are you sure you want to delete this student?')) {
     try {
-      await studentStore.deleteStudent(id)
+      await studentStore.deleteStudentOffline(id)
     } catch (error) {
       console.error('Failed to delete student:', error)
     }
@@ -261,6 +263,8 @@ const deleteStudent = async (id: number) => {
 
 // Lifecycle
 onMounted(() => {
+  // Initialize offline dummy data if needed
+  offlineStore.initializeOffline()
   fetchStudents()
 })
 </script>

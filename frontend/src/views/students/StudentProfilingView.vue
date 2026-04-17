@@ -15,13 +15,7 @@
             </svg>
             Add Student
           </button>
-          <button @click="generateSampleData" class="btn btn-secondary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
-            Generate Sample Data
-          </button>
-        </div>
+                  </div>
       </div>
     </div>
 
@@ -232,7 +226,7 @@
         <button
           v-for="mode in displayModes"
           :key="mode.value"
-          @click="displayMode = mode.value"
+          @click="displayMode = mode.value as DisplayMode"
           :class="['display-mode-btn', { active: displayMode === mode.value }]"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -243,7 +237,7 @@
       </div>
 
       <div class="results-info">
-        <span>{{ filteredStudents.length }} results found</span>
+        <span>{{ filteredStudents?.length || 0 }} results found</span>
       </div>
     </div>
 
@@ -657,15 +651,19 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Submit button inside form -->
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" :disabled="isCreating">
+                <span v-if="isCreating">Creating...</span>
+                <span v-else>Create Student</span>
+              </button>
+            </div>
           </form>
         </div>
 
         <div class="modal-footer">
           <button @click="closeCreateModal" class="btn btn-secondary">Cancel</button>
-          <button @click="handleCreateStudent" class="btn btn-primary" :disabled="isCreating">
-            <span v-if="isCreating">Creating...</span>
-            <span v-else>Create Student</span>
-          </button>
         </div>
       </div>
     </div>
@@ -721,10 +719,10 @@ const newStudent = ref({
   // Academic Standing
   academicStanding: {
     currentYear: 1,
-    currentSemester: 'first',
+    currentSemester: 'first' as 'first' | 'second' | 'summer',
     currentGPA: 0,
     totalUnits: 0,
-    standing: 'good',
+    standing: 'good' as 'good' | 'warning' | 'probation',
     advisor: ''
   },
   // Academic History
@@ -742,6 +740,7 @@ const availableActivities = ref(['basketball', 'volunteer', 'organization', 'spo
 
 // Computed
 const {
+  students,
   filteredStudents,
   paginatedStudents,
   loading,
@@ -755,17 +754,17 @@ const {
 
 // Access store directly for reactive values
 const activeStudents = computed(() => 
-  studentStore.students.filter((s: Student) => s.isActive).length
+  students?.filter((s: Student) => s.isActive).length || 0
 )
 
 const averageGPA = computed(() => {
-  if (studentStore.students.length === 0) return 0
-  const total = studentStore.students.reduce((sum: number, student: Student) => sum + student.academicStanding.currentGPA, 0)
-  return total / studentStore.students.length
+  if (!students || students.length === 0) return 0
+  const total = students.reduce((sum: number, student: Student) => sum + (student.academicStanding?.currentGPA || 0), 0)
+  return total / students.length
 })
 
 const totalViolations = computed(() => 
-  studentStore.students.reduce((sum: number, student: Student) => sum + student.violations.length, 0)
+  students?.reduce((sum: number, student: Student) => sum + (student.violations?.length || 0), 0) || 0
 )
 
 const visiblePages = computed(() => {
@@ -900,7 +899,7 @@ const deleteStudent = async (id: number) => {
 }
 
 const goToPage = (page: number) => {
-  studentStore.goToPage(page)
+  studentStore.setCurrentPage(page)
 }
 
 const closeCreateModal = () => {
@@ -932,10 +931,10 @@ const resetForm = () => {
     // Academic Standing
     academicStanding: {
       currentYear: 1,
-      currentSemester: 'first',
+      currentSemester: 'first' as 'first' | 'second' | 'summer',
       currentGPA: 0,
       totalUnits: 0,
-      standing: 'good',
+      standing: 'good' as 'good' | 'warning' | 'probation',
       advisor: ''
     },
     // Academic History
@@ -952,8 +951,41 @@ const handleCreateStudent = async () => {
   try {
     isCreating.value = true
     
-    // Create student object matching the Student interface
-    const studentData: any = {
+    // Basic validation - check all required fields
+    const requiredFields = [
+      newStudent.value.firstName,
+      newStudent.value.lastName,
+      newStudent.value.studentId,
+      newStudent.value.email,
+      newStudent.value.phone,
+      newStudent.value.dateOfBirth,
+      newStudent.value.age,
+      newStudent.value.gender,
+      newStudent.value.address,
+      newStudent.value.city,
+      newStudent.value.province,
+      newStudent.value.postalCode,
+      newStudent.value.emergencyContact.name,
+      newStudent.value.emergencyContact.relationship,
+      newStudent.value.emergencyContact.phone,
+      newStudent.value.academicStanding.currentYear,
+      newStudent.value.academicStanding.currentSemester,
+      newStudent.value.academicStanding.currentGPA,
+      newStudent.value.academicStanding.standing,
+      newStudent.value.schoolName,
+      newStudent.value.degree,
+      newStudent.value.major,
+      newStudent.value.startDate
+    ]
+    
+    const missingFields = requiredFields.filter(field => !field || field === '')
+    if (missingFields.length > 0) {
+      alert('Please fill in all required fields marked with *')
+      return
+    }
+    
+    // Create student data matching the CreateStudentRequest interface
+    const studentData = {
       personalInfo: {
         firstName: newStudent.value.firstName,
         lastName: newStudent.value.lastName,
@@ -963,30 +995,18 @@ const handleCreateStudent = async () => {
         phone: newStudent.value.phone,
         dateOfBirth: newStudent.value.dateOfBirth,
         age: newStudent.value.age,
-        gender: newStudent.value.gender,
+        gender: newStudent.value.gender as 'male' | 'female' | 'other',
         address: newStudent.value.address,
         city: newStudent.value.city,
         province: newStudent.value.province,
         postalCode: newStudent.value.postalCode,
         emergencyContact: newStudent.value.emergencyContact
       },
-      academicStanding: newStudent.value.academicStanding,
-      academicHistory: [{
-        id: Date.now(),
-        schoolName: newStudent.value.schoolName,
-        degree: newStudent.value.degree,
-        major: newStudent.value.major,
-        startDate: newStudent.value.startDate,
-        gpa: newStudent.value.gpa || undefined,
-        status: newStudent.value.status
-      }],
-      activities: [],
-      violations: [],
-      skills: [],
-      affiliations: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isActive: true
+      academicStanding: {
+        ...newStudent.value.academicStanding,
+        currentSemester: newStudent.value.academicStanding.currentSemester as 'first' | 'second' | 'summer',
+        standing: newStudent.value.academicStanding.standing as 'good' | 'warning' | 'probation'
+      }
     }
     
     // Add the student to the store
@@ -995,20 +1015,17 @@ const handleCreateStudent = async () => {
     // Close modal and reset form
     closeCreateModal()
     
-    // Show success message (you could add a toast notification here)
-    console.log('Student created successfully!')
+    // Show success message
+    alert('Student created successfully!')
     
   } catch (error) {
     console.error('Failed to create student:', error)
-    // You could show an error message here
+    alert('Failed to create student. Please try again.')
   } finally {
     isCreating.value = false
   }
 }
 
-const generateSampleData = () => {
-  studentStore.generateSampleData()
-}
 
 const fetchStudents = () => {
   studentStore.fetchStudents()
@@ -1729,6 +1746,13 @@ onMounted(() => {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 0;
+  margin-top: 1rem;
 }
 
 .form-section:last-child {

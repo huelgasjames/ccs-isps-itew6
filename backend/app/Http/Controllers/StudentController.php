@@ -12,15 +12,41 @@ class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::with(['user', 'skills', 'talents', 'sports', 'certificates', 'violations', 'organizations'])
-            ->get()
-            ->map(function ($student) {
-                $student->is_at_risk = $student->isAtRisk();
-                $student->full_name = $student->full_name;
-                return $student;
-            });
+        $students = Student::with([
+            'user', 
+            'skills', 
+            'activities', 
+            'academicHistory', 
+            'affiliations', 
+            'violations'
+        ])
+        ->active()
+        ->get()
+        ->map(function ($student) {
+            // Add computed attributes
+            $student->is_at_risk = $student->isAtRisk();
+            $student->full_name = $student->full_name;
+            
+            // Transform to match frontend dummy data structure
+            return [
+                'id' => $student->id,
+                'personalInfo' => $student->personal_info,
+                'academicHistory' => $student->academicHistory,
+                'academicStanding' => $student->academic_standing,
+                'activities' => $student->activities,
+                'violations' => $student->violations,
+                'skills' => $student->skills,
+                'affiliations' => $student->affiliations,
+                'createdAt' => $student->created_at->toISOString(),
+                'updatedAt' => $student->updated_at->toISOString(),
+                'isActive' => $student->is_active,
+            ];
+        });
 
-        return response()->json($students);
+        return response()->json([
+            'students' => $students,
+            'total' => $students->count()
+        ]);
     }
 
     public function store(Request $request)

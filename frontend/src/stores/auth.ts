@@ -135,6 +135,24 @@ export const useAuthStore = defineStore('auth', () => {
         console.error('Error parsing stored user:', error)
         logout()
       }
+    } else {
+      // Auto-login demo admin for local development
+      const demoAdmin = {
+        id: 1,
+        email: 'admin@ccs.edu',
+        name: 'Demo Admin',
+        role: 'admin' as const,
+        department: 'College of Computing Studies',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      const demoToken = 'demo-admin-token-' + Date.now()
+      
+      user.value = demoAdmin
+      token.value = demoToken
+      
+      localStorage.setItem('auth_token', demoToken)
+      localStorage.setItem('user', JSON.stringify(demoAdmin))
     }
   }
 

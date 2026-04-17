@@ -25,6 +25,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
 
+// Announcement routes (temporarily public for testing)
+Route::get('/announcements', [AnnouncementController::class, 'index']);
+Route::get('/announcements/recent', [AnnouncementController::class, 'recent']);
+Route::get('/announcements/{id}', [AnnouncementController::class, 'show']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('students', StudentController::class);
     Route::apiResource('professors', ProfessorController::class);
@@ -47,11 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{event}/unregister', [EventController::class, 'unregister']);
     Route::get('/events/my-registrations', [EventController::class, 'myRegistrations']);
     
-    // Announcement routes
-    Route::get('/announcements', [AnnouncementController::class, 'index']);
-    Route::get('/announcements/recent', [AnnouncementController::class, 'recent']);
+    // Protected announcement routes
     Route::post('/announcements', [AnnouncementController::class, 'store']);
-    Route::get('/announcements/{id}', [AnnouncementController::class, 'show']);
     Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
     Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
     

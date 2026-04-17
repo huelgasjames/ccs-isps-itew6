@@ -9,7 +9,8 @@ import type {
   DisplayMode,
   StudentStatistics
 } from '@/types/student'
-import api from '@/services/api'
+import api, { apiWithFallback } from '@/services/api'
+import { offlineService } from '@/services/offline'
 
 export const useStudentStore = defineStore('student', () => {
   // State
@@ -62,28 +63,21 @@ export const useStudentStore = defineStore('student', () => {
       )
     }
 
-    // Affiliations filter
-    if (filter.value.affiliations && filter.value.affiliations.length > 0) {
+    // Academic standing filter
+    if (filter.value.academicStanding) {
       filtered = filtered.filter(student =>
-        filter.value.affiliations!.some(affiliationName =>
-          student.affiliations.some(affiliation =>
-            affiliation.name.toLowerCase().includes(affiliationName.toLowerCase())
-          )
+        filter.value.academicStanding!.some(standing =>
+          student.academicStanding.standing === standing
         )
       )
     }
 
-    // Academic standing filter
-    if (filter.value.academicStanding && filter.value.academicStanding.length > 0) {
-      filtered = filtered.filter(student =>
-        filter.value.academicStanding!.includes(student.academicStanding.standing)
-      )
-    }
-
     // Year level filter
-    if (filter.value.yearLevel && filter.value.yearLevel.length > 0) {
+    if (filter.value.yearLevel) {
       filtered = filtered.filter(student =>
-        filter.value.yearLevel!.includes(student.academicStanding.currentYear)
+        filter.value.yearLevel!.some(year =>
+          student.academicStanding.currentYear === year
+        )
       )
     }
 
@@ -92,23 +86,6 @@ export const useStudentStore = defineStore('student', () => {
       filtered = filtered.filter(student =>
         student.academicStanding.currentGPA >= filter.value.gpaRange!.min &&
         student.academicStanding.currentGPA <= filter.value.gpaRange!.max
-      )
-    }
-
-    // Age range filter
-    if (filter.value.ageRange) {
-      filtered = filtered.filter(student =>
-        student.personalInfo.age >= filter.value.ageRange!.min &&
-        student.personalInfo.age <= filter.value.ageRange!.max
-      )
-    }
-
-    // Violation status filter
-    if (filter.value.violationStatus && filter.value.violationStatus.length > 0) {
-      filtered = filtered.filter(student =>
-        student.violations.some(violation =>
-          filter.value.violationStatus!.includes(violation.status)
-        )
       )
     }
 
@@ -122,22 +99,71 @@ export const useStudentStore = defineStore('student', () => {
   })
 
   // Actions
-  const fetchStudents = async (page = 1, limit = 10) => {
+  const fetchStudents = async () => {
     loading.value = true
     error.value = null
     
     try {
-      const response = await api.get<StudentListResponse>('/students', {
-        params: { page, limit }
-      })
-      
+      const response = await api.get<StudentListResponse>('/students')
       students.value = response.data.students
       totalStudents.value = response.data.total
-      totalPages.value = response.data.totalPages
-      currentPage.value = response.data.page
+      totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
     } catch (err) {
-      error.value = 'Failed to fetch students'
-      console.error('Error fetching students:', err)
+      // If API is not available, return empty array for demo purposes
+      if (err instanceof Error && (err.message.includes('Network Error') || err.message.includes('ERR_CONNECTION_REFUSED'))) {
+        console.warn('Backend API not available. No students to display.')
+        students.value = []
+        totalStudents.value = 0
+        totalPages.value = 0
+        return
+      }
+      
+      error.value = err instanceof Error ? err.message : 'Failed to fetch students'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Offline-enabled methods
+  const fetchStudentsOffline = async () => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      // First try to get from localStorage
+      let localStudents = offlineService.getLocalStudents()
+      
+      // If no local students exist, initialize dummy data
+      if (localStudents.length === 0) {
+        offlineService.initializeDummyData()
+        localStudents = offlineService.getLocalStudents()
+      }
+      
+      // Try API first, fallback to localStorage
+      try {
+        const response = await apiWithFallback.get('/students')
+        const data = response.data
+        students.value = data.students || data
+        totalStudents.value = data.total || students.value.length
+        totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+      } catch (apiErr) {
+        // API failed, use localStorage data
+        console.log('API unavailable, using offline data:', apiErr)
+        students.value = localStudents
+        totalStudents.value = localStudents.length
+        totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch students'
+      // Still try to load local data as fallback
+      const localStudents = offlineService.getLocalStudents()
+      if (localStudents.length > 0) {
+        students.value = localStudents
+        totalStudents.value = localStudents.length
+        totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+        error.value = null // Clear error since we have offline data
+      }
     } finally {
       loading.value = false
     }
@@ -152,8 +178,7 @@ export const useStudentStore = defineStore('student', () => {
       currentStudent.value = response.data
       return response.data
     } catch (err) {
-      error.value = 'Failed to fetch student'
-      console.error('Error fetching student:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to fetch student'
       throw err
     } finally {
       loading.value = false
@@ -166,40 +191,77 @@ export const useStudentStore = defineStore('student', () => {
     
     try {
       const response = await api.post<Student>('/students', studentData)
-      students.value.unshift(response.data)
+      students.value.push(response.data)
       totalStudents.value += 1
+      totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
       return response.data
     } catch (err) {
-      error.value = 'Failed to create student'
-      console.error('Error creating student:', err)
+      // If API is not available, create a mock student for demo purposes
+      if (err instanceof Error && (err.message.includes('Network Error') || err.message.includes('ERR_CONNECTION_REFUSED'))) {
+        console.warn('Backend API not available. Creating mock student for demo.')
+        
+        // Create a mock student with the provided data
+        const mockStudent: Student = {
+          id: Date.now(), // Use timestamp as ID
+          ...studentData,
+          academicHistory: [],
+          activities: [],
+          violations: [],
+          skills: [],
+          affiliations: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isActive: true
+        }
+        
+        students.value.push(mockStudent)
+        totalStudents.value += 1
+        totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+        
+        return mockStudent
+      }
+      
+      error.value = err instanceof Error ? err.message : 'Failed to create student'
       throw err
     } finally {
       loading.value = false
     }
   }
 
-  const updateStudent = async (id: number, updates: UpdateStudentRequest) => {
+  const createStudentOffline = async (studentData: CreateStudentRequest) => {
     loading.value = true
     error.value = null
     
     try {
-      const response = await api.put<Student>(`/students/${id}`, updates)
-      
-      // Update in array
-      const index = students.value.findIndex(s => s.id === id)
+      const response = await apiWithFallback.post('/students', studentData)
+      students.value.push(response.data)
+      totalStudents.value += 1
+      totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+      return response.data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to create student'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateStudent = async (id: number, studentData: UpdateStudentRequest) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const response = await api.put<Student>(`/students/${id}`, studentData)
+      const index = students.value.findIndex(student => student.id === id)
       if (index !== -1) {
         students.value[index] = response.data
       }
-      
-      // Update current student if it's the same
       if (currentStudent.value?.id === id) {
         currentStudent.value = response.data
       }
-      
       return response.data
     } catch (err) {
-      error.value = 'Failed to update student'
-      console.error('Error updating student:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to update student'
       throw err
     } finally {
       loading.value = false
@@ -212,46 +274,72 @@ export const useStudentStore = defineStore('student', () => {
     
     try {
       await api.delete(`/students/${id}`)
-      
-      // Remove from array
-      const index = students.value.findIndex(s => s.id === id)
-      if (index !== -1) {
-        students.value.splice(index, 1)
-      }
-      
-      // Clear current student if it's the same
+      students.value = students.value.filter(student => student.id !== id)
+      totalStudents.value -= 1
+      totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
       if (currentStudent.value?.id === id) {
         currentStudent.value = null
       }
-      
-      totalStudents.value -= 1
     } catch (err) {
-      error.value = 'Failed to delete student'
-      console.error('Error deleting student:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to delete student'
       throw err
     } finally {
       loading.value = false
     }
   }
 
-  const addSkill = async (studentId: number, skill: Omit<Student['skills'][0], 'id'>) => {
+  const updateStudentOffline = async (id: number, studentData: UpdateStudentRequest) => {
+    loading.value = true
+    error.value = null
+    
     try {
-      const response = await api.post(`/students/${studentId}/skills`, skill)
-      
-      // Update local state
+      const response = await apiWithFallback.put(`/students/${id}`, studentData)
+      const index = students.value.findIndex(student => student.id === id)
+      if (index !== -1) {
+        students.value[index] = response.data
+      }
+      if (currentStudent.value?.id === id) {
+        currentStudent.value = response.data
+      }
+      return response.data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to update student'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteStudentOffline = async (id: number) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      await apiWithFallback.delete(`/students/${id}`)
+      students.value = students.value.filter(student => student.id !== id)
+      totalStudents.value -= 1
+      totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+      if (currentStudent.value?.id === id) {
+        currentStudent.value = null
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to delete student'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const addSkill = async (studentId: number, skillData: any) => {
+    try {
+      const response = await api.post(`/students/${studentId}/skills`, skillData)
       const student = students.value.find(s => s.id === studentId)
       if (student) {
         student.skills.push(response.data)
       }
-      
-      if (currentStudent.value?.id === studentId) {
-        currentStudent.value.skills.push(response.data)
-      }
-      
       return response.data
     } catch (err) {
-      error.value = 'Failed to add skill'
-      console.error('Error adding skill:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to add skill'
       throw err
     }
   }
@@ -259,41 +347,68 @@ export const useStudentStore = defineStore('student', () => {
   const removeSkill = async (studentId: number, skillId: number) => {
     try {
       await api.delete(`/students/${studentId}/skills/${skillId}`)
-      
-      // Update local state
       const student = students.value.find(s => s.id === studentId)
       if (student) {
-        student.skills = student.skills.filter(s => s.id !== skillId)
-      }
-      
-      if (currentStudent.value?.id === studentId) {
-        currentStudent.value.skills = currentStudent.value.skills.filter(s => s.id !== skillId)
+        student.skills = student.skills.filter(skill => skill.id !== skillId)
       }
     } catch (err) {
-      error.value = 'Failed to remove skill'
-      console.error('Error removing skill:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to remove skill'
       throw err
     }
   }
 
-  const addActivity = async (studentId: number, activity: Omit<Student['activities'][0], 'id'>) => {
+  const addActivity = async (studentId: number, activityData: any) => {
     try {
-      const response = await api.post(`/students/${studentId}/activities`, activity)
-      
-      // Update local state
+      const response = await api.post(`/students/${studentId}/activities`, activityData)
       const student = students.value.find(s => s.id === studentId)
       if (student) {
         student.activities.push(response.data)
       }
-      
-      if (currentStudent.value?.id === studentId) {
-        currentStudent.value.activities.push(response.data)
-      }
-      
       return response.data
     } catch (err) {
-      error.value = 'Failed to add activity'
-      console.error('Error adding activity:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to add activity'
+      throw err
+    }
+  }
+
+  // Offline versions of skill and activity operations
+  const addSkillOffline = async (studentId: number, skillData: any) => {
+    try {
+      const response = await apiWithFallback.post(`/students/${studentId}/skills`, skillData)
+      const student = students.value.find(s => s.id === studentId)
+      if (student) {
+        student.skills.push(response.data)
+      }
+      return response.data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to add skill'
+      throw err
+    }
+  }
+
+  const removeSkillOffline = async (studentId: number, skillId: number) => {
+    try {
+      await apiWithFallback.delete(`/students/${studentId}/skills/${skillId}`)
+      const student = students.value.find(s => s.id === studentId)
+      if (student) {
+        student.skills = student.skills.filter(skill => skill.id !== skillId)
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to remove skill'
+      throw err
+    }
+  }
+
+  const addActivityOffline = async (studentId: number, activityData: any) => {
+    try {
+      const response = await apiWithFallback.post(`/students/${studentId}/activities`, activityData)
+      const student = students.value.find(s => s.id === studentId)
+      if (student) {
+        student.activities.push(response.data)
+      }
+      return response.data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to add activity'
       throw err
     }
   }
@@ -302,8 +417,21 @@ export const useStudentStore = defineStore('student', () => {
     try {
       const response = await api.get<StudentStatistics>('/students/statistics')
       statistics.value = response.data
+      return response.data
     } catch (err) {
-      console.error('Error fetching statistics:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to fetch statistics'
+      throw err
+    }
+  }
+
+  const fetchStatisticsOffline = async () => {
+    try {
+      const response = await apiWithFallback.get('/students/statistics')
+      statistics.value = response.data
+      return response.data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch statistics'
+      throw err
     }
   }
 
@@ -333,137 +461,6 @@ export const useStudentStore = defineStore('student', () => {
     error.value = null
   }
 
-  // Sample data generator for demo purposes
-  const generateSampleData = () => {
-    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Mary', 'William', 'Patricia', 'Richard', 'Jennifer', 'Charles', 'Linda']
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Wilson', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson']
-    const majors = ['Computer Science', 'Information Technology', 'Software Engineering', 'Data Science', 'Cybersecurity', 'Web Development', 'Network Engineering', 'Database Administration']
-    const skillOptions = ['Programming', 'Web Development', 'Database Management', 'Network Security', 'Data Analysis', 'Machine Learning', 'Cloud Computing', 'Mobile Development', 'UI/UX Design', 'Project Management']
-    const activityOptions = ['Basketball Varsity', 'Computer Science Society', 'Debate Club', 'Student Government', 'Drama Club', 'Music Club', 'Photography Club', 'Volunteer Corps', 'Robotics Club', 'Hackathon Team']
-    
-    const sampleStudents: Student[] = []
-    
-    for (let i = 1; i <= 20; i++) {
-      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]!
-      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]!
-      const major = majors[Math.floor(Math.random() * majors.length)]!
-      const year = Math.floor(Math.random() * 4) + 1
-      const gpa = (Math.random() * 2 + 2).toFixed(2) // GPA between 2.0 and 4.0
-      const age = Math.floor(Math.random() * 8) + 18 // Age between 18 and 25
-      
-      const studentSkills: any[] = []
-      const numSkills = Math.floor(Math.random() * 3) + 1
-      for (let j = 0; j < numSkills; j++) {
-        const skill = skillOptions[Math.floor(Math.random() * skillOptions.length)]!
-        if (!studentSkills.find((s: any) => s.name === skill)) {
-          studentSkills.push({
-            id: j + 1,
-            name: skill,
-            category: skill.includes('Programming') || skill.includes('Development') ? 'technical' : 'soft',
-            proficiency: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)] as any,
-            yearsExperience: Math.floor(Math.random() * 4) + 1,
-            lastUsed: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          })
-        }
-      }
-      
-      const studentActivities: any[] = []
-      const numActivities = Math.floor(Math.random() * 2)
-      for (let j = 0; j < numActivities; j++) {
-        const activity = activityOptions[Math.floor(Math.random() * activityOptions.length)]!
-        if (!studentActivities.find((a: any) => a.name === activity)) {
-          studentActivities.push({
-            id: j + 1,
-            name: activity,
-            type: activity.includes('Club') ? 'organization' : activity.includes('Varsity') ? 'sports' : 'other',
-            role: ['Member', 'President', 'Vice President', 'Secretary', 'Treasurer'][Math.floor(Math.random() * 5)],
-            startDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            description: `Active participation in ${activity}`,
-            achievements: [],
-            level: ['local', 'regional', 'national'][Math.floor(Math.random() * 3)] as any
-          })
-        }
-      }
-      
-      const violations: any[] = []
-      if (Math.random() > 0.7) { // 30% chance of having violations
-        const numViolations = Math.floor(Math.random() * 2) + 1
-        for (let j = 0; j < numViolations; j++) {
-          violations.push({
-            id: j + 1,
-            type: ['Attendance', 'Academic', 'Conduct'][Math.floor(Math.random() * 3)],
-            severity: 'minor' as const,
-            description: 'Minor violation',
-            date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            status: 'resolved' as const,
-            points: Math.floor(Math.random() * 3) + 1,
-            reportedBy: 'System'
-          })
-        }
-      }
-      
-      sampleStudents.push({
-        id: i,
-        personalInfo: {
-          firstName,
-          lastName,
-          middleName: Math.random() > 0.5 ? ['A.', 'B.', 'C.', 'D.'][Math.floor(Math.random() * 4)] : undefined,
-          studentId: `202${Math.floor(Math.random() * 4) + 1}-${String(i).padStart(3, '0')}`,
-          email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@ccs.edu`,
-          phone: `+63 9${Math.floor(Math.random() * 900000000) + 100000000}`,
-          dateOfBirth: new Date(Date.now() - age * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] || '',
-          age,
-          gender: ['male', 'female'][Math.floor(Math.random() * 2)] as any,
-          address: `${Math.floor(Math.random() * 999) + 1} University St`,
-          city: ['Manila', 'Quezon City', 'Makati', 'Pasig', 'Mandaluyong'][Math.floor(Math.random() * 5)] || '',
-          province: 'Metro Manila',
-          postalCode: String(Math.floor(Math.random() * 9000) + 1000),
-          emergencyContact: {
-            name: `${['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)]} ${lastName}`,
-            relationship: ['Mother', 'Father', 'Guardian'][Math.floor(Math.random() * 3)] || '',
-            phone: `+63 9${Math.floor(Math.random() * 900000000) + 100000000}`
-          }
-        },
-        academicHistory: [
-          {
-            id: 1,
-            schoolName: 'CCS University',
-            degree: 'Bachelor of Science',
-            major,
-            startDate: '2021-08-01',
-            gpa: parseFloat(gpa),
-            status: 'ongoing' as const
-          }
-        ],
-        academicStanding: {
-          currentYear: year,
-          currentSemester: ['first', 'second'][Math.floor(Math.random() * 2)] as any,
-          currentGPA: parseFloat(gpa),
-          totalUnits: year * 24,
-          standing: parseFloat(gpa) >= 3.5 ? 'good' : parseFloat(gpa) >= 2.5 ? 'warning' : 'probation' as any,
-          advisor: ['Dr. Smith', 'Prof. Johnson', 'Dr. Williams', 'Prof. Brown'][Math.floor(Math.random() * 4)] || ''
-        },
-        activities: studentActivities,
-        violations,
-        skills: studentSkills,
-        affiliations: studentActivities.map((a: any) => ({
-          id: a.id,
-          name: a.name,
-          type: 'student_organization' as const,
-          role: a.role,
-          startDate: a.startDate,
-          position: a.role
-        })),
-        createdAt: '2021-08-01T00:00:00Z',
-        updatedAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-        isActive: Math.random() > 0.1 // 90% active
-      })
-    }
-    
-    students.value = sampleStudents
-    totalStudents.value = sampleStudents.length
-  }
-
   return {
     // State
     students,
@@ -488,16 +485,23 @@ export const useStudentStore = defineStore('student', () => {
     createStudent,
     updateStudent,
     deleteStudent,
+    fetchStudentsOffline,
+    createStudentOffline,
+    updateStudentOffline,
+    deleteStudentOffline,
     addSkill,
     removeSkill,
     addActivity,
+    addSkillOffline,
+    removeSkillOffline,
+    addActivityOffline,
     fetchStatistics,
+    fetchStatisticsOffline,
     setFilter,
     clearFilter,
     setDisplayMode,
     setCurrentPage,
     clearCurrentStudent,
-    clearError,
-    generateSampleData
+    clearError
   }
 })

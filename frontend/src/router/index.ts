@@ -128,36 +128,126 @@ const router = createRouter({
       component: () => import('../views/announcements/AnnouncementFormView.vue'),
       meta: { requiresAuth: true, roles: ['admin', 'professor'] }
     },
-    // Academic Management Routes (Temporary - redirect to dashboard until components are created)
+    // Academic Management Routes
     {
       path: '/courses',
       name: 'courses',
-      redirect: '/dashboard',
-      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+      component: () => import('../views/courses/CourseListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/courses/create',
+      name: 'course-create',
+      component: () => import('../views/courses/CourseFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/courses/:id',
+      name: 'course-detail',
+      component: () => import('../views/courses/CourseDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/courses/:id/edit',
+      name: 'course-edit',
+      component: () => import('../views/courses/CourseFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
       path: '/syllabi',
       name: 'syllabi',
-      redirect: '/dashboard',
+      component: () => import('../views/syllabi/SyllabusListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/syllabi/create',
+      name: 'syllabus-create',
+      component: () => import('../views/syllabi/SyllabusFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+    },
+    {
+      path: '/syllabi/:id',
+      name: 'syllabus-detail',
+      component: () => import('../views/syllabi/SyllabusDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/syllabi/:id/edit',
+      name: 'syllabus-edit',
+      component: () => import('../views/syllabi/SyllabusFormView.vue'),
       meta: { requiresAuth: true, roles: ['admin', 'professor'] }
     },
     {
       path: '/schedules',
       name: 'schedules',
-      redirect: '/dashboard',
+      component: () => import('../views/schedules/ScheduleListView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/schedules/create',
+      name: 'schedule-create',
+      component: () => import('../views/schedules/ScheduleFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/schedules/:id',
+      name: 'schedule-detail',
+      component: () => import('../views/schedules/ScheduleDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/schedules/:id/edit',
+      name: 'schedule-edit',
+      component: () => import('../views/schedules/ScheduleFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
       path: '/rooms',
       name: 'rooms',
-      redirect: '/dashboard',
-      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+      component: () => import('../views/rooms/RoomListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/rooms/create',
+      name: 'room-create',
+      component: () => import('../views/rooms/RoomFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/rooms/:id',
+      name: 'room-detail',
+      component: () => import('../views/rooms/RoomDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/rooms/:id/edit',
+      name: 'room-edit',
+      component: () => import('../views/rooms/RoomFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
       path: '/events',
       name: 'events',
-      redirect: '/dashboard',
+      component: () => import('../views/events/EventListView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/events/create',
+      name: 'event-create',
+      component: () => import('../views/events/EventFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/events/:id',
+      name: 'event-detail',
+      component: () => import('../views/events/EventDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/events/:id/edit',
+      name: 'event-edit',
+      component: () => import('../views/events/EventFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
       path: '/profile',

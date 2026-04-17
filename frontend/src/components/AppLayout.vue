@@ -2,7 +2,7 @@
   <div class="app-layout" :class="{ 'dark': isDark, 'sidebar-collapsed': isCollapsed }">
     <!-- Sidebar -->
     <AppSidebar ref="sidebarRef" />
-    
+
     <!-- Main Content Area -->
     <div class="main-wrapper">
       <!-- Top Bar (optional - can be removed if not needed) -->
@@ -16,7 +16,7 @@
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-          
+
           <!-- Breadcrumb -->
           <div class="breadcrumb">
             <span class="bc-prompt">$</span>
@@ -24,14 +24,14 @@
             <span class="bc-sep">›</span>
             <span class="bc-current">{{ currentPageName }}</span>
           </div>
-          
+
           <!-- Quick actions (optional) -->
           <div class="quick-actions">
             <!-- Add any quick actions here -->
           </div>
         </div>
       </header>
-      
+
       <!-- Page Content -->
       <main class="page-content" :class="{ 'with-top-bar': showTopBar }">
         <router-view />
@@ -39,6 +39,8 @@
     </div>
   </div>
 </template>
+
+
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
@@ -60,7 +62,7 @@ const isCollapsed = computed(() => sidebarRef.value?.isCollapsed ?? false)
 const currentPageName = computed(() => {
   const routeName = route.name as string
   if (!routeName) return 'UNKNOWN'
-  
+
   const names: Record<string, string> = {
     dashboard: 'DASHBOARD',
     students: 'STUDENTS',
@@ -84,7 +86,7 @@ const currentPageName = computed(() => {
     rooms: 'ROOMS',
     events: 'EVENTS'
   }
-  
+
   return names[routeName] || routeName.toUpperCase()
 })
 
@@ -113,7 +115,10 @@ onUnmounted(() => {
 })
 </script>
 
+
+
 <style scoped>
+
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -252,15 +257,15 @@ onUnmounted(() => {
   .main-wrapper {
     margin-left: 0;
   }
-  
+
   .sidebar-collapsed .main-wrapper {
     margin-left: 0;
   }
-  
+
   .mobile-menu-btn {
     display: block;
   }
-  
+
   .breadcrumb {
     display: none; /* Hide breadcrumb on mobile to save space */
   }
@@ -271,4 +276,6 @@ onUnmounted(() => {
     padding: 0 1rem;
   }
 }
+
 </style>
+
