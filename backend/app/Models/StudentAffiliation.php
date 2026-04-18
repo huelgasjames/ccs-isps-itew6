@@ -9,6 +9,8 @@ class StudentAffiliation extends Model
 {
     use HasFactory;
 
+    protected $table = 'student_affiliations';
+
     protected $fillable = [
         'student_id',
         'name',

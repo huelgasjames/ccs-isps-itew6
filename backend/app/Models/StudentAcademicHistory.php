@@ -9,6 +9,8 @@ class StudentAcademicHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'student_academic_history';
+
     protected $fillable = [
         'student_id',
         'school_name',
@@ -22,10 +24,10 @@ class StudentAcademicHistory extends Model
     ];
 
     protected $casts = [
-        'honors' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
         'gpa' => 'decimal:2',
+        'honors' => 'array',
     ];
 
     public function student()

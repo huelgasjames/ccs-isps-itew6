@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // Check for hardcoded demo credentials for different roles
       const demoCredentials = [
-        // Admin credentials
+        // Admin credentials - username only
         {
           email: 'admin',
           password: 'password',
@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
           },
           token: 'demo-professor-token-' + Date.now()
         },
-        // Student credentials
+                // Student credentials
         {
           email: 'student',
           password: 'password',
@@ -76,8 +76,8 @@ export const useAuthStore = defineStore('auth', () => {
             updated_at: new Date().toISOString()
           },
           token: 'demo-maria-token-' + Date.now()
-        }
-      ]
+        },
+              ]
 
       // Check if credentials match any demo account
       const demoAccount = demoCredentials.find(
@@ -135,24 +135,6 @@ export const useAuthStore = defineStore('auth', () => {
         console.error('Error parsing stored user:', error)
         logout()
       }
-    } else {
-      // Auto-login demo admin for local development
-      const demoAdmin = {
-        id: 1,
-        email: 'admin@ccs.edu',
-        name: 'Demo Admin',
-        role: 'admin' as const,
-        department: 'College of Computing Studies',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-      const demoToken = 'demo-admin-token-' + Date.now()
-      
-      user.value = demoAdmin
-      token.value = demoToken
-      
-      localStorage.setItem('auth_token', demoToken)
-      localStorage.setItem('user', JSON.stringify(demoAdmin))
     }
   }
 

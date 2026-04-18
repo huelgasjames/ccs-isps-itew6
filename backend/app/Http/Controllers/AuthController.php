@@ -11,31 +11,25 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        \Log::info('Login attempt', ['data' => $request->all(), 'headers' => $request->headers->all()]);
-        
         try {
             $validated = $request->validate([
                 'email' => 'required|string|email',
-                'password' => 'required',
+                'password' => 'required|string',
             ]);
-            \Log::info('Validation passed', $validated);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation failed', ['errors' => $e->errors()]);
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
         }
-
-        \Log::info('Attempting auth', ['email' => $request->email]);
         
-        if (!Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
+        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = Auth::user();
 
         return response()->json([
             'user' => $user,
@@ -65,7 +59,7 @@ class AuthController extends Controller
         ];
 
         if ($user->role === 'student' && $user->student) {
-            $userData['profile'] = $user->student->load(['skills', 'talents', 'sports', 'certificates', 'violations', 'organizations']);
+            $userData['profile'] = $user->student->load(['skills', 'activities', 'academicHistory', 'affiliations', 'violations']);
         } elseif ($user->role === 'professor' && $user->professor) {
             $userData['profile'] = $user->professor;
         }

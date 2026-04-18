@@ -16,68 +16,68 @@ class StudentAffiliationSeeder extends Seeder
         // Sample affiliations
         $affiliations = [
             [
-                'organization_name' => 'Computer Science Society',
-                'type' => 'Academic',
+                'name' => 'Computer Science Society',
+                'type' => 'student_organization',
+                'role' => 'Member',
                 'position' => 'Member',
                 'start_date' => '2022-08-01',
-                'end_date' => null,
-                'status' => 'active'
+                'description' => 'Active member of Computer Science Society'
             ],
             [
-                'organization_name' => 'Programming Club',
-                'type' => 'Academic',
+                'name' => 'Programming Club',
+                'type' => 'student_organization',
+                'role' => 'Vice President',
                 'position' => 'Vice President',
                 'start_date' => '2023-06-01',
-                'end_date' => null,
-                'status' => 'active'
+                'description' => 'Vice President of Programming Club'
             ],
             [
-                'organization_name' => 'Basketball Varsity Team',
-                'type' => 'Sports',
+                'name' => 'Basketball Varsity Team',
+                'type' => 'professional',
+                'role' => 'Team Captain',
                 'position' => 'Team Captain',
                 'start_date' => '2022-06-01',
-                'end_date' => '2024-03-31',
-                'status' => 'completed'
+                'description' => 'Team Captain of Basketball Varsity'
             ],
             [
-                'organization_name' => 'Student Council',
-                'type' => 'Leadership',
+                'name' => 'Student Council',
+                'type' => 'student_organization',
+                'role' => 'Secretary',
                 'position' => 'Secretary',
                 'start_date' => '2023-06-01',
-                'end_date' => null,
-                'status' => 'active'
+                'description' => 'Secretary of Student Council'
             ],
             [
-                'organization_name' => 'Web Development Guild',
-                'type' => 'Academic',
+                'name' => 'Web Development Guild',
+                'type' => 'student_organization',
+                'role' => 'Member',
                 'position' => 'Member',
                 'start_date' => '2022-09-01',
-                'end_date' => null,
-                'status' => 'active'
+                'description' => 'Member of Web Development Guild'
             ],
             [
-                'organization_name' => 'Environmental Advocacy Group',
-                'type' => 'Advocacy',
+                'name' => 'Environmental Advocacy Group',
+                'type' => 'community',
+                'role' => 'Volunteer',
                 'position' => 'Volunteer',
                 'start_date' => '2023-01-15',
-                'end_date' => null,
-                'status' => 'active'
+                'description' => 'Volunteer for Environmental Advocacy'
             ],
             [
-                'organization_name' => 'Debate Society',
-                'type' => 'Academic',
+                'name' => 'Debate Society',
+                'type' => 'student_organization',
+                'role' => 'Member',
                 'position' => 'Member',
                 'start_date' => '2022-10-01',
-                'end_date' => '2024-02-28',
-                'status' => 'completed'
+                'description' => 'Member of Debate Society'
             ],
             [
-                'organization_name' => 'Music Club',
-                'type' => 'Cultural',
+                'name' => 'Music Club',
+                'type' => 'student_organization',
+                'role' => 'Guitarist',
                 'position' => 'Guitarist',
                 'start_date' => '2022-08-15',
-                'end_date' => null,
-                'status' => 'active'
+                'description' => 'Guitarist in Music Club'
             ],
         ];
 
@@ -88,13 +88,12 @@ class StudentAffiliationSeeder extends Seeder
             foreach ($studentAffiliations as $affiliation) {
                 StudentAffiliation::create([
                     'student_id' => $student->id,
-                    'organization_name' => $affiliation['organization_name'],
+                    'name' => $affiliation['name'],
                     'type' => $affiliation['type'],
+                    'role' => $affiliation['role'],
                     'position' => $affiliation['position'],
                     'start_date' => $affiliation['start_date'],
-                    'end_date' => $affiliation['end_date'],
-                    'status' => $affiliation['status'],
-                    'description' => 'Active member of ' . $affiliation['organization_name'],
+                    'description' => $affiliation['description'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

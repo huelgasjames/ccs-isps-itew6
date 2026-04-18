@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Skill;
+use App\Models\StudentSkill;
 use Illuminate\Http\Request;
 
 class SkillController extends Controller
 {
     public function index()
     {
-        $skills = Skill::with('student.user')->get();
+        $skills = StudentSkill::with('student.user')->get();
         return response()->json($skills);
     }
 
@@ -17,29 +17,45 @@ class SkillController extends Controller
     {
         $request->validate([
             'student_id' => 'required|exists:students,id',
-            'skill_name' => 'required|string|max:100',
+            'name' => 'required|string|max:100',
+            'category' => 'required|in:technical,soft,business,creative,sports,language',
+            'proficiency' => 'required|in:beginner,intermediate,advanced,expert,native',
+            'years_experience' => 'nullable|integer|min:0',
+            'certifications' => 'nullable|string',
         ]);
 
-        $skill = Skill::create($request->all());
+        $skill = StudentSkill::create([
+            'student_id' => $request->student_id,
+            'name' => $request->name,
+            'category' => $request->category,
+            'proficiency' => $request->proficiency,
+            'years_experience' => $request->years_experience ?? 0,
+            'certifications' => $request->certifications,
+            'last_used' => now(),
+        ]);
         return response()->json($skill->load('student.user'), 201);
     }
 
-    public function show(Skill $skill)
+    public function show(StudentSkill $skill)
     {
         return response()->json($skill->load('student.user'));
     }
 
-    public function update(Request $request, Skill $skill)
+    public function update(Request $request, StudentSkill $skill)
     {
         $request->validate([
-            'skill_name' => 'required|string|max:100',
+            'name' => 'required|string|max:100',
+            'category' => 'required|in:technical,soft,business,creative,sports,language',
+            'proficiency' => 'required|in:beginner,intermediate,advanced,expert,native',
+            'years_experience' => 'nullable|integer|min:0',
+            'certifications' => 'nullable|string',
         ]);
 
         $skill->update($request->all());
         return response()->json($skill->load('student.user'));
     }
 
-    public function destroy(Skill $skill)
+    public function destroy(StudentSkill $skill)
     {
         $skill->delete();
         return response()->json(null, 204);

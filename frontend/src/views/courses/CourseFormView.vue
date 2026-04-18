@@ -130,17 +130,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
+
+interface CourseForm {
+  course_code: string
+  course_name: string
+  description: string
+  credits: number
+  department: string
+  level: string
+  semester: string
+  prerequisites: string
+  active: boolean
+}
 
 const route = useRoute()
 const router = useRouter()
 const isEdit = !!route.params.id
 const loading = ref(false)
 
-const form = ref({
+const form = ref<CourseForm>({
   course_code: '',
   course_name: '',
   description: '',

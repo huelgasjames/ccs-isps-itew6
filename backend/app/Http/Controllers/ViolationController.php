@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Violation;
+use App\Models\StudentViolation;
 use App\Models\Student;
 use Illuminate\Http\Request;
 
@@ -10,7 +10,7 @@ class ViolationController extends Controller
 {
     public function index()
     {
-        $violations = Violation::with('student.user')->get();
+        $violations = StudentViolation::with('student.user')->get();
         return response()->json($violations);
     }
 
@@ -18,38 +18,41 @@ class ViolationController extends Controller
     {
         $request->validate([
             'student_id' => 'required|exists:students,id',
-            'violation_type' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'sanction' => 'nullable|string|max:255',
-            'date_committed' => 'required|date',
-            'status' => 'nullable|in:Pending,Resolved',
+            'type' => 'required|in:academic,disciplinary,attendance,conduct',
+            'description' => 'required|string',
+            'date' => 'required|date',
+            'severity' => 'required|in:minor,moderate,major,severe',
+            'status' => 'nullable|in:pending,resolved,appealed',
+            'consequence' => 'nullable|string|max:255',
         ]);
 
-        $violation = Violation::create([
+        $violation = StudentViolation::create([
             'student_id' => $request->student_id,
-            'violation_type' => $request->violation_type,
+            'type' => $request->type,
             'description' => $request->description,
-            'sanction' => $request->sanction,
-            'date_committed' => $request->date_committed,
-            'status' => $request->status ?? 'Pending',
+            'date' => $request->date,
+            'severity' => $request->severity,
+            'status' => $request->status ?? 'pending',
+            'consequence' => $request->consequence,
         ]);
 
         return response()->json($violation->load('student.user'), 201);
     }
 
-    public function show(Violation $violation)
+    public function show(StudentViolation $violation)
     {
         return response()->json($violation->load('student.user'));
     }
 
-    public function update(Request $request, Violation $violation)
+    public function update(Request $request, StudentViolation $violation)
     {
         $request->validate([
-            'violation_type' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'sanction' => 'nullable|string|max:255',
-            'date_committed' => 'required|date',
-            'status' => 'nullable|in:Pending,Resolved',
+            'type' => 'required|in:academic,disciplinary,attendance,conduct',
+            'description' => 'required|string',
+            'date' => 'required|date',
+            'severity' => 'required|in:minor,moderate,major,severe',
+            'status' => 'nullable|in:pending,resolved,appealed',
+            'consequence' => 'nullable|string|max:255',
         ]);
 
         $violation->update($request->all());
@@ -57,16 +60,16 @@ class ViolationController extends Controller
         return response()->json($violation->load('student.user'));
     }
 
-    public function destroy(Violation $violation)
+    public function destroy(StudentViolation $violation)
     {
         $violation->delete();
 
         return response()->json(null, 204);
     }
 
-    public function resolveViolation(Violation $violation)
+    public function resolveViolation(StudentViolation $violation)
     {
-        $violation->update(['status' => 'Resolved']);
+        $violation->update(['status' => 'resolved']);
 
         return response()->json($violation->load('student.user'));
     }
@@ -80,8 +83,8 @@ class ViolationController extends Controller
 
     public function getPendingViolations()
     {
-        $violations = Violation::with('student.user')
-            ->where('status', 'Pending')
+        $violations = StudentViolation::with('student.user')
+            ->where('status', 'pending')
             ->get();
 
         return response()->json($violations);

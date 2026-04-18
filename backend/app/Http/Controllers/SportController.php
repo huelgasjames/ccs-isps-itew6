@@ -2,47 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sport;
 use Illuminate\Http\Request;
 
 class SportController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $sports = Sport::with('student.user')->get();
+        return response()->json($sports);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'sport_name' => 'required|string|max:100',
+        ]);
+
+        $sport = Sport::create($request->all());
+        return response()->json($sport->load('student.user'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Sport $sport)
     {
-        //
+        return response()->json($sport->load('student.user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Sport $sport)
     {
-        //
+        $request->validate([
+            'sport_name' => 'required|string|max:100',
+        ]);
+
+        $sport->update($request->all());
+        return response()->json($sport->load('student.user'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Sport $sport)
     {
-        //
+        $sport->delete();
+        return response()->json(null, 204);
     }
 }

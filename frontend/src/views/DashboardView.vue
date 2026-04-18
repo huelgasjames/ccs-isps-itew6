@@ -427,6 +427,13 @@ const fetchAnnouncements = async () => {
     loadingAnnouncements.value = true
     const allAnnouncements = await announcementService.getAnnouncements()
     
+    // Ensure allAnnouncements is an array before filtering
+    if (!Array.isArray(allAnnouncements)) {
+      console.warn('API did not return an array for announcements:', allAnnouncements)
+      announcements.value = []
+      return
+    }
+    
     // Filter announcements user can view and get only the latest 3
     announcements.value = allAnnouncements
       .filter(announcement => {

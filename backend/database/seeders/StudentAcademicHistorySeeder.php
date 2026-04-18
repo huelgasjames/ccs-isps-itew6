@@ -23,17 +23,17 @@ class StudentAcademicHistorySeeder extends Seeder
                 'end_date' => '2022-03-31',
                 'gpa' => 3.8,
                 'status' => 'completed',
-                'awards' => 'With Honors, Best in Mathematics'
+                'honors' => ['With Honors', 'Best in Mathematics']
             ],
             [
                 'school_name' => 'University of the Philippines',
                 'degree' => 'Bachelor of Science in Computer Science',
                 'major' => 'Software Engineering',
                 'start_date' => '2022-06-01',
-                'end_date' => null,
+                'end_date' => '2026-03-31',
                 'gpa' => 3.5,
                 'status' => 'ongoing',
-                'awards' => 'Dean\'s List'
+                'honors' => ['Dean\'s List']
             ],
             [
                 'school_name' => 'Ateneo de Manila High School',
@@ -43,17 +43,17 @@ class StudentAcademicHistorySeeder extends Seeder
                 'end_date' => '2023-03-31',
                 'gpa' => 3.6,
                 'status' => 'completed',
-                'awards' => 'With Honors'
+                'honors' => ['With Honors']
             ],
             [
                 'school_name' => 'De La Salle University',
                 'degree' => 'Bachelor of Science in Information Technology',
                 'major' => 'Web Development',
                 'start_date' => '2023-06-01',
-                'end_date' => null,
+                'end_date' => '2027-03-31',
                 'gpa' => 3.2,
                 'status' => 'ongoing',
-                'awards' => null
+                'honors' => null
             ],
         ];
 
@@ -72,7 +72,7 @@ class StudentAcademicHistorySeeder extends Seeder
                     'end_date' => $history['end_date'],
                     'gpa' => $history['gpa'],
                     'status' => $history['status'],
-                    'awards' => $history['awards'],
+                    'honors' => $history['honors'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

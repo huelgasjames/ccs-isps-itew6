@@ -154,102 +154,6 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
-      path: '/syllabi',
-      name: 'syllabi',
-      component: () => import('../views/syllabi/SyllabusListView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/syllabi/create',
-      name: 'syllabus-create',
-      component: () => import('../views/syllabi/SyllabusFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
-    },
-    {
-      path: '/syllabi/:id',
-      name: 'syllabus-detail',
-      component: () => import('../views/syllabi/SyllabusDetailView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/syllabi/:id/edit',
-      name: 'syllabus-edit',
-      component: () => import('../views/syllabi/SyllabusFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin', 'professor'] }
-    },
-    {
-      path: '/schedules',
-      name: 'schedules',
-      component: () => import('../views/schedules/ScheduleListView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/schedules/create',
-      name: 'schedule-create',
-      component: () => import('../views/schedules/ScheduleFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin'] }
-    },
-    {
-      path: '/schedules/:id',
-      name: 'schedule-detail',
-      component: () => import('../views/schedules/ScheduleDetailView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/schedules/:id/edit',
-      name: 'schedule-edit',
-      component: () => import('../views/schedules/ScheduleFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin'] }
-    },
-    {
-      path: '/rooms',
-      name: 'rooms',
-      component: () => import('../views/rooms/RoomListView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/rooms/create',
-      name: 'room-create',
-      component: () => import('../views/rooms/RoomFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin'] }
-    },
-    {
-      path: '/rooms/:id',
-      name: 'room-detail',
-      component: () => import('../views/rooms/RoomDetailView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/rooms/:id/edit',
-      name: 'room-edit',
-      component: () => import('../views/rooms/RoomFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin'] }
-    },
-    {
-      path: '/events',
-      name: 'events',
-      component: () => import('../views/events/EventListView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events/create',
-      name: 'event-create',
-      component: () => import('../views/events/EventFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin'] }
-    },
-    {
-      path: '/events/:id',
-      name: 'event-detail',
-      component: () => import('../views/events/EventDetailView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events/:id/edit',
-      name: 'event-edit',
-      component: () => import('../views/events/EventFormView.vue'),
-      meta: { requiresAuth: true, roles: ['admin'] }
-    },
-    {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
@@ -260,8 +164,8 @@ const router = createRouter({
       name: 'settings',
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true }
-    },
-      ],
+    }
+  ]
 })
 
 router.beforeEach((to, from) => {

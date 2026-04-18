@@ -40,7 +40,6 @@ class Student extends Model
         'advisor',
         
         // Legacy fields for compatibility
-        'student_unique_id',
         'blood_type',
         'disability_status',
         'disability_name',
@@ -74,27 +73,27 @@ class Student extends Model
 
     public function skills()
     {
-        return $this->hasMany(StudentSkill::class);
+        return $this->hasMany(StudentSkill::class, 'student_id');
     }
 
     public function activities()
     {
-        return $this->hasMany(StudentActivity::class);
+        return $this->hasMany(StudentActivity::class, 'student_id');
     }
 
     public function academicHistory()
     {
-        return $this->hasMany(StudentAcademicHistory::class);
+        return $this->hasMany(StudentAcademicHistory::class, 'student_id');
     }
 
     public function affiliations()
     {
-        return $this->hasMany(StudentAffiliation::class);
+        return $this->hasMany(StudentAffiliation::class, 'student_id');
     }
 
     public function violations()
     {
-        return $this->hasMany(StudentViolation::class);
+        return $this->hasMany(StudentViolation::class, 'student_id');
     }
 
     // Legacy relationships for compatibility

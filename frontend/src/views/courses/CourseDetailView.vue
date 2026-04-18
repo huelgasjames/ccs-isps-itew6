@@ -79,15 +79,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
+interface Course {
+  id?: number
+  course_code?: string
+  course_name?: string
+  description?: string
+  credits?: number
+  department?: string
+  level?: string
+  semester?: string
+  prerequisites?: string
+  active?: boolean
+  syllabi?: any[]
+}
+
 const route = useRoute()
 const authStore = useAuthStore()
-const course = ref(null)
+const course = ref<Course | null>(null)
 const loading = ref(true)
 
 const fetchCourse = async () => {

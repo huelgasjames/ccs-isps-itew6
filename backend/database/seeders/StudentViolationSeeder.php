@@ -16,66 +16,66 @@ class StudentViolationSeeder extends Seeder
         // Sample violations
         $violations = [
             [
-                'violation_type' => 'Late Submission',
+                'type' => 'academic',
                 'description' => 'Submitted programming assignment 2 days late',
-                'sanction' => 'Grade deduction of 10%',
-                'date_committed' => '2024-01-15',
+                'consequence' => 'Grade deduction of 10%',
+                'date' => '2024-01-15',
                 'status' => 'resolved',
                 'severity' => 'minor'
             ],
             [
-                'violation_type' => 'Attendance Issue',
+                'type' => 'attendance',
                 'description' => 'Absent for 3 consecutive classes without valid reason',
-                'sanction' => 'Warning letter sent to parents',
-                'date_committed' => '2024-02-10',
+                'consequence' => 'Warning letter sent to parents',
+                'date' => '2024-02-10',
                 'status' => 'pending',
                 'severity' => 'moderate'
             ],
             [
-                'violation_type' => 'Code of Conduct Violation',
+                'type' => 'disciplinary',
                 'description' => 'Use of mobile phone during examination',
-                'sanction' => 'Automatic failure in exam',
-                'date_committed' => '2024-01-25',
+                'consequence' => 'Automatic failure in exam',
+                'date' => '2024-01-25',
                 'status' => 'resolved',
                 'severity' => 'major'
             ],
             [
-                'violation_type' => 'Plagiarism',
+                'type' => 'academic',
                 'description' => 'Copied content from online sources without proper citation',
-                'sanction' => 'Grade penalty and academic probation',
-                'date_committed' => '2024-03-05',
+                'consequence' => 'Grade penalty and academic probation',
+                'date' => '2024-03-05',
                 'status' => 'pending',
                 'severity' => 'major'
             ],
             [
-                'violation_type' => 'Dress Code Violation',
+                'type' => 'conduct',
                 'description' => 'Not wearing proper uniform on multiple occasions',
-                'sanction' => 'Verbal warning',
-                'date_committed' => '2024-01-10',
+                'consequence' => 'Verbal warning',
+                'date' => '2024-01-10',
                 'status' => 'resolved',
                 'severity' => 'minor'
             ],
             [
-                'violation_type' => 'Disruptive Behavior',
+                'type' => 'disciplinary',
                 'description' => 'Causing disturbance during class hours',
-                'sanction' => 'Parent conference required',
-                'date_committed' => '2024-02-20',
+                'consequence' => 'Parent conference required',
+                'date' => '2024-02-20',
                 'status' => 'pending',
                 'severity' => 'moderate'
             ],
             [
-                'violation_type' => 'Late Arrival',
+                'type' => 'attendance',
                 'description' => 'Consistently arriving 15+ minutes late to class',
-                'sanction' => 'Detention for 1 hour',
-                'date_committed' => '2024-03-01',
+                'consequence' => 'Detention for 1 hour',
+                'date' => '2024-03-01',
                 'status' => 'resolved',
                 'severity' => 'minor'
             ],
             [
-                'violation_type' => 'Unauthorized Device Use',
+                'type' => 'disciplinary',
                 'description' => 'Using laptop during non-computer class without permission',
-                'sanction' => 'Device confiscated for the day',
-                'date_committed' => '2024-02-15',
+                'consequence' => 'Device confiscated for the day',
+                'date' => '2024-02-15',
                 'status' => 'resolved',
                 'severity' => 'minor'
             ],
@@ -90,13 +90,12 @@ class StudentViolationSeeder extends Seeder
                 foreach ($studentViolations as $violation) {
                     StudentViolation::create([
                         'student_id' => $student->id,
-                        'violation_type' => $violation['violation_type'],
+                        'type' => $violation['type'],
                         'description' => $violation['description'],
-                        'sanction' => $violation['sanction'],
-                        'date_committed' => $violation['date_committed'],
+                        'consequence' => $violation['consequence'],
+                        'date' => $violation['date'],
                         'status' => $violation['status'],
                         'severity' => $violation['severity'],
-                        'reported_by' => 'Faculty Member',
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);

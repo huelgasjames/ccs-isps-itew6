@@ -15,16 +15,16 @@ class StudentActivitySeeder extends Seeder
 
         // Sample activities
         $activities = [
-            ['name' => 'Basketball Tournament', 'type' => 'Sports', 'role' => 'Player', 'status' => 'Completed'],
-            ['name' => 'Programming Contest', 'type' => 'Academic', 'role' => 'Participant', 'status' => 'Completed'],
-            ['name' => 'Student Council', 'type' => 'Leadership', 'role' => 'Member', 'status' => 'Ongoing'],
-            ['name' => 'Web Development Workshop', 'type' => 'Workshop', 'role' => 'Attendee', 'status' => 'Completed'],
-            ['name' => 'Community Outreach', 'type' => 'Volunteer', 'role' => 'Volunteer', 'status' => 'Ongoing'],
-            ['name' => 'Hackathon 2024', 'type' => 'Competition', 'role' => 'Team Lead', 'status' => 'Completed'],
-            ['name' => 'Debate Competition', 'type' => 'Academic', 'role' => 'Participant', 'status' => 'Completed'],
-            ['name' => 'Music Festival', 'type' => 'Cultural', 'role' => 'Performer', 'status' => 'Completed'],
-            ['name' => 'Research Symposium', 'type' => 'Academic', 'role' => 'Presenter', 'status' => 'Upcoming'],
-            ['name' => 'Environmental Campaign', 'type' => 'Advocacy', 'role' => 'Organizer', 'status' => 'Ongoing'],
+            ['name' => 'Basketball Tournament', 'type' => 'sports', 'role' => 'Player', 'level' => 'regional'],
+            ['name' => 'Programming Contest', 'type' => 'research', 'role' => 'Participant', 'level' => 'national'],
+            ['name' => 'Student Council', 'type' => 'organization', 'role' => 'Member', 'level' => 'local'],
+            ['name' => 'Web Development Workshop', 'type' => 'research', 'role' => 'Attendee', 'level' => 'local'],
+            ['name' => 'Community Outreach', 'type' => 'volunteer', 'role' => 'Volunteer', 'level' => 'local'],
+            ['name' => 'Hackathon 2024', 'type' => 'research', 'role' => 'Team Lead', 'level' => 'national'],
+            ['name' => 'Debate Competition', 'type' => 'research', 'role' => 'Participant', 'level' => 'regional'],
+            ['name' => 'Music Festival', 'type' => 'club', 'role' => 'Performer', 'level' => 'local'],
+            ['name' => 'Research Symposium', 'type' => 'research', 'role' => 'Presenter', 'level' => 'international'],
+            ['name' => 'Environmental Campaign', 'type' => 'volunteer', 'role' => 'Organizer', 'level' => 'local'],
         ];
 
         foreach ($students as $student) {
@@ -34,13 +34,14 @@ class StudentActivitySeeder extends Seeder
             foreach ($studentActivities as $activity) {
                 StudentActivity::create([
                     'student_id' => $student->id,
-                    'activity_name' => $activity['name'],
-                    'activity_type' => $activity['type'],
+                    'name' => $activity['name'],
+                    'type' => $activity['type'],
                     'role' => $activity['role'],
-                    'status' => $activity['status'],
+                    'level' => $activity['level'],
                     'start_date' => now()->subDays(rand(30, 365)),
-                    'end_date' => $activity['status'] === 'Completed' ? now()->subDays(rand(1, 29)) : null,
+                    'end_date' => rand(0, 1) ? now()->subDays(rand(1, 29)) : null,
                     'description' => 'Participated in ' . $activity['name'] . ' as ' . $activity['role'],
+                    'achievements' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

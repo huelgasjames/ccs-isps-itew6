@@ -17,6 +17,7 @@ class Course extends Model
         'credits',
         'department',
         'level',
+        'year_level',
         'semester',
         'prerequisites',
         'active',
@@ -24,6 +25,7 @@ class Course extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'year_level' => 'integer',
     ];
 
     public function syllabi(): HasMany

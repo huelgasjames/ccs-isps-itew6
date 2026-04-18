@@ -2,47 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Talent;
 use Illuminate\Http\Request;
 
 class TalentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $talents = Talent::with('student.user')->get();
+        return response()->json($talents);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'talent_name' => 'required|string|max:100',
+        ]);
+
+        $talent = Talent::create($request->all());
+        return response()->json($talent->load('student.user'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Talent $talent)
     {
-        //
+        return response()->json($talent->load('student.user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Talent $talent)
     {
-        //
+        $request->validate([
+            'talent_name' => 'required|string|max:100',
+        ]);
+
+        $talent->update($request->all());
+        return response()->json($talent->load('student.user'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Talent $talent)
     {
-        //
+        $talent->delete();
+        return response()->json(null, 204);
     }
 }

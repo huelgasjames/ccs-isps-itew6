@@ -9,6 +9,8 @@ class StudentActivity extends Model
 {
     use HasFactory;
 
+    protected $table = 'student_activities';
+
     protected $fillable = [
         'student_id',
         'name',
@@ -22,9 +24,9 @@ class StudentActivity extends Model
     ];
 
     protected $casts = [
-        'achievements' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
+        'achievements' => 'array',
     ];
 
     public function student()

@@ -39,8 +39,14 @@ class AnnouncementController extends Controller
         // For public access, only show published announcements
         $query->where('status', 'published');
 
-        $announcements = $query->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 10));
+        // Check if request wants paginated data
+        $perPage = $request->get('per_page', 10);
+        if ($perPage === 'all') {
+            $announcements = $query->orderBy('created_at', 'desc')->get();
+        } else {
+            $announcements = $query->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+        }
 
         return response()->json($announcements);
     }
