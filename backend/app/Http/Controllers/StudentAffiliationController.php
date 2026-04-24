@@ -67,7 +67,7 @@ class StudentAffiliationController extends Controller
 
     public function getStudentAffiliations(Student $student)
     {
-        $affiliations = $student->affiliations()->with('student.user')->get();
+        $affiliations = $student->affiliations()->get();
         return response()->json($affiliations);
     }
 }

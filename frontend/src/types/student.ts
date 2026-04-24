@@ -84,7 +84,7 @@ export interface Skill {
 export interface Affiliation {
   id: number
   name: string
-  type: 'student_organization' | 'professional' | 'religious' | 'community' | 'academic' | 'other'
+  type: 'student_organization' | 'professional' | 'religious' | 'community' | 'academic' | 'sports' | 'other'
   role: string
   startDate: string
   endDate?: string

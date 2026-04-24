@@ -21,6 +21,18 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/student/dashboard',
+      name: 'student-dashboard',
+      component: () => import('../views/StudentDashboardView.vue'),
+      meta: { requiresAuth: true, roles: ['student'] }
+    },
+    {
+      path: '/faculty/dashboard',
+      name: 'faculty-dashboard',
+      component: () => import('../views/FacultyDashboardView.vue'),
+      meta: { requiresAuth: true, roles: ['professor'] }
+    },
+    {
       path: '/students',
       name: 'students',
       component: () => import('../views/students/StudentProfilingView.vue'),
@@ -213,8 +225,8 @@ router.beforeEach((to, from) => {
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     const role = authStore.user?.role || 'student'
     const dashboardRoute = role === 'admin' ? '/dashboard' : 
-                          role === 'professor' ? '/dashboard' : 
-                          '/dashboard'
+                          role === 'professor' ? '/faculty/dashboard' : 
+                          '/student/dashboard'
     return dashboardRoute
   }
   

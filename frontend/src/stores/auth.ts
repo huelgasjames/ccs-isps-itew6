@@ -158,9 +158,9 @@ export const useAuthStore = defineStore('auth', () => {
       case 'admin':
         return '/dashboard' // Future: '/admin/dashboard'
       case 'professor':
-        return '/dashboard' // Future: '/professor/dashboard'
+        return '/faculty/dashboard'
       case 'student':
-        return '/dashboard' // Future: '/student/dashboard'
+        return '/student/dashboard'
       default:
         return '/dashboard'
     }

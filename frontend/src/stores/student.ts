@@ -7,7 +7,8 @@ import type {
   CreateStudentRequest, 
   UpdateStudentRequest,
   DisplayMode,
-  StudentStatistics
+  StudentStatistics,
+  Violation
 } from '@/types/student'
 import api, { apiWithFallback } from '@/services/api'
 import { offlineService } from '@/services/offline'
@@ -21,10 +22,12 @@ export const useStudentStore = defineStore('student', () => {
   const filter = ref<StudentFilter>({})
   const displayMode = ref<DisplayMode>('table')
   const currentPage = ref(1)
-  const pageSize = ref(10)
+  const pageSize = ref(25)
   const totalStudents = ref(0)
   const totalPages = ref(0)
   const statistics = ref<StudentStatistics | null>(null)
+  const allSkills = ref<string[]>([]) // Store all unique skills
+  const allAffiliations = ref<string[]>([]) // Store all unique affiliations
 
   // Computed
   const filteredStudents = computed(() => {
@@ -129,6 +132,9 @@ export const useStudentStore = defineStore('student', () => {
         students.value = students.value.map(transformBackendStudent)
       }
       
+      // Fetch skills and affiliations for all students
+      await fetchAllStudentSkillsAndAffiliations()
+      
     } catch (err) {
       // If API is not available, return empty array for demo purposes
       if (err instanceof Error && (err.message.includes('Network Error') || err.message.includes('ERR_CONNECTION_REFUSED'))) {
@@ -148,6 +154,42 @@ export const useStudentStore = defineStore('student', () => {
 
   // Helper function to transform backend student data to frontend format
   const transformBackendStudent = (backendStudent: any): Student => {
+    // Transform skills if they exist in backend
+    const skills = backendStudent.skills ? backendStudent.skills.map((skill: any) => ({
+      id: skill.id || Date.now() + Math.random(),
+      name: skill.name || skill.skill_name || '',
+      category: skill.category || 'technical',
+      proficiency: skill.proficiency || 'intermediate',
+      certifications: skill.certifications || [],
+      yearsExperience: skill.years_experience,
+      lastUsed: skill.last_used
+    })) : []
+    
+    // Transform affiliations if they exist in backend
+    const affiliations = backendStudent.affiliations ? backendStudent.affiliations.map((affiliation: any) => ({
+      id: affiliation.id || Date.now() + Math.random(),
+      name: affiliation.name || affiliation.organization_name || '',
+      type: affiliation.type || 'student_organization',
+      role: affiliation.role || 'Member',
+      startDate: affiliation.start_date || affiliation.join_date || '',
+      endDate: affiliation.end_date,
+      position: affiliation.position,
+      description: affiliation.description
+    })) : []
+    
+    // Transform violations if they exist in backend
+    const violations = backendStudent.violations ? backendStudent.violations.map((violation: any) => ({
+      id: violation.id || Date.now() + Math.random(),
+      type: violation.type || violation.violation_type || '',
+      severity: violation.severity || 'minor',
+      description: violation.description || violation.violation_description || '',
+      date: violation.date || violation.violation_date || '',
+      status: violation.status || 'pending',
+      sanctions: violation.sanctions || [],
+      points: violation.points || 0,
+      reportedBy: violation.reported_by || violation.reporter || 'System'
+    })) : []
+    
     return {
       id: backendStudent.id,
       personalInfo: {
@@ -180,9 +222,9 @@ export const useStudentStore = defineStore('student', () => {
         advisor: 'TBD'
       },
       activities: [],
-      violations: [],
-      skills: [],
-      affiliations: [],
+      violations,
+      skills,
+      affiliations,
       createdAt: backendStudent.created_at || new Date().toISOString(),
       updatedAt: backendStudent.updated_at || new Date().toISOString(),
       isActive: true
@@ -499,6 +541,82 @@ export const useStudentStore = defineStore('student', () => {
     }
   }
 
+  // Fetch student skills from API
+  const fetchStudentSkills = async (studentId: number) => {
+    try {
+      const response = await api.get(`/students/${studentId}/skills`)
+      return response.data
+    } catch (err) {
+      console.error(`Failed to fetch skills for student ${studentId}:`, err)
+      return []
+    }
+  }
+
+  // Fetch student affiliations from API
+  const fetchStudentAffiliations = async (studentId: number) => {
+    try {
+      const response = await api.get(`/students/${studentId}/affiliations`)
+      return response.data
+    } catch (err) {
+      console.error(`Failed to fetch affiliations for student ${studentId}:`, err)
+      return []
+    }
+  }
+
+  // Fetch all skills and affiliations for all students
+  const fetchAllStudentSkillsAndAffiliations = async () => {
+    if (students.value.length === 0) return
+
+    const uniqueSkills = new Set<string>()
+    const uniqueAffiliations = new Set<string>()
+
+    for (const student of students.value) {
+      try {
+        // Fetch skills for this student
+        const skills = await fetchStudentSkills(student.id)
+        student.skills = skills.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          category: skill.category,
+          proficiency: skill.proficiency,
+          certifications: skill.certifications,
+          yearsExperience: skill.years_experience,
+          lastUsed: skill.last_used
+        }))
+
+        // Collect unique skill names
+        skills.forEach((skill: any) => {
+          uniqueSkills.add(skill.name)
+        })
+
+        // Fetch affiliations for this student
+        const affiliations = await fetchStudentAffiliations(student.id)
+        student.affiliations = affiliations.map((affiliation: any) => ({
+          id: affiliation.id,
+          name: affiliation.name,
+          type: affiliation.type,
+          role: affiliation.role,
+          startDate: affiliation.start_date,
+          endDate: affiliation.end_date,
+          position: affiliation.position,
+          description: affiliation.description
+        }))
+
+        // Collect unique affiliation names
+        affiliations.forEach((affiliation: any) => {
+          uniqueAffiliations.add(affiliation.name)
+        })
+
+      } catch (err) {
+        console.error(`Failed to fetch data for student ${student.id}:`, err)
+      }
+    }
+
+    // Update the reactive arrays
+    allSkills.value = Array.from(uniqueSkills).sort()
+    allAffiliations.value = Array.from(uniqueAffiliations).sort()
+  }
+
   const setFilter = (newFilter: Partial<StudentFilter>) => {
     filter.value = { ...filter.value, ...newFilter }
     currentPage.value = 1 // Reset to first page when filter changes
@@ -525,132 +643,306 @@ export const useStudentStore = defineStore('student', () => {
     error.value = null
   }
 
-  const generateSampleData = () => {
-    const sampleStudents: Student[] = [
-      {
-        id: 1,
-        personalInfo: {
-          firstName: 'John',
-          lastName: 'Doe',
-          studentId: '2021001',
-          email: 'john.doe@ccs.edu',
-          phone: '09123456789',
-          dateOfBirth: '2000-01-15',
-          age: 23,
-          gender: 'male',
-          address: '123 Main St',
-          city: 'Quezon City',
-          province: 'Metro Manila',
-          postalCode: '1100',
-          emergencyContact: {
-            name: 'Jane Doe',
-            relationship: 'Mother',
-            phone: '09123456788'
-          }
-        },
-        academicHistory: [],
-        academicStanding: {
-          currentYear: 3,
-          currentSemester: 'first',
-          currentGPA: 3.5,
-          totalUnits: 120,
-          standing: 'good',
-          advisor: 'Dr. Smith'
-        },
-        activities: [],
-        violations: [],
-        skills: [
-          { id: 1, name: 'JavaScript', category: 'technical', proficiency: 'advanced' },
-          { id: 2, name: 'Leadership', category: 'soft', proficiency: 'intermediate' }
-        ],
-        affiliations: [],
-        createdAt: '2023-01-01',
-        updatedAt: '2023-01-01',
-        isActive: true
-      },
-      {
-        id: 2,
-        personalInfo: {
-          firstName: 'Jane',
-          lastName: 'Smith',
-          studentId: '2021002',
-          email: 'jane.smith@ccs.edu',
-          phone: '09123456787',
-          dateOfBirth: '2000-05-20',
-          age: 23,
-          gender: 'female',
-          address: '456 Oak Ave',
-          city: 'Manila',
-          province: 'Metro Manila',
-          postalCode: '1000',
-          emergencyContact: {
-            name: 'Bob Smith',
-            relationship: 'Father',
-            phone: '09123456786'
-          }
-        },
-        academicHistory: [],
-        academicStanding: {
-          currentYear: 2,
-          currentSemester: 'second',
-          currentGPA: 3.8,
-          totalUnits: 80,
-          standing: 'good',
-          advisor: 'Dr. Johnson'
-        },
-        activities: [],
-        violations: [],
-        skills: [
-          { id: 3, name: 'Python', category: 'technical', proficiency: 'advanced' },
-          { id: 4, name: 'Communication', category: 'soft', proficiency: 'advanced' }
-        ],
-        affiliations: [],
-        createdAt: '2023-01-01',
-        updatedAt: '2023-01-01',
-        isActive: true
-      },
-      {
-        id: 3,
-        personalInfo: {
-          firstName: 'Mike',
-          lastName: 'Wilson',
-          studentId: '2021003',
-          email: 'mike.wilson@ccs.edu',
-          phone: '09123456785',
-          dateOfBirth: '2001-03-10',
-          age: 22,
-          gender: 'male',
-          address: '789 Pine Rd',
-          city: 'Pasig',
-          province: 'Metro Manila',
-          postalCode: '1600',
-          emergencyContact: {
-            name: 'Sarah Wilson',
-            relationship: 'Sister',
-            phone: '09123456784'
-          }
-        },
-        academicHistory: [],
-        academicStanding: {
-          currentYear: 1,
-          currentSemester: 'first',
-          currentGPA: 2.8,
-          totalUnits: 40,
-          standing: 'warning',
-          advisor: 'Dr. Brown'
-        },
-        activities: [],
-        violations: [],
-        skills: [
-          { id: 5, name: 'Basketball', category: 'sports', proficiency: 'intermediate' },
-          { id: 6, name: 'Programming', category: 'technical', proficiency: 'beginner' }
-        ],
-        affiliations: [],
-        createdAt: '2023-01-01',
-        updatedAt: '2023-01-01',
-        isActive: true
-      }
+  // Helper function to generate random affiliations
+  const generateRandomAffiliations = (studentId: number) => {
+    const allAffiliations = [
+      // Student Organizations
+      { name: 'Computer Science Society', type: 'student_organization', role: 'Member', position: 'Events Coordinator' },
+      { name: 'Programming Club', type: 'student_organization', role: 'Member', position: 'Treasurer' },
+      { name: 'Women in Tech', type: 'student_organization', role: 'President', position: 'Founder' },
+      { name: 'Debate Club', type: 'student_organization', role: 'Member', position: 'Secretary' },
+      { name: 'Student Council', type: 'student_organization', role: 'Member', position: 'Class Representative' },
+      { name: 'Tech Innovation Club', type: 'student_organization', role: 'Vice President', position: 'Technical Lead' },
+      { name: 'Entrepreneurship Society', type: 'student_organization', role: 'Member', position: 'Marketing Lead' },
+      { name: 'Data Science Club', type: 'student_organization', role: 'President', position: 'Founder' },
+      
+      // Academic Groups
+      { name: 'Honor Society', type: 'academic', role: 'Member', position: 'Academic Chair' },
+      { name: 'Research Lab', type: 'academic', role: 'Research Assistant', position: 'Lab Assistant' },
+      { name: 'Academic Team', type: 'academic', role: 'Member', position: 'Study Group Leader' },
+      { name: 'Scholarship Committee', type: 'academic', role: 'Member', position: 'Scholarship Coordinator' },
+      
+      // Sports Teams
+      { name: 'Basketball Varsity Team', type: 'sports', role: 'Member', position: 'Point Guard' },
+      { name: 'Football Team', type: 'sports', role: 'Member', position: 'Quarterback' },
+      { name: 'Volleyball Team', type: 'sports', role: 'Member', position: 'Setter' },
+      { name: 'Swimming Team', type: 'sports', role: 'Member', position: 'Team Captain' },
+      { name: 'Tennis Club', type: 'sports', role: 'Member', position: 'Team Captain' },
+      { name: 'Badminton Team', type: 'sports', role: 'Member', position: 'Doubles Partner' },
+      { name: 'Chess Club', type: 'sports', role: 'Member', position: 'Team Captain' },
+      
+      // Professional Organizations
+      { name: 'Tech Innovation Lab', type: 'professional', role: 'Lead Developer', position: 'CTO' },
+      { name: 'Software Development Association', type: 'professional', role: 'Member', position: 'Junior Developer' },
+      { name: 'IT Professionals Network', type: 'professional', role: 'Member', position: 'Network Administrator' },
+      { name: 'Web Developers Guild', type: 'professional', role: 'Member', position: 'Frontend Developer' },
+      { name: 'Data Science Association', type: 'professional', role: 'Member', position: 'Data Analyst' },
+      
+      // Community Organizations
+      { name: 'Community Outreach', type: 'community', role: 'Volunteer', position: 'Volunteer Coordinator' },
+      { name: 'Environmental Club', type: 'community', role: 'Member', position: 'Event Organizer' },
+      { name: 'Youth Mentoring Program', type: 'community', role: 'Mentor', position: 'Senior Mentor' },
+      { name: 'Food Bank Volunteers', type: 'community', role: 'Volunteer', position: 'Distribution Lead' },
+      { name: 'Senior Care Program', type: 'community', role: 'Volunteer', position: 'Care Assistant' },
+      
+      // Religious Groups
+      { name: 'Christian Fellowship', type: 'religious', role: 'Member', position: 'Youth Leader' },
+      { name: 'Muslim Student Association', type: 'religious', role: 'Member', position: 'Prayer Coordinator' },
+      { name: 'Bible Study Group', type: 'religious', role: 'Member', position: 'Group Leader' },
+      
+      // Other Organizations
+      { name: 'Alumni Association', type: 'other', role: 'Member', position: 'Student Representative' },
+      { name: 'International Students Club', type: 'other', role: 'Member', position: 'Cultural Ambassador' },
+      { name: 'Photography Club', type: 'other', role: 'Member', position: 'Photography Lead' },
+      { name: 'Music Club', type: 'other', role: 'Member', position: 'Band Leader' }
     ]
+
+    const affiliationCount = Math.floor(Math.random() * 3) + 1 // 1-3 affiliations per student
+    const selectedAffiliations: any[] = []
+    
+    // Randomly select affiliations
+    const shuffled = [...allAffiliations].sort(() => Math.random() - 0.5)
+    const chosen = shuffled.slice(0, affiliationCount)
+    
+    chosen.forEach((affiliation, index) => {
+      const startDate = new Date(Date.now() - Math.floor(Math.random() * 365 * 2) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      const endDate = Math.random() > 0.7 ? new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
+      
+      selectedAffiliations.push({
+        id: studentId * 200 + index,
+        name: affiliation.name,
+        type: affiliation.type,
+        role: affiliation.role,
+        startDate,
+        endDate,
+        position: affiliation.position,
+        description: `Active member of ${affiliation.name} since ${startDate}`
+      })
+    })
+    
+    return selectedAffiliations
+  }
+
+// Helper function to generate random skills
+  const generateRandomSkills = (studentId: number) => {
+    const allSkills = [
+      // Technical Skills
+      { name: 'JavaScript', category: 'technical', certifications: ['JavaScript Certification', 'React Developer'] },
+      { name: 'Python', category: 'technical', certifications: ['Python Developer Certificate'] },
+      { name: 'Java', category: 'technical', certifications: ['Oracle Certified Professional'] },
+      { name: 'TypeScript', category: 'technical', certifications: [] },
+      { name: 'React', category: 'technical', certifications: ['React Certification'] },
+      { name: 'Vue.js', category: 'technical', certifications: [] },
+      { name: 'Node.js', category: 'technical', certifications: [] },
+      { name: 'HTML/CSS', category: 'technical', certifications: ['Web Design Certificate'] },
+      { name: 'SQL', category: 'technical', certifications: [] },
+      { name: 'MongoDB', category: 'technical', certifications: [] },
+      { name: 'Docker', category: 'technical', certifications: ['Docker Certification'] },
+      { name: 'Git', category: 'technical', certifications: [] },
+      { name: 'Machine Learning', category: 'technical', certifications: ['ML Certificate'] },
+      { name: 'Data Analysis', category: 'technical', certifications: [] },
+      { name: 'Cloud Computing', category: 'technical', certifications: ['AWS Certification'] },
+      
+      // Soft Skills
+      { name: 'Leadership', category: 'soft', certifications: [] },
+      { name: 'Communication', category: 'soft', certifications: ['Public Speaking Certificate'] },
+      { name: 'Teamwork', category: 'soft', certifications: [] },
+      { name: 'Problem Solving', category: 'soft', certifications: [] },
+      { name: 'Time Management', category: 'soft', certifications: [] },
+      { name: 'Critical Thinking', category: 'soft', certifications: [] },
+      { name: 'Creativity', category: 'soft', certifications: [] },
+      { name: 'Adaptability', category: 'soft', certifications: [] },
+      { name: 'Project Management', category: 'soft', certifications: ['PMP Certification'] },
+      { name: 'Mentoring', category: 'soft', certifications: [] },
+      
+      // Sports Skills
+      { name: 'Basketball', category: 'sports', certifications: [] },
+      { name: 'Football', category: 'sports', certifications: [] },
+      { name: 'Volleyball', category: 'sports', certifications: [] },
+      { name: 'Swimming', category: 'sports', certifications: [] },
+      { name: 'Tennis', category: 'sports', certifications: [] },
+      { name: 'Badminton', category: 'sports', certifications: [] },
+      
+      // Creative Skills
+      { name: 'Graphic Design', category: 'creative', certifications: ['Adobe Certified'] },
+      { name: 'Video Editing', category: 'creative', certifications: [] },
+      { name: 'Photography', category: 'creative', certifications: [] },
+      { name: 'Writing', category: 'creative', certifications: [] },
+      { name: 'Music Production', category: 'creative', certifications: [] },
+      
+      // Language Skills
+      { name: 'English', category: 'language', certifications: ['IELTS', 'TOEFL'] },
+      { name: 'Spanish', category: 'language', certifications: [] },
+      { name: 'French', category: 'language', certifications: [] },
+      { name: 'Mandarin', category: 'language', certifications: [] },
+      { name: 'Japanese', category: 'language', certifications: [] }
+    ]
+
+    const proficiencies: Array<'beginner' | 'intermediate' | 'advanced' | 'expert'> = ['beginner', 'intermediate', 'advanced', 'expert']
+    const skillCount = Math.floor(Math.random() * 4) + 3 // 3-6 skills per student
+    const selectedSkills: any[] = []
+    
+    // Randomly select skills
+    const shuffled = [...allSkills].sort(() => Math.random() - 0.5)
+    const chosen = shuffled.slice(0, skillCount)
+    
+    chosen.forEach((skill, index) => {
+      const proficiency = proficiencies[Math.floor(Math.random() * proficiencies.length)]
+      const yearsExperience = Math.floor(Math.random() * 5) + 1 // 1-5 years
+      const lastUsed = new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      
+      selectedSkills.push({
+        id: studentId * 100 + index,
+        name: skill.name,
+        category: skill.category,
+        proficiency,
+        certifications: Math.random() > 0.6 ? skill.certifications : [],
+        yearsExperience,
+        lastUsed
+      })
+    })
+    
+    return selectedSkills
+  }
+
+  const generateSampleData = () => {
+    console.log('Generating 1000 random students...')
+    const startTime = performance.now()
+    
+    const firstNames = ['Juan', 'Maria', 'Jose', 'Ana', 'Carlos', 'Sofia', 'Miguel', 'Isabella', 'Antonio', 'Carmen', 
+                       'Francisco', 'Rosa', 'Luis', 'Patricia', 'Diego', 'Laura', 'Manuel', 'Elena', 'Pedro', 'Teresa',
+                       'Javier', 'Monica', 'Ricardo', 'Claudia', 'Alberto', 'Gabriela', 'Roberto', 'Veronica', 'Fernando', 'Luz',
+                       'Rafael', 'Adriana', 'Santiago', 'Mariana', 'Eduardo', 'Daniela', 'Alejandro', 'Valeria', 'Jorge', 'Paola']
+    
+    const lastNames = ['Garcia', 'Rodriguez', 'Hernandez', 'Lopez', 'Martinez', 'Gonzalez', 'Perez', 'Sanchez', 'Ramirez', 'Cruz',
+                      'Flores', 'Morales', 'Reyes', 'Jimenez', 'Gomez', 'Mendoza', 'Diaz', 'Torres', 'Vargas', 'Castillo',
+                      'Silva', 'Molina', 'Ortiz', 'Delgado', 'Roman', 'Serrano', 'Alvarez', 'Cortes', 'Guzman', 'Vega']
+    
+    const cities = ['Quezon City', 'Manila', 'Caloocan', 'Pasig', 'Makati', 'Taguig', 'Pasay', 'Mandaluyong', 'Marikina', 'Las Piñas',
+                   'Muntinlupa', 'Parañaque', 'San Juan', 'Valenzuela', 'Malabon', 'Navotas', 'Cainta', 'Taytay', 'Antipolo', 'San Pedro']
+    
+    const provinces = ['Metro Manila', 'Laguna', 'Cavite', 'Rizal', 'Bulacan', 'Pampanga', 'Batangas', 'Quezon', 'Nueva Ecija']
+    
+    const violationTypes = ['Late Submission', 'Absence', 'Cheating', 'Plagiarism', 'Disruptive Behavior', 'Dress Code Violation', 
+                           'Mobile Phone Use', 'Incomplete Requirements', 'Poor Attendance', 'Academic Dishonesty']
+    
+    const violationSeverities: ('minor' | 'major' | 'critical')[] = ['minor', 'major', 'critical']
+    const violationStatuses: ('pending' | 'resolved' | 'under_review')[] = ['pending', 'resolved', 'under_review']
+    const academicStandings: ('good' | 'warning' | 'probation')[] = ['good', 'warning', 'probation']
+    const semesters = ['first', 'second']
+    const advisors = ['Dr. Smith', 'Dr. Johnson', 'Dr. Brown', 'Dr. Davis', 'Dr. Martinez', 'Dr. Wilson', 'Dr. Taylor', 'Dr. Anderson']
+    
+    const sampleStudents: Student[] = []
+    
+    for (let i = 1; i <= 1000; i++) {
+      const firstName: string = firstNames[Math.floor(Math.random() * firstNames.length)] || 'Student'
+      const lastName: string = lastNames[Math.floor(Math.random() * lastNames.length)] || 'Name'
+      const city: string = cities[Math.floor(Math.random() * cities.length)] || 'Quezon City'
+      const province: string = provinces[Math.floor(Math.random() * provinces.length)] || 'Metro Manila'
+      const gender: 'male' | 'female' = Math.random() > 0.5 ? 'male' : 'female'
+      const year = Math.floor(Math.random() * 4) + 1
+      const semester: 'first' | 'second' = semesters[Math.floor(Math.random() * semesters.length)] as 'first' | 'second'
+      const gpa = (Math.random() * 2 + 2).toFixed(2)
+      const standing: 'good' | 'warning' | 'probation' = academicStandings[Math.floor(Math.random() * academicStandings.length)] || 'good'
+      const advisor: string = advisors[Math.floor(Math.random() * advisors.length)] || 'Dr. Smith'
+      
+      const birthYear = 2000 + Math.floor(Math.random() * 5)
+      const birthMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')
+      const birthDay = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')
+      const dateOfBirth = `${birthYear}-${birthMonth}-${birthDay}`
+      const age = new Date().getFullYear() - birthYear
+      
+      const studentId = `20${String(birthYear).slice(2)}${String(i).padStart(4, '0')}`
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@ccs.edu`
+      const phone = `09${Math.floor(Math.random() * 900000000) + 100000000}`
+      
+      const streetNumber = Math.floor(Math.random() * 9999) + 1
+      const streetNames = ['Main St', 'Oak Ave', 'Pine Rd', 'Elm St', 'Maple Ave', 'Cedar Rd', 'Walnut St', 'Birch Ave', 'Ash St', 'Spruce Rd']
+      const street = streetNames[Math.floor(Math.random() * streetNames.length)] || 'Main St'
+      const address = `${streetNumber} ${street}`
+      const postalCode = String(Math.floor(Math.random() * 9000) + 1000)
+      
+      const emergencyNames = gender === 'male' ? ['Maria', 'Ana', 'Sofia', 'Carmen', 'Laura'] : ['Juan', 'Jose', 'Carlos', 'Miguel', 'Antonio']
+      const emergencyName = emergencyNames[Math.floor(Math.random() * emergencyNames.length)]
+      const emergencyRelationship = Math.random() > 0.5 ? 'Mother' : 'Father'
+      const emergencyPhone = `09${Math.floor(Math.random() * 900000000) + 100000000}`
+      
+      const violations: Violation[] = []
+      const numViolations = Math.random() > 0.7 ? Math.floor(Math.random() * 3) + 1 : 0
+      
+      for (let j = 0; j < numViolations; j++) {
+        const violationDate: string = new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1)
+          .toISOString().split('T')[0] || '2023-01-01'
+        
+        violations.push({
+          id: i * 10 + j,
+          type: violationTypes[Math.floor(Math.random() * violationTypes.length)] || 'Other',
+          severity: violationSeverities[Math.floor(Math.random() * violationSeverities.length)] || 'minor',
+          description: `Violation recorded for ${firstName} ${lastName}`,
+          date: violationDate,
+          status: violationStatuses[Math.floor(Math.random() * violationStatuses.length)] || 'pending',
+          points: Math.floor(Math.random() * 10) + 1,
+          reportedBy: advisors[Math.floor(Math.random() * advisors.length)] || 'Dr. Smith'
+        })
+      }
+      
+      sampleStudents.push({
+        id: i,
+        personalInfo: {
+          firstName,
+          lastName,
+          studentId,
+          email,
+          phone,
+          dateOfBirth,
+          age,
+          gender,
+          address,
+          city,
+          province,
+          postalCode,
+          emergencyContact: {
+            name: `${emergencyName} ${lastName}`,
+            relationship: emergencyRelationship,
+            phone: emergencyPhone
+          }
+        },
+        academicHistory: [],
+        academicStanding: {
+          currentYear: year,
+          currentSemester: semester,
+          currentGPA: parseFloat(gpa),
+          totalUnits: year * 40,
+          standing,
+          advisor
+        },
+        activities: [],
+        violations,
+        skills: generateRandomSkills(i),
+        affiliations: generateRandomAffiliations(i),
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+        isActive: true
+      })
+    }
+    
+    // Collect all unique skills and affiliations from generated students
+    const uniqueSkills = new Set<string>()
+    const uniqueAffiliations = new Set<string>()
+    sampleStudents.forEach(student => {
+      student.skills.forEach(skill => {
+        uniqueSkills.add(skill.name)
+      })
+      student.affiliations.forEach(affiliation => {
+        uniqueAffiliations.add(affiliation.name)
+      })
+    })
+    allSkills.value = Array.from(uniqueSkills).sort()
+    allAffiliations.value = Array.from(uniqueAffiliations).sort()
+    
+    const endTime = performance.now()
+    console.log(`Generated ${sampleStudents.length} random students in ${(endTime - startTime).toFixed(2)}ms`)
+    console.log(`Unique skills: ${allSkills.value.length}, Unique affiliations: ${allAffiliations.value.length}`)
     
     students.value = sampleStudents
     totalStudents.value = sampleStudents.length
@@ -670,6 +962,8 @@ export const useStudentStore = defineStore('student', () => {
     totalStudents,
     totalPages,
     statistics,
+    allSkills,
+    allAffiliations,
     
     // Computed
     filteredStudents,
@@ -693,6 +987,9 @@ export const useStudentStore = defineStore('student', () => {
     addActivityOffline,
     fetchStatistics,
     fetchStatisticsOffline,
+    fetchStudentSkills,
+    fetchStudentAffiliations,
+    fetchAllStudentSkillsAndAffiliations,
     setFilter,
     clearFilter,
     setDisplayMode,

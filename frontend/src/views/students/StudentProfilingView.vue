@@ -79,67 +79,6 @@
       </div>
     </div>
 
-    <!-- Academic Standing Analytics -->
-    <div class="analytics-section">
-      <h2>Academic Standing Analytics</h2>
-      <div class="standing-grid">
-        <div class="standing-card excellent">
-          <div class="standing-header">
-            <div class="standing-icon"> excellence</div>
-            <h4>Excellent Standing</h4>
-          </div>
-          <div class="standing-stats">
-            <div class="standing-number">{{ excellentStandingCount }}</div>
-            <div class="standing-percentage">{{ ((excellentStandingCount / totalStudents) * 100).toFixed(1) }}%</div>
-          </div>
-          <div class="standing-progress">
-            <div class="progress-bar" :style="{ width: ((excellentStandingCount / totalStudents) * 100) + '%' }"></div>
-          </div>
-        </div>
-
-        <div class="standing-card good">
-          <div class="standing-header">
-            <div class="standing-icon"> good</div>
-            <h4>Good Standing</h4>
-          </div>
-          <div class="standing-stats">
-            <div class="standing-number">{{ goodStandingCount }}</div>
-            <div class="standing-percentage">{{ ((goodStandingCount / totalStudents) * 100).toFixed(1) }}%</div>
-          </div>
-          <div class="standing-progress">
-            <div class="progress-bar" :style="{ width: ((goodStandingCount / totalStudents) * 100) + '%' }"></div>
-          </div>
-        </div>
-
-        <div class="standing-card average">
-          <div class="standing-header">
-            <div class="standing-icon"> avg</div>
-            <h4>Average Standing</h4>
-          </div>
-          <div class="standing-stats">
-            <div class="standing-number">{{ averageStandingCount }}</div>
-            <div class="standing-percentage">{{ ((averageStandingCount / totalStudents) * 100).toFixed(1) }}%</div>
-          </div>
-          <div class="standing-progress">
-            <div class="progress-bar" :style="{ width: ((averageStandingCount / totalStudents) * 100) + '%' }"></div>
-          </div>
-        </div>
-
-        <div class="standing-card probation">
-          <div class="standing-header">
-            <div class="standing-icon"> prob</div>
-            <h4>On Probation</h4>
-          </div>
-          <div class="standing-stats">
-            <div class="standing-number">{{ probationCount }}</div>
-            <div class="standing-percentage">{{ ((probationCount / totalStudents) * 100).toFixed(1) }}%</div>
-          </div>
-          <div class="standing-progress">
-            <div class="progress-bar" :style="{ width: ((probationCount / totalStudents) * 100) + '%' }"></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Year Level Distribution -->
     <div class="analytics-section">
@@ -187,7 +126,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search by name or email..."
+          placeholder="Search by name, email, skills, affiliations, violations, or courses..."
           class="search-input"
         />
       </div>
@@ -208,6 +147,32 @@
           <option value="probation">Probation</option>
         </select>
       </div>
+      <div class="filter-group">
+        <select v-model="selectedSkill" class="filter-select">
+          <option value="">All Skills</option>
+          <option v-for="skill in availableSkillsList" :key="skill" :value="skill">
+            {{ skill }}
+          </option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <select v-model="selectedAffiliation" class="filter-select">
+
+          
+          <option value="">All Affiliations</option>
+          <option v-for="affiliation in availableAffiliationsList" :key="affiliation" :value="affiliation">
+            {{ affiliation }}
+          </option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <select v-model="selectedViolationStatus" class="filter-select">
+          <option value="">All Violation Status</option>
+          <option value="pending">Pending</option>
+          <option value="resolved">Resolved</option>
+          <option value="under_review">Under Review</option>
+        </select>
+      </div>
       <button @click="resetFilters" class="btn btn-secondary">
         Reset Filters
       </button>
@@ -226,6 +191,9 @@
             <th>Email</th>
             <th>Year Level</th>
             <th>Academic Standing</th>
+            <th>Skills</th>
+            <th>Affiliations</th>
+            <th>Violations</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -239,6 +207,41 @@
               <span :class="['status-badge', student.academicStanding.standing]">
                 {{ formatStanding(student.academicStanding.standing) }}
               </span>
+            </td>
+            <td>
+              <div class="skills-tags">
+                <span v-for="skill in student.skills.slice(0, 2)" :key="skill.id" class="skill-tag">
+                  {{ skill.name }}
+                </span>
+                <span v-if="student.skills.length > 2" class="more-skills">
+                  +{{ student.skills.length - 2 }} more
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="affiliations-tags">
+                <span v-for="affiliation in student.affiliations.slice(0, 2)" :key="affiliation.id" class="affiliation-tag">
+                  {{ affiliation.name }}
+                </span>
+                <span v-if="student.affiliations.length > 2" class="more-affiliations">
+                  +{{ student.affiliations.length - 2 }} more
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="violations-info">
+                <span :class="['violation-count', getViolationClass(student.violations)]">
+                  {{ student.violations.length }} violations
+                </span>
+                <div v-if="student.violations.length > 0" class="violation-types">
+                  <span v-for="(violation, index) in student.violations.slice(0, 2)" :key="violation.id" class="violation-type">
+                    {{ violation.type }}<span v-if="index < Math.min(student.violations.length - 1, 1)">,</span>
+                  </span>
+                  <span v-if="student.violations.length > 2" class="more-violations">
+                    +{{ student.violations.length - 2 }} more
+                  </span>
+                </div>
+              </div>
             </td>
             <td>
               <router-link :to="`/students/${student.id}`" class="btn btn-sm btn-info">
@@ -290,10 +293,39 @@ const localFilter = ref<StudentFilter>({
 const searchQuery = ref('')
 const selectedYear = ref('')
 const selectedStanding = ref('')
+const selectedSkill = ref('')
+const selectedAffiliation = ref('')
+const selectedViolationStatus = ref('')
 
 // Available options for filters
-const availableSkills = ref(['basketball', 'programming', 'python', 'javascript', 'leadership', 'communication'])
+const availableSkills = ref([
+  'JavaScript', 'Python', 'Java', 'C++', 'PHP', 'React', 'Vue.js', 'Node.js', 
+  'HTML/CSS', 'SQL', 'MongoDB', 'Docker', 'Git', 'Machine Learning', 'Data Analysis', 
+  'UI/UX Design', 'Laravel', 'Angular', 'TypeScript', 'Flutter', 'Swift', 'Kotlin', 
+  'AWS', 'Azure', 'Google Cloud', 'TensorFlow', 'PyTorch', 'Leadership', 'Communication', 'Teamwork'
+])
 const availableActivities = ref(['basketball', 'volunteer', 'organization', 'sports', 'leadership'])
+
+// Computed lists for filter dropdowns
+const availableSkillsList = computed(() => {
+  const allSkills = new Set<string>()
+  studentStore.students.forEach(student => {
+    student.skills.forEach(skill => {
+      allSkills.add(skill.name)
+    })
+  })
+  return Array.from(allSkills).sort()
+})
+
+const availableAffiliationsList = computed(() => {
+  const allAffiliations = new Set<string>()
+  studentStore.students.forEach(student => {
+    student.affiliations.forEach(affiliation => {
+      allAffiliations.add(affiliation.name)
+    })
+  })
+  return Array.from(allAffiliations).sort()
+})
 
 // Computed
 const {
@@ -407,14 +439,42 @@ const availableYears = computed(() => {
 const filteredStudentsList = computed(() => {
   let filtered = studentStore.students
 
-  // Search filter
+  // Search filter - now includes skills, affiliations, violations, and courses
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(student =>
-      student.personalInfo.firstName.toLowerCase().includes(query) ||
-      student.personalInfo.lastName.toLowerCase().includes(query) ||
-      student.personalInfo.email.toLowerCase().includes(query)
-    )
+    filtered = filtered.filter(student => {
+      // Basic info search
+      const basicMatch = 
+        student.personalInfo.firstName.toLowerCase().includes(query) ||
+        student.personalInfo.lastName.toLowerCase().includes(query) ||
+        student.personalInfo.email.toLowerCase().includes(query)
+      
+      // Skills search
+      const skillsMatch = student.skills.some(skill => 
+        skill.name.toLowerCase().includes(query) ||
+        skill.category.toLowerCase().includes(query)
+      )
+      
+      // Affiliations search
+      const affiliationsMatch = student.affiliations.some(affiliation => 
+        affiliation.name.toLowerCase().includes(query) ||
+        affiliation.type.toLowerCase().includes(query)
+      )
+      
+      // Violations search
+      const violationsMatch = student.violations.some(violation => 
+        violation.type.toLowerCase().includes(query) ||
+        violation.description.toLowerCase().includes(query)
+      )
+      
+      // Courses search (placeholder for when enrolled courses are added)
+      // const coursesMatch = student.enrolledCourses?.some(course => 
+      //   course.courseName.toLowerCase().includes(query) ||
+      //   course.courseCode.toLowerCase().includes(query)
+      // ) || false
+      
+      return basicMatch || skillsMatch || affiliationsMatch || violationsMatch // || coursesMatch
+    })
   }
 
   // Year filter
@@ -425,6 +485,27 @@ const filteredStudentsList = computed(() => {
   // Standing filter
   if (selectedStanding.value) {
     filtered = filtered.filter(student => student.academicStanding.standing === selectedStanding.value)
+  }
+  
+  // Skill filter
+  if (selectedSkill.value) {
+    filtered = filtered.filter(student => 
+      student.skills.some(skill => skill.name === selectedSkill.value)
+    )
+  }
+  
+  // Affiliation filter
+  if (selectedAffiliation.value) {
+    filtered = filtered.filter(student => 
+      student.affiliations.some(affiliation => affiliation.name === selectedAffiliation.value)
+    )
+  }
+  
+  // Violation status filter
+  if (selectedViolationStatus.value) {
+    filtered = filtered.filter(student => 
+      student.violations.some(violation => violation.status === selectedViolationStatus.value)
+    )
   }
 
   return filtered
@@ -610,6 +691,19 @@ const resetFilters = () => {
   searchQuery.value = ''
   selectedYear.value = ''
   selectedStanding.value = ''
+  selectedSkill.value = ''
+  selectedAffiliation.value = ''
+  selectedViolationStatus.value = ''
+}
+
+// Helper methods for new columns
+const getViolationClass = (violations: any[]) => {
+  if (violations.length === 0) return 'no-violations'
+  const hasCritical = violations.some(v => v.severity === 'critical')
+  const hasMajor = violations.some(v => v.severity === 'major')
+  if (hasCritical) return 'critical-violations'
+  if (hasMajor) return 'major-violations'
+  return 'minor-violations'
 }
 
 const archiveStudent = async (studentId: number) => {

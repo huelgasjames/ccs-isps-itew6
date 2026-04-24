@@ -53,6 +53,51 @@ Route::get('/test-users', function () {
     }
 });
 
+Route::get('/test-student-data', function () {
+    try {
+        $students = \App\Models\Student::with(['skills', 'affiliations'])->limit(3)->get();
+        
+        $result = [];
+        foreach ($students as $student) {
+            $result[] = [
+                'student_id' => $student->id,
+                'name' => $student->first_name . ' ' . $student->last_name,
+                'skills_count' => $student->skills->count(),
+                'affiliations_count' => $student->affiliations->count(),
+                'skills' => $student->skills->map(function($skill) {
+                    return [
+                        'id' => $skill->id,
+                        'name' => $skill->name,
+                        'category' => $skill->category,
+                        'proficiency' => $skill->proficiency
+                    ];
+                }),
+                'affiliations' => $student->affiliations->map(function($affiliation) {
+                    return [
+                        'id' => $affiliation->id,
+                        'name' => $affiliation->name,
+                        'type' => $affiliation->type,
+                        'role' => $affiliation->role,
+                        'start_date' => $affiliation->start_date
+                    ];
+                })
+            ];
+        }
+        
+        return response()->json([
+            'students_with_data' => $result,
+            'total_students' => \App\Models\Student::count(),
+            'total_skills' => \App\Models\StudentSkill::count(),
+            'total_affiliations' => \App\Models\StudentAffiliation::count()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware(['demo.auth', 'auth:sanctum']);
 Route::get('/me', [AuthController::class, 'me'])->middleware(['demo.auth', 'auth:sanctum']);
@@ -86,6 +131,10 @@ Route::post('/professors/generate-sample-data', [ProfessorController::class, 'ge
 
 // Demo routes - handle demo tokens without sanctum
 Route::middleware('demo.auth')->group(function () {
+    // Student skills and affiliations routes (for testing)
+    Route::get('/students/{student}/skills', [SkillController::class, 'getStudentSkills']);
+    Route::get('/students/{student}/affiliations', [StudentAffiliationController::class, 'getStudentAffiliations']);
+    
     // Courses routes
     Route::apiResource('courses', CourseController::class);
     Route::get('/courses/analytics', [CourseController::class, 'analytics']);
@@ -136,6 +185,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/students/{student}/activities', [StudentActivityController::class, 'getStudentActivities']);
     Route::get('/students/{student}/history', [StudentAcademicHistoryController::class, 'getStudentHistory']);
     Route::get('/students/{student}/affiliations', [StudentAffiliationController::class, 'getStudentAffiliations']);
+    Route::get('/students/{student}/skills', [SkillController::class, 'getStudentSkills']);
     
     // Event specific routes
     Route::post('/events/{event}/register', [EventController::class, 'register']);

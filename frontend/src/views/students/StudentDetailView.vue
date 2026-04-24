@@ -22,31 +22,31 @@
           <h2>Basic Information</h2>
           <div class="detail-row">
             <span class="label">Student Number:</span>
-            <span class="value">{{ student.student_number }}</span>
+            <span class="value">{{ student.personalInfo.studentId }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Full Name:</span>
-            <span class="value">{{ student.first_name }} {{ student.middle_name }} {{ student.last_name }}</span>
+            <span class="value">{{ student.personalInfo.firstName }} {{ student.personalInfo.middleName }} {{ student.personalInfo.lastName }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Email:</span>
-            <span class="value">{{ student.user?.email }}</span>
+            <span class="value">{{ student.personalInfo.email }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Phone:</span>
-            <span class="value">{{ student.phone || 'N/A' }}</span>
+            <span class="value">{{ student.personalInfo.phone || 'N/A' }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Date of Birth:</span>
-            <span class="value">{{ formatDate(student.date_of_birth || '') }}</span>
+            <span class="value">{{ formatDate(student.personalInfo.dateOfBirth || '') }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Gender:</span>
-            <span class="value">{{ capitalize(student.gender || '') }}</span>
+            <span class="value">{{ capitalize(student.personalInfo.gender || '') }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">City:</span>
-            <span class="value">{{ student.city || 'N/A' }}</span>
+            <span class="label">Address:</span>
+            <span class="value">{{ student.personalInfo.address }}, {{ student.personalInfo.city }}, {{ student.personalInfo.province }} {{ student.personalInfo.postalCode }}</span>
           </div>
         </div>
 
@@ -54,19 +54,31 @@
           <h2>Academic Information</h2>
           <div class="detail-row">
             <span class="label">Year Level:</span>
-            <span class="value">{{ student.year_level }}{{ getYearSuffix(student.year_level) }} Year</span>
+            <span class="value">{{ student.academicStanding.currentYear }}{{ getYearSuffix(student.academicStanding.currentYear) }} Year</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Semester:</span>
+            <span class="value">{{ capitalize(student.academicStanding.currentSemester) }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Academic Standing:</span>
             <span class="value">
-              <span :class="['status-badge', student.academic_standing]">
-                {{ formatStanding(student.academic_standing) }}
+              <span :class="['status-badge', student.academicStanding.standing]">
+                {{ formatStanding(student.academicStanding.standing) }}
               </span>
             </span>
           </div>
           <div class="detail-row">
             <span class="label">GPA:</span>
-            <span class="value">{{ student.gpa || 'N/A' }}</span>
+            <span class="value">{{ student.academicStanding.currentGPA || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total Units:</span>
+            <span class="value">{{ student.academicStanding.totalUnits || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Academic Advisor:</span>
+            <span class="value">{{ student.academicStanding.advisor || 'N/A' }}</span>
           </div>
         </div>
 
@@ -74,11 +86,15 @@
           <h2>Emergency Contact</h2>
           <div class="detail-row">
             <span class="label">Contact Name:</span>
-            <span class="value">{{ student.emergency_contact_name || 'N/A' }}</span>
+            <span class="value">{{ student.personalInfo.emergencyContact.name || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Relationship:</span>
+            <span class="value">{{ student.personalInfo.emergencyContact.relationship || 'N/A' }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Contact Phone:</span>
-            <span class="value">{{ student.emergency_contact_phone || 'N/A' }}</span>
+            <span class="value">{{ student.personalInfo.emergencyContact.phone || 'N/A' }}</span>
           </div>
         </div>
 
@@ -86,10 +102,18 @@
           <h2>Skills ({{ student.skills?.length || 0 }})</h2>
           <div v-if="student.skills && student.skills.length > 0" class="skills-list">
             <div v-for="skill in student.skills" :key="skill.id" class="skill-item">
-              <strong>{{ skill.name }}</strong>
-              <span>Category: {{ skill.category }}</span>
-              <span>Proficiency: {{ skill.proficiency }}</span>
-              <span v-if="skill.certifications">Certifications: {{ skill.certifications }}</span>
+              <div class="skill-header">
+                <strong>{{ skill.name }}</strong>
+                <span :class="['proficiency-badge', skill.proficiency]">{{ skill.proficiency }}</span>
+              </div>
+              <div class="skill-details">
+                <span>Category: {{ skill.category }}</span>
+                <span v-if="skill.yearsExperience">Experience: {{ skill.yearsExperience }} years</span>
+                <span v-if="skill.certifications && skill.certifications.length > 0">
+                  Certifications: {{ skill.certifications.join(', ') }}
+                </span>
+                <span v-if="skill.lastUsed">Last Used: {{ formatDate(skill.lastUsed) }}</span>
+              </div>
             </div>
           </div>
           <p v-else class="no-data">No skills recorded</p>
@@ -102,22 +126,22 @@
               <strong>{{ activity.name }}</strong>
               <span>Type: {{ activity.type }}</span>
               <span>Role: {{ activity.role }}</span>
-              <span v-if="activity.start_date">From: {{ formatDate(activity.start_date) }}</span>
-              <span v-if="activity.end_date">To: {{ formatDate(activity.end_date) }}</span>
+              <span v-if="activity.startDate">From: {{ formatDate(activity.startDate) }}</span>
+              <span v-if="activity.endDate">To: {{ formatDate(activity.endDate) }}</span>
             </div>
           </div>
           <p v-else class="no-data">No activities recorded</p>
         </div>
 
         <div class="detail-section">
-          <h2>Academic History ({{ student.academic_history?.length || 0 }})</h2>
-          <div v-if="student.academic_history && student.academic_history.length > 0" class="history-list">
-            <div v-for="history in student.academic_history" :key="history.id" class="history-item">
-              <strong>{{ history.school_name }}</strong>
+          <h2>Academic History ({{ student.academicHistory?.length || 0 }})</h2>
+          <div v-if="student.academicHistory && student.academicHistory.length > 0" class="history-list">
+            <div v-for="history in student.academicHistory" :key="history.id" class="history-item">
+              <strong>{{ history.schoolName }}</strong>
               <span>{{ history.degree }} in {{ history.major }}</span>
               <span>GPA: {{ history.gpa }}</span>
               <span>Status: {{ history.status }}</span>
-              <span>{{ formatDate(history.start_date) }} - {{ formatDate(history.end_date) }}</span>
+              <span>{{ formatDate(history.startDate || '') }} - {{ formatDate(history.endDate || '') }}</span>
               <span v-if="history.honors && history.honors.length > 0">Honors: {{ history.honors.join(', ') }}</span>
             </div>
           </div>
@@ -128,11 +152,17 @@
           <h2>Affiliations ({{ student.affiliations?.length || 0 }})</h2>
           <div v-if="student.affiliations && student.affiliations.length > 0" class="affiliations-list">
             <div v-for="affiliation in student.affiliations" :key="affiliation.id" class="affiliation-item">
-              <strong>{{ affiliation.name }}</strong>
-              <span>Type: {{ affiliation.type }}</span>
-              <span>Role: {{ affiliation.role }}</span>
-              <span v-if="affiliation.position">Position: {{ affiliation.position }}</span>
-              <span v-if="affiliation.start_date">Since: {{ formatDate(affiliation.start_date) }}</span>
+              <div class="affiliation-header">
+                <strong>{{ affiliation.name }}</strong>
+                <span :class="['type-badge', affiliation.type]">{{ affiliation.type.replace('_', ' ') }}</span>
+              </div>
+              <div class="affiliation-details">
+                <span>Role: {{ affiliation.role }}</span>
+                <span v-if="affiliation.position">Position: {{ affiliation.position }}</span>
+                <span v-if="affiliation.startDate">Since: {{ formatDate(affiliation.startDate) }}</span>
+                <span v-if="affiliation.endDate">Until: {{ formatDate(affiliation.endDate) }}</span>
+                <span v-if="affiliation.description">{{ affiliation.description }}</span>
+              </div>
             </div>
           </div>
           <p v-else class="no-data">No affiliations recorded</p>
@@ -141,13 +171,21 @@
         <div class="detail-section">
           <h2>Violations ({{ student.violations?.length || 0 }})</h2>
           <div v-if="student.violations && student.violations.length > 0" class="violations-list">
-            <div v-for="violation in student.violations" :key="violation.id" class="violation-item">
-              <strong>{{ violation.type }}</strong>
-              <span>{{ violation.description }}</span>
-              <span>Date: {{ formatDate(violation.date) }}</span>
-              <span :class="['severity', violation.severity]">Severity: {{ violation.severity }}</span>
-              <span>Status: {{ violation.status }}</span>
-              <span v-if="violation.consequence">Consequence: {{ violation.consequence }}</span>
+            <div v-for="violation in student.violations" :key="violation.id" :class="['violation-item', violation.severity]">
+              <div class="violation-header">
+                <strong>{{ violation.type }}</strong>
+                <span :class="['severity-badge', violation.severity]">{{ violation.severity }}</span>
+                <span :class="['status-badge', violation.status]">{{ violation.status.replace('_', ' ') }}</span>
+              </div>
+              <div class="violation-details">
+                <span>{{ violation.description }}</span>
+                <span>Date: {{ formatDate(violation.date) }}</span>
+                <span>Points: {{ violation.points }}</span>
+                <span>Reported by: {{ violation.reportedBy }}</span>
+                <span v-if="violation.sanctions && violation.sanctions.length > 0">
+                  Sanctions: {{ violation.sanctions.join(', ') }}
+                </span>
+              </div>
             </div>
           </div>
           <p v-else class="no-data">No violations recorded</p>
@@ -158,46 +196,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
-
-interface Student {
-  id: number
-  first_name: string
-  middle_name?: string
-  last_name: string
-  student_number: string
-  phone?: string
-  date_of_birth?: string
-  gender?: string
-  city?: string
-  year_level: number
-  academic_standing: string
-  gpa?: number
-  emergency_contact_name?: string
-  emergency_contact_phone?: string
-  user?: { email: string }
-  skills?: Array<{ id: number; name: string; category: string; proficiency: string; certifications?: string }>
-  activities?: Array<{ id: number; name: string; type: string; role: string; start_date?: string; end_date?: string }>
-  academic_history?: Array<{ id: number; school_name: string; degree: string; major: string; gpa: number; status: string; start_date: string; end_date: string; honors?: string[] }>
-  affiliations?: Array<{ id: number; name: string; type: string; role: string; position?: string; start_date?: string }>
-  violations?: Array<{ id: number; type: string; description: string; date: string; severity: string; status: string; consequence?: string }>
-}
+import { useStudentStore } from '@/stores/student'
+import type { Student } from '@/types/student'
 
 const route = useRoute()
-const student = ref<Student | null>(null)
-const loading = ref(true)
-const error = ref('')
+const studentStore = useStudentStore()
+
+// Use computed property to get student from store
+const student = computed(() => studentStore.currentStudent)
+const loading = computed(() => studentStore.loading)
+const error = computed(() => studentStore.error)
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/students/${route.params.id}`)
-    student.value = response.data
+    await studentStore.fetchStudentById(Number(route.params.id))
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'Failed to fetch student'
-  } finally {
-    loading.value = false
+    console.error('Failed to fetch student:', err)
   }
 })
 
@@ -403,5 +419,153 @@ function getYearSuffix(year: number) {
 .no-data {
   color: #9ca3af;
   font-style: italic;
+}
+
+/* Enhanced Styles for Skills, Affiliations, and Violations */
+.skill-header,
+.affiliation-header,
+.violation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.skill-details,
+.affiliation-details,
+.violation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Proficiency Badges */
+.proficiency-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.proficiency-badge.beginner {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.proficiency-badge.intermediate {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.proficiency-badge.advanced {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.proficiency-badge.expert {
+  background: #e9d5ff;
+  color: #6b21a8;
+}
+
+/* Type Badges for Affiliations */
+.type-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.type-badge.student_organization {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.type-badge.professional {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.type-badge.academic {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.type-badge.sports {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.type-badge.community {
+  background: #e9d5ff;
+  color: #6b21a8;
+}
+
+.type-badge.religious {
+  background: #fce7f3;
+  color: #9f1239;
+}
+
+.type-badge.other {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Severity Badges for Violations */
+.severity-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.severity-badge.minor {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.severity-badge.major {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.severity-badge.critical {
+  background: #dc2626;
+  color: white;
+}
+
+/* Status Badges for Violations */
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.resolved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.under_review {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Enhanced Violation Items */
+.violation-item.minor {
+  background-color: #fff7ed;
+  border-left: 4px solid #f59e0b;
+}
+
+.violation-item.major {
+  background-color: #fef2f2;
+  border-left: 4px solid #dc2626;
+}
+
+.violation-item.critical {
+  background-color: #fee2e2;
+  border-left: 4px solid #991b1b;
 }
 </style>

@@ -60,4 +60,10 @@ class SkillController extends Controller
         $skill->delete();
         return response()->json(null, 204);
     }
+
+    public function getStudentSkills(Student $student)
+    {
+        $skills = $student->skills()->get();
+        return response()->json($skills);
+    }
 }
