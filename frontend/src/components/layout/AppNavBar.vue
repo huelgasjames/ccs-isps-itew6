@@ -162,6 +162,14 @@
               <span>Add Professor</span>
             </button>
 
+            <button class="action-btn info" @click="$router.push('/courses/create')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+              <span>Add Course</span>
+            </button>
+
             <button class="action-btn warning" @click="$router.push('/violations/create')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -421,6 +429,24 @@ const toggleMobileMenu = () => {
 .action-btn.success:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+}
+
+.action-btn.info {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+.action-btn.info:hover {
+  background: rgba(14, 165, 233, 0.2);
+  border-color: #0ea5e9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+}
+
+.action-btn.info:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.2);
 }
 
 .action-btn.warning {

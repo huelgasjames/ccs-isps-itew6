@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         // Personal Information
@@ -94,6 +95,18 @@ class Student extends Model
     public function violations()
     {
         return $this->hasMany(StudentViolation::class, 'student_id');
+    }
+
+    public function courseEnrollments()
+    {
+        return $this->hasMany(CourseEnrollment::class);
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_enrollments')
+                   ->withPivot(['grade', 'status', 'semester', 'academic_year', 'enrollment_date'])
+                   ->withTimestamps();
     }
 
     // Legacy relationships for compatibility

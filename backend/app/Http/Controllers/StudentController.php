@@ -376,9 +376,94 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
-        $student->delete();
+        try {
+            // Soft delete (archive) the student
+            $student->delete();
+            
+            // Also soft delete the associated user if exists
+            if ($student->user) {
+                $student->user->delete();
+            }
 
-        return response()->json(null, 204);
+            return response()->json([
+                'message' => 'Student archived successfully',
+                'student_id' => $student->id,
+                'archived_at' => now()->toISOString()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error archiving student: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to archive student',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $student = Student::withTrashed()->findOrFail($id);
+            
+            if (!$student->trashed()) {
+                return response()->json([
+                    'message' => 'Student is not archived'
+                ], 400);
+            }
+
+            // Restore the student
+            $student->restore();
+            
+            // Also restore the associated user if exists and is trashed
+            if ($student->user && $student->user->trashed()) {
+                $student->user->restore();
+            }
+
+            return response()->json([
+                'message' => 'Student restored successfully',
+                'student_id' => $student->id,
+                'restored_at' => now()->toISOString()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error restoring student: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to restore student',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function archived()
+    {
+        try {
+            $archivedStudents = Student::onlyTrashed()
+                ->with('user')
+                ->get()
+                ->map(function ($student) {
+                    return [
+                        'id' => $student->id,
+                        'first_name' => $student->first_name,
+                        'last_name' => $student->last_name,
+                        'student_number' => $student->student_id,
+                        'email' => $student->email,
+                        'year_level' => $student->year_level ?? $student->current_year,
+                        'academic_standing' => $student->standing,
+                        'gpa' => $student->current_gpa,
+                        'deleted_at' => $student->deleted_at,
+                        'user' => $student->user ? [
+                            'email' => $student->user->email,
+                            'deleted_at' => $student->user->deleted_at
+                        ] : null
+                    ];
+                });
+
+            return response()->json($archivedStudents);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching archived students: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to fetch archived students',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getAtRiskStudents()
@@ -391,5 +476,119 @@ class StudentController extends Controller
             ->values();
 
         return response()->json($students);
+    }
+
+    public function generateSampleData(): JsonResponse
+    {
+        $samples = [
+            [
+                'first_name' => 'Juan',
+                'last_name' => 'Dela Cruz',
+                'email' => 'juan.delacruz@example.com',
+                'age' => 20,
+                'blood_type' => 'O+',
+                'disability_status' => false,
+                'disability_name' => null,
+                'scholar' => true,
+                'working_student' => false,
+                'contact_number' => '09123456789',
+                'address' => '123 Main St, Manila',
+                'section' => 'BSIT-3A',
+                'year_level' => '3rd',
+                'program' => 'BSIT',
+                'gender' => 'Male',
+                'birth_date' => '2003-05-15',
+                'is_at_risk' => false,
+            ],
+            [
+                'first_name' => 'Maria',
+                'last_name' => 'Santos',
+                'email' => 'maria.santos@example.com',
+                'age' => 19,
+                'blood_type' => 'A+',
+                'disability_status' => false,
+                'disability_name' => null,
+                'scholar' => false,
+                'working_student' => true,
+                'contact_number' => '09234567890',
+                'address' => '456 Oak Ave, Quezon City',
+                'section' => 'BSCS-2B',
+                'year_level' => '2nd',
+                'program' => 'BSCS',
+                'gender' => 'Female',
+                'birth_date' => '2004-08-22',
+                'is_at_risk' => false,
+            ],
+            [
+                'first_name' => 'Jose',
+                'last_name' => 'Reyes',
+                'email' => 'jose.reyes@example.com',
+                'age' => 21,
+                'blood_type' => 'B+',
+                'disability_status' => false,
+                'disability_name' => null,
+                'scholar' => true,
+                'working_student' => true,
+                'contact_number' => '09345678901',
+                'address' => '789 Pine Rd, Makati',
+                'section' => 'BSIT-4A',
+                'year_level' => '4th',
+                'program' => 'BSIT',
+                'gender' => 'Male',
+                'birth_date' => '2002-12-10',
+                'is_at_risk' => true,
+            ],
+            [
+                'first_name' => 'Ana',
+                'last_name' => 'Garcia',
+                'email' => 'ana.garcia@example.com',
+                'age' => 18,
+                'blood_type' => 'AB+',
+                'disability_status' => false,
+                'disability_name' => null,
+                'scholar' => false,
+                'working_student' => false,
+                'contact_number' => '09456789012',
+                'address' => '321 Elm St, Pasay',
+                'section' => 'BSCS-1A',
+                'year_level' => '1st',
+                'program' => 'BSCS',
+                'gender' => 'Female',
+                'birth_date' => '2005-03-08',
+                'is_at_risk' => false,
+            ],
+            [
+                'first_name' => 'Carlos',
+                'last_name' => 'Lopez',
+                'email' => 'carlos.lopez@example.com',
+                'age' => 22,
+                'blood_type' => 'O-',
+                'disability_status' => true,
+                'disability_name' => 'Visual Impairment',
+                'scholar' => true,
+                'working_student' => false,
+                'contact_number' => '09567890123',
+                'address' => '654 Maple Dr, Mandaluyong',
+                'section' => 'BSIT-3B',
+                'year_level' => '3rd',
+                'program' => 'BSIT',
+                'gender' => 'Male',
+                'birth_date' => '2001-07-19',
+                'is_at_risk' => false,
+            ],
+        ];
+
+        $created = [];
+        foreach ($samples as $data) {
+            $existing = Student::where('email', $data['email'])->first();
+            if (!$existing) {
+                $created[] = Student::create($data);
+            }
+        }
+
+        return response()->json([
+            'message' => count($created) . ' sample students generated',
+            'students' => $created,
+        ]);
     }
 }

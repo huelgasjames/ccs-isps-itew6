@@ -1,8 +1,7 @@
 import api from './api'
 
 export interface LoginCredentials {
-  email?: string
-  username?: string
+  email: string
   password: string
 }
 
@@ -24,8 +23,15 @@ export interface AuthResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post('/login', credentials)
-    return response.data
+    console.log('Sending login request:', credentials)
+    try {
+      const response = await api.post('/login', credentials)
+      console.log('Login response:', response)
+      return response.data
+    } catch (error: any) {
+      console.error('Login error:', error.response?.data || error)
+      throw error
+    }
   },
 
   async logout(): Promise<void> {

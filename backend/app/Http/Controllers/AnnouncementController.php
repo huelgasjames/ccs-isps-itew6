@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\StoredAnnouncement;
 use App\Models\AnnouncementAttachment;
 use App\Models\AnnouncementComment;
+use App\Helpers\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -61,18 +62,18 @@ class AnnouncementController extends Controller
             'title' => 'required|string|max:255',
             'excerpt' => 'nullable|string|max:500',
             'content' => 'required|string',
-            'type' => 'required|string|in:System,Academic,Event,Feature,Policy,General',
-            'priority' => 'required|in:low,medium,high,urgent',
+            'type' => 'nullable|string|in:System,Academic,Event,Feature,Policy,General',
+            'priority' => 'nullable|in:low,medium,high,urgent',
             'status' => 'required|in:draft,published,scheduled,archived',
             'publish_date' => 'nullable|date',
             'expires_at' => 'nullable|date|after:publish_date',
             'target_type' => 'required|in:all,students,professors,specific',
             'target_users' => 'nullable|array',
             'target_users.*' => 'integer',
-            'target_all' => 'boolean',
-            'target_students' => 'boolean',
-            'target_professors' => 'boolean',
-            'target_admins' => 'boolean',
+            'target_all' => 'nullable|boolean',
+            'target_students' => 'nullable|boolean',
+            'target_professors' => 'nullable|boolean',
+            'target_admins' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
@@ -81,12 +82,25 @@ class AnnouncementController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $path = $image->store('announcements', 'public');
+            
+            // Validate image
+            $validationErrors = ImageHelper::validateImage($image);
+            if (!empty($validationErrors)) {
+                return response()->json(['errors' => $validationErrors], 422);
+            }
+            
+            $path = ImageHelper::uploadAnnouncementImage($image);
             $data['image'] = $path;
         }
 
         // Set default values
         $data['user_id'] = Auth::id();
+        $data['type'] = $data['type'] ?? 'General';
+        $data['priority'] = $data['priority'] ?? 'medium';
+        $data['target_all'] = $data['target_all'] ?? true;
+        $data['target_students'] = $data['target_students'] ?? false;
+        $data['target_professors'] = $data['target_professors'] ?? false;
+        $data['target_admins'] = $data['target_admins'] ?? false;
         
         if (!isset($data['target_users'])) {
             $data['target_users'] = null;
@@ -218,6 +232,24 @@ class AnnouncementController extends Controller
         $announcement->incrementLikes();
 
         return response()->json(['likes' => $announcement->fresh()->likes]);
+    }
+
+    /**
+     * Mark announcement as viewed by user
+     */
+    public function markAsViewed($id)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $announcement = Announcement::findOrFail($id);
+        
+        // Mark as viewed
+        $announcement->markAsViewedBy($user->id);
+        
+        return response()->json(['message' => 'Announcement marked as viewed']);
     }
 
     /**

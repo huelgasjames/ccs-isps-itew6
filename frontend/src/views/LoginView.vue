@@ -111,7 +111,8 @@ const handleLogin = async () => {
     }
     
     await authStore.login(credentials)
-    router.push('/dashboard')
+    const redirectRoute = authStore.getDashboardRoute(authStore.user?.role || 'student')
+    router.push(redirectRoute)
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Invalid email or password.'
   } finally {

@@ -104,10 +104,31 @@ export const useStudentStore = defineStore('student', () => {
     error.value = null
     
     try {
-      const response = await api.get<StudentListResponse>('/students')
-      students.value = response.data.students
-      totalStudents.value = response.data.total
+      const response = await api.get('/students')
+      const data = response.data
+      
+      // Handle both paginated response and simple array
+      if (data && Array.isArray(data)) {
+        // Simple array response from backend
+        students.value = data
+        totalStudents.value = data.length
+      } else if (data && data.students && Array.isArray(data.students)) {
+        // Paginated response
+        students.value = data.students
+        totalStudents.value = data.total || data.students.length
+      } else {
+        // Empty or invalid response
+        students.value = []
+        totalStudents.value = 0
+      }
+      
       totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+      
+      // Transform backend data to frontend format if needed
+      if (students.value.length > 0 && students.value[0] && 'first_name' in students.value[0]) {
+        students.value = students.value.map(transformBackendStudent)
+      }
+      
     } catch (err) {
       // If API is not available, return empty array for demo purposes
       if (err instanceof Error && (err.message.includes('Network Error') || err.message.includes('ERR_CONNECTION_REFUSED'))) {
@@ -122,6 +143,49 @@ export const useStudentStore = defineStore('student', () => {
       throw err
     } finally {
       loading.value = false
+    }
+  }
+
+  // Helper function to transform backend student data to frontend format
+  const transformBackendStudent = (backendStudent: any): Student => {
+    return {
+      id: backendStudent.id,
+      personalInfo: {
+        firstName: backendStudent.first_name || '',
+        lastName: backendStudent.last_name || '',
+        middleName: backendStudent.middle_name,
+        studentId: backendStudent.student_number || '',
+        email: backendStudent.email || `${backendStudent.student_number}@ccs.edu`,
+        phone: backendStudent.phone || '',
+        dateOfBirth: backendStudent.date_of_birth || '',
+        age: backendStudent.age || 18,
+        gender: backendStudent.gender || 'other',
+        address: backendStudent.address || '',
+        city: backendStudent.city || '',
+        province: backendStudent.province || '',
+        postalCode: backendStudent.postal_code || '',
+        emergencyContact: {
+          name: backendStudent.emergency_contact_name || '',
+          relationship: 'Parent',
+          phone: backendStudent.emergency_contact_phone || ''
+        }
+      },
+      academicHistory: [],
+      academicStanding: {
+        currentYear: backendStudent.year_level || backendStudent.current_year || 1,
+        currentSemester: 'first',
+        currentGPA: backendStudent.current_gpa || backendStudent.gpa || 0,
+        totalUnits: 0,
+        standing: backendStudent.academic_standing || 'good',
+        advisor: 'TBD'
+      },
+      activities: [],
+      violations: [],
+      skills: [],
+      affiliations: [],
+      createdAt: backendStudent.created_at || new Date().toISOString(),
+      updatedAt: backendStudent.updated_at || new Date().toISOString(),
+      isActive: true
     }
   }
 
@@ -461,6 +525,138 @@ export const useStudentStore = defineStore('student', () => {
     error.value = null
   }
 
+  const generateSampleData = () => {
+    const sampleStudents: Student[] = [
+      {
+        id: 1,
+        personalInfo: {
+          firstName: 'John',
+          lastName: 'Doe',
+          studentId: '2021001',
+          email: 'john.doe@ccs.edu',
+          phone: '09123456789',
+          dateOfBirth: '2000-01-15',
+          age: 23,
+          gender: 'male',
+          address: '123 Main St',
+          city: 'Quezon City',
+          province: 'Metro Manila',
+          postalCode: '1100',
+          emergencyContact: {
+            name: 'Jane Doe',
+            relationship: 'Mother',
+            phone: '09123456788'
+          }
+        },
+        academicHistory: [],
+        academicStanding: {
+          currentYear: 3,
+          currentSemester: 'first',
+          currentGPA: 3.5,
+          totalUnits: 120,
+          standing: 'good',
+          advisor: 'Dr. Smith'
+        },
+        activities: [],
+        violations: [],
+        skills: [
+          { id: 1, name: 'JavaScript', category: 'technical', proficiency: 'advanced' },
+          { id: 2, name: 'Leadership', category: 'soft', proficiency: 'intermediate' }
+        ],
+        affiliations: [],
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+        isActive: true
+      },
+      {
+        id: 2,
+        personalInfo: {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          studentId: '2021002',
+          email: 'jane.smith@ccs.edu',
+          phone: '09123456787',
+          dateOfBirth: '2000-05-20',
+          age: 23,
+          gender: 'female',
+          address: '456 Oak Ave',
+          city: 'Manila',
+          province: 'Metro Manila',
+          postalCode: '1000',
+          emergencyContact: {
+            name: 'Bob Smith',
+            relationship: 'Father',
+            phone: '09123456786'
+          }
+        },
+        academicHistory: [],
+        academicStanding: {
+          currentYear: 2,
+          currentSemester: 'second',
+          currentGPA: 3.8,
+          totalUnits: 80,
+          standing: 'good',
+          advisor: 'Dr. Johnson'
+        },
+        activities: [],
+        violations: [],
+        skills: [
+          { id: 3, name: 'Python', category: 'technical', proficiency: 'advanced' },
+          { id: 4, name: 'Communication', category: 'soft', proficiency: 'advanced' }
+        ],
+        affiliations: [],
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+        isActive: true
+      },
+      {
+        id: 3,
+        personalInfo: {
+          firstName: 'Mike',
+          lastName: 'Wilson',
+          studentId: '2021003',
+          email: 'mike.wilson@ccs.edu',
+          phone: '09123456785',
+          dateOfBirth: '2001-03-10',
+          age: 22,
+          gender: 'male',
+          address: '789 Pine Rd',
+          city: 'Pasig',
+          province: 'Metro Manila',
+          postalCode: '1600',
+          emergencyContact: {
+            name: 'Sarah Wilson',
+            relationship: 'Sister',
+            phone: '09123456784'
+          }
+        },
+        academicHistory: [],
+        academicStanding: {
+          currentYear: 1,
+          currentSemester: 'first',
+          currentGPA: 2.8,
+          totalUnits: 40,
+          standing: 'warning',
+          advisor: 'Dr. Brown'
+        },
+        activities: [],
+        violations: [],
+        skills: [
+          { id: 5, name: 'Basketball', category: 'sports', proficiency: 'intermediate' },
+          { id: 6, name: 'Programming', category: 'technical', proficiency: 'beginner' }
+        ],
+        affiliations: [],
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+        isActive: true
+      }
+    ]
+    
+    students.value = sampleStudents
+    totalStudents.value = sampleStudents.length
+    totalPages.value = Math.ceil(totalStudents.value / pageSize.value)
+  }
+
   return {
     // State
     students,
@@ -502,6 +698,7 @@ export const useStudentStore = defineStore('student', () => {
     setDisplayMode,
     setCurrentPage,
     clearCurrentStudent,
-    clearError
+    clearError,
+    generateSampleData
   }
 })

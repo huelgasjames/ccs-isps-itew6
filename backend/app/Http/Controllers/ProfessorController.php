@@ -129,4 +129,71 @@ class ProfessorController extends Controller
 
         return response()->json(null, 204);
     }
+
+    public function generateSampleData(): JsonResponse
+    {
+        $samples = [
+            [
+                'first_name' => 'Dr. Roberto',
+                'last_name' => 'Mendoza',
+                'email' => 'roberto.mendoza@ccs.edu',
+                'gender' => 'Male',
+                'contact_number' => '09123456789',
+                'address' => '123 University Ave, Manila',
+                'educational_attainment' => 'PhD in Computer Science',
+                'experience' => '15 years',
+                'courses_handled' => 'Data Structures, Algorithms, Database Systems',
+                'role' => 'Department Head',
+                'employment_type' => 'Full-time',
+                'department' => 'Computer Science',
+                'organization' => 'CCS Faculty',
+                'application_date' => '2010-06-15',
+            ],
+            [
+                'first_name' => 'Prof. Cristina',
+                'last_name' => 'Reyes',
+                'email' => 'cristina.reyes@ccs.edu',
+                'gender' => 'Female',
+                'contact_number' => '09234567890',
+                'address' => '456 College Rd, Quezon City',
+                'educational_attainment' => 'MS in Information Technology',
+                'experience' => '8 years',
+                'courses_handled' => 'Web Development, Mobile Programming',
+                'role' => 'Assistant Professor',
+                'employment_type' => 'Full-time',
+                'department' => 'Information Technology',
+                'organization' => 'CCS Faculty',
+                'application_date' => '2016-08-20',
+            ],
+            [
+                'first_name' => 'Dr. Antonio',
+                'last_name' => 'Santos',
+                'email' => 'antonio.santos@ccs.edu',
+                'gender' => 'Male',
+                'contact_number' => '09345678901',
+                'address' => '789 Academic St, Makati',
+                'educational_attainment' => 'PhD in Computer Engineering',
+                'experience' => '12 years',
+                'courses_handled' => 'Computer Networks, Security, Cloud Computing',
+                'role' => 'Associate Professor',
+                'employment_type' => 'Full-time',
+                'department' => 'Computer Engineering',
+                'organization' => 'CCS Research Group',
+                'application_date' => '2012-03-10',
+            ],
+        ];
+
+        $created = [];
+        foreach ($samples as $data) {
+            $existing = Professor::where('email', $data['email'])->first();
+            if (!$existing) {
+                $created[] = Professor::create($data);
+            }
+        }
+
+        return response()->json([
+            'message' => count($created) . ' sample professors generated',
+            'professors' => $created,
+        ]);
+    }
 }

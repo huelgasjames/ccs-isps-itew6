@@ -160,6 +160,123 @@ class EventController extends Controller
         return response()->json(['message' => 'Successfully unregistered']);
     }
 
+    public function generateSampleData(): JsonResponse
+    {
+        $samples = [
+            [
+                'title' => 'CCS Week 2025',
+                'description' => 'Annual celebration of the College of Computer Studies featuring various activities, competitions, and showcases of student projects and achievements throughout the week.',
+                'type' => 'cultural',
+                'status' => 'upcoming',
+                'start_datetime' => now()->addDays(7)->setHour(9)->setMinute(0),
+                'end_datetime' => now()->addDays(12)->setHour(17)->setMinute(0),
+                'venue' => 'CCS Building Auditorium',
+                'organizer' => 'CCS Student Council',
+                'target_audience' => 'all_students',
+                'max_participants' => 200,
+                'current_participants' => 45,
+                'registration_fee' => 0.00,
+                'requirements' => 'Must be a CCS student',
+                'created_by' => 1,
+            ],
+            [
+                'title' => 'Web Development Workshop',
+                'description' => 'Hands-on workshop covering modern web development technologies including Vue.js, React, and Node.js. Participants will build a full-stack application.',
+                'type' => 'workshop',
+                'status' => 'upcoming',
+                'start_datetime' => now()->addDays(3)->setHour(13)->setMinute(0),
+                'end_datetime' => now()->addDays(3)->setHour(17)->setMinute(0),
+                'venue' => 'Computer Lab 3',
+                'organizer' => 'IT Department',
+                'target_audience' => 'specific_course',
+                'target_audience_specification' => 'IT and CS Students',
+                'max_participants' => 40,
+                'current_participants' => 28,
+                'registration_fee' => 50.00,
+                'requirements' => 'Laptop required',
+                'created_by' => 1,
+            ],
+            [
+                'title' => 'Programming Competition',
+                'description' => 'Inter-department programming competition. Teams of 3 will solve algorithmic problems within a time limit using C++, Java, or Python.',
+                'type' => 'academic',
+                'status' => 'upcoming',
+                'start_datetime' => now()->addDays(14)->setHour(8)->setMinute(0),
+                'end_datetime' => now()->addDays(14)->setHour(17)->setMinute(0),
+                'venue' => 'Computer Lab 1 & 2',
+                'organizer' => 'ACM Student Chapter',
+                'target_audience' => 'all_students',
+                'max_participants' => 60,
+                'current_participants' => 36,
+                'registration_fee' => 100.00,
+                'requirements' => 'Team of 3 members',
+                'created_by' => 1,
+            ],
+            [
+                'title' => 'Career Seminar: Tech Industry Trends',
+                'description' => 'Industry professionals share insights on current trends in the tech industry, career opportunities, and skills in demand for IT graduates.',
+                'type' => 'seminar',
+                'status' => 'ongoing',
+                'start_datetime' => now()->subDays(1)->setHour(9)->setMinute(0),
+                'end_datetime' => now()->addDays(1)->setHour(12)->setMinute(0),
+                'venue' => 'Main Conference Hall',
+                'organizer' => 'Placement Office',
+                'target_audience' => 'all',
+                'max_participants' => 150,
+                'current_participants' => 120,
+                'registration_fee' => 0.00,
+                'requirements' => 'None',
+                'created_by' => 1,
+            ],
+            [
+                'title' => 'Intramural Sports Festival',
+                'description' => 'Annual sports festival featuring basketball, volleyball, badminton, and table tennis competitions between departments.',
+                'type' => 'sports',
+                'status' => 'ongoing',
+                'start_datetime' => now()->subDays(3)->setHour(8)->setMinute(0),
+                'end_datetime' => now()->addDays(4)->setHour(17)->setMinute(0),
+                'venue' => 'University Gymnasium',
+                'organizer' => 'Sports Committee',
+                'target_audience' => 'all_students',
+                'max_participants' => 300,
+                'current_participants' => 185,
+                'registration_fee' => 0.00,
+                'requirements' => 'Must be enrolled for current semester',
+                'created_by' => 1,
+            ],
+            [
+                'title' => 'Hackathon 2024',
+                'description' => '24-hour hackathon where teams develop innovative solutions for real-world problems. Prizes for top 3 teams.',
+                'type' => 'extra_curricular',
+                'status' => 'completed',
+                'start_datetime' => now()->subDays(30)->setHour(8)->setMinute(0),
+                'end_datetime' => now()->subDays(29)->setHour(8)->setMinute(0),
+                'venue' => 'CCS Building',
+                'organizer' => 'Google Developer Student Club',
+                'target_audience' => 'specific_course',
+                'target_audience_specification' => 'CS and IT Students',
+                'max_participants' => 80,
+                'current_participants' => 72,
+                'registration_fee' => 150.00,
+                'requirements' => 'Team of 2-4 members',
+                'created_by' => 1,
+            ],
+        ];
+
+        $created = [];
+        foreach ($samples as $data) {
+            $existing = Event::where('title', $data['title'])->first();
+            if (!$existing) {
+                $created[] = Event::create($data);
+            }
+        }
+
+        return response()->json([
+            'message' => count($created) . ' sample events generated',
+            'events' => $created,
+        ]);
+    }
+
     public function myRegistrations(Request $request): JsonResponse
     {
         $user = $request->user();

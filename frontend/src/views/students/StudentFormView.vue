@@ -75,7 +75,21 @@
               id="date_of_birth"
               v-model="form.date_of_birth"
               type="date"
+              @change="calculateAge"
               class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="age">Age *</label>
+            <input 
+              id="age"
+              v-model="form.age"
+              type="number"
+              min="16"
+              max="100"
+              required
+              class="form-control"
+              readonly
             />
           </div>
           <div class="form-group">
@@ -120,7 +134,14 @@
               <option value="2">2nd Year</option>
               <option value="3">3rd Year</option>
               <option value="4">4th Year</option>
-              <option value="5">5th Year</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="program">Program *</label>
+            <select id="program" v-model="form.program" class="form-control" required>
+              <option value="">Select Program</option>
+              <option value="BSIT">BSIT</option>
+              <option value="BSCS">BSCS</option>
             </select>
           </div>
           <div class="form-group">
@@ -201,10 +222,12 @@ const form = ref({
   password: '',
   phone: '',
   date_of_birth: '',
+  age: '',
   gender: '',
   city: '',
   student_number: '',
   year_level: '',
+  program: '',
   academic_standing: '',
   gpa: '',
   emergency_contact_name: '',
@@ -229,11 +252,13 @@ onMounted(async () => {
         password: '',
         phone: student.phone || '',
         date_of_birth: student.date_of_birth || '',
+        age: student.age || '',
         gender: student.gender || '',
         city: student.city || '',
         student_number: student.student_number || '',
-        year_level: student.year_level || '',
-        academic_standing: student.academic_standing || '',
+        year_level: student.year_level || student.current_year || '',
+        program: student.program || '',
+        academic_standing: student.academic_standing || student.standing || '',
         gpa: student.gpa || '',
         emergency_contact_name: student.emergency_contact_name || '',
         emergency_contact_phone: student.emergency_contact_phone || '',
@@ -248,6 +273,21 @@ onMounted(async () => {
     }
   }
 })
+
+function calculateAge() {
+  if (form.value.date_of_birth) {
+    const today = new Date()
+    const birthDate = new Date(form.value.date_of_birth)
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+    
+    form.value.age = age.toString()
+  }
+}
 
 async function handleSubmit() {
   loading.value = true

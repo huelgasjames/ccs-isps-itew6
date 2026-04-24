@@ -93,6 +93,9 @@
               <router-link :to="`/students/${student.id}/edit`" class="btn btn-sm btn-warning">
                 Edit
               </router-link>
+              <button @click="archiveStudent(student.id)" class="btn btn-sm btn-danger">
+                Archive
+              </button>
             </td>
           </tr>
         </tbody>
@@ -192,6 +195,27 @@ function resetFilters() {
   searchQuery.value = ''
   selectedYear.value = ''
   selectedStanding.value = ''
+}
+
+async function archiveStudent(studentId: number) {
+  const student = students.value.find(s => s.id === studentId)
+  const studentName = student ? `${student.first_name} ${student.last_name}` : 'this student'
+  
+  if (confirm(`Are you sure you want to archive ${studentName}? This will remove them from the active list but keep their data for records.`)) {
+    try {
+      const response = await axios.delete(`http://127.0.0.1:8000/api/students/${studentId}`)
+      
+      // Show success message
+      const message = response.data?.message || 'Student archived successfully'
+      alert(`${message}\n\nStudent ID: ${response.data?.student_id}\nArchived at: ${new Date().toLocaleString()}`)
+      
+      // Remove from local list
+      students.value = students.value.filter(student => student.id !== studentId)
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to archive student'
+      alert(`Error: ${errorMessage}`)
+    }
+  }
 }
 </script>
 
@@ -351,6 +375,15 @@ function resetFilters() {
 
 .btn-warning:hover {
   background-color: #d97706;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
 }
 
 /* Table */

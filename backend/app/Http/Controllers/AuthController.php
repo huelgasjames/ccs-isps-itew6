@@ -13,7 +13,7 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validate([
-                'email' => 'required|string|email',
+                'email' => 'required|string',
                 'password' => 'required|string',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -23,7 +23,19 @@ class AuthController extends Controller
             ], 422);
         }
         
-        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        // Convert username to email if needed
+        $email = $validated['email'];
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $emailMap = [
+                'admin' => 'admin@ccs.edu',
+                'professor' => 'professor@ccs.edu',
+                'student' => 'student@ccs.edu',
+                'maria' => 'maria@ccs.edu'
+            ];
+            $email = $emailMap[$email] ?? $email;
+        }
+        
+        if (!Auth::attempt(['email' => $email, 'password' => $validated['password']])) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);

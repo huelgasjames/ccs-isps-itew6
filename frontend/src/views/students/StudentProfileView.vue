@@ -101,6 +101,37 @@
           </div>
 
           <div class="section">
+            <h3>Enrolled Courses</h3>
+            <div v-if="loadingEnrollments" class="loading-small">
+              <div class="spinner-small"></div>
+              <p>Loading enrolled courses...</p>
+            </div>
+            <div v-else-if="enrolledCourses.length > 0" class="courses-grid">
+              <div v-for="enrollment in enrolledCourses" :key="enrollment.id" class="course-card">
+                <div class="course-header">
+                  <h4>{{ enrollment.course.course_code }}</h4>
+                  <span :class="['status-badge', getEnrollmentStatusClass(enrollment.status)]">
+                    {{ enrollment.status.charAt(0).toUpperCase() + enrollment.status.slice(1) }}
+                  </span>
+                </div>
+                <div class="course-info">
+                  <p class="course-name">{{ enrollment.course.course_name }}</p>
+                  <p class="course-instructor">{{ enrollment.course.instructor || 'TBA' }}</p>
+                  <p class="course-credits">{{ enrollment.course.credits }} Credits</p>
+                  <p class="course-semester">{{ enrollment.semester }} {{ enrollment.academic_year }}</p>
+                  <p class="grade-info" v-if="enrollment.grade">
+                    Grade: <strong>{{ enrollment.grade }}%</strong> 
+                    <span :class="['grade-status', enrollment.grade >= 75 ? 'pass' : 'fail']">
+                      ({{ enrollment.grade >= 75 ? 'Passed' : 'Failed' }})
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p v-else>No courses enrolled</p>
+          </div>
+
+          <div class="section">
             <h3>Affiliations</h3>
             <div v-if="student.affiliations && student.affiliations.length > 0" class="list">
               <div v-for="affiliation in student.affiliations" :key="affiliation.id" class="list-item">
@@ -132,6 +163,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import api from '@/services/api'
 
 interface Student {
   id: number
@@ -153,20 +185,60 @@ interface Student {
   violations?: Array<{ id: number; type: string; description: string; severity: string }>
 }
 
+interface CourseEnrollment {
+  id: number
+  student_id: number
+  course_id: number
+  semester: string
+  academic_year: string
+  grade?: number
+  status: string
+  enrollment_date: string
+  remarks?: string
+  course: {
+    id: number
+    course_code: string
+    course_name: string
+    credits: number
+    instructor?: string
+  }
+}
+
 const route = useRoute()
 const student = ref<Student | null>(null)
 const loading = ref(true)
 const error = ref('')
+const enrolledCourses = ref<CourseEnrollment[]>([])
+const loadingEnrollments = ref(false)
 
-onMounted(async () => {
+const fetchStudent = async () => {
   try {
     const response = await axios.get(`http://127.0.0.1:8000/api/students/${route.params.id}`)
     student.value = response.data
+    if (response.data) {
+      await fetchEnrolledCourses(response.data.id)
+    }
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Failed to fetch student'
   } finally {
     loading.value = false
   }
+}
+
+const fetchEnrolledCourses = async (studentId: number) => {
+  loadingEnrollments.value = true
+  try {
+    const response = await api.get(`/students/${studentId}/enrollments`)
+    enrolledCourses.value = response.data
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error)
+  } finally {
+    loadingEnrollments.value = false
+  }
+}
+
+onMounted(() => {
+  fetchStudent()
 })
 
 function formatStanding(standing: string) {
@@ -188,6 +260,14 @@ function getYearSuffix(year: number) {
   if (year === 2) return 'nd'
   if (year === 3) return 'rd'
   return 'th'
+}
+
+function getEnrollmentStatusClass(status: string) {
+  if (status === 'enrolled') return 'enrolled'
+  if (status === 'completed') return 'completed'
+  if (status === 'dropped') return 'dropped'
+  if (status === 'failed') return 'failed'
+  return 'enrolled'
 }
 </script>
 
@@ -377,6 +457,119 @@ function getYearSuffix(year: number) {
 }
 
 .severity.critical {
+  color: #991b1b;
+}
+
+/* Enrolled Courses Styles */
+.loading-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.spinner-small {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+.course-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.course-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.course-header h4 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.course-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.course-name {
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+}
+
+.course-instructor,
+.course-credits,
+.course-semester {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.grade-info {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0;
+}
+
+.grade-status.pass {
+  color: #059669;
+  font-weight: 500;
+}
+
+.grade-status.fail {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.status-badge.enrolled {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.completed {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.dropped {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.failed {
+  background-color: #fee2e2;
   color: #991b1b;
 }
 </style>

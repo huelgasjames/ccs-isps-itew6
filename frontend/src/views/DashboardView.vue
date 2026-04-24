@@ -20,6 +20,7 @@
             <p class="welcome-sub">
               <span class="tag-chip">{{ user?.role === 'admin' ? 'Administrator' : user?.role === 'professor' ? 'Professor' : 'Student' }}</span>
               <span class="tag-chip">CCS Department</span>
+              <span v-if="isDemoMode" class="tag-chip demo-mode">Demo Mode</span>
             </p>
           </div>
         </div>
@@ -144,6 +145,10 @@
           <button class="action-btn" @click="fetchStats">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Refresh
+          </button>
+          <button v-if="isDemoMode" class="action-btn secondary" @click="generateSampleData">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Generate Sample Data
           </button>
         </div>
       </div>
@@ -380,6 +385,7 @@ const user = computed(() => authStore.user)
 const isAdmin = computed(() => authStore.isAdmin)
 const isStudent = computed(() => authStore.isStudent)
 const isProfessor = computed(() => authStore.isProfessor)
+const isDemoMode = computed(() => authStore.isDemoMode)
 
 const now = ref(new Date())
 let timer: any
@@ -398,23 +404,37 @@ const handleLogout = async () => {
 const fetchStats = async () => {
   try {
     if (isAdmin.value) {
-      const studentsRes = await api.get('/students')
-      const professorsRes = await api.get('/professors')
+      const studentsRes = await api.get('/students?per_page=1000')
+      const professorsRes = await api.get('/professors?per_page=100')
+      const studentsData = studentsRes.data.data || studentsRes.data
+      const professorsData = professorsRes.data.data || professorsRes.data
       stats.value = {
-        totalStudents: studentsRes.data.length,
-        totalProfessors: professorsRes.data.length,
+        totalStudents: Array.isArray(studentsData) ? studentsData.length : 0,
+        totalProfessors: Array.isArray(professorsData) ? professorsData.length : 0,
         pendingViolations: 0,
         atRiskStudents: 0
       }
-      try {
-        const v = await api.get('/violations/pending')
-        stats.value.pendingViolations = v.data.length
-      } catch {}
-      try {
-        const r = await api.get('/students/at-risk')
-        stats.value.atRiskStudents = r.data.length
-      } catch {
-        stats.value.atRiskStudents = studentsRes.data.filter((s: any) => s.is_at_risk).length
+      // Skip protected endpoints in demo mode
+      if (!isDemoMode.value) {
+        try {
+          const v = await api.get('/violations/pending')
+          stats.value.pendingViolations = v.data.length
+        } catch {}
+        try {
+          const r = await api.get('/students/at-risk')
+          stats.value.atRiskStudents = r.data.length
+        } catch (error) {
+          if (Array.isArray(studentsData)) {
+            stats.value.atRiskStudents = studentsData.filter((s: any) => s.is_at_risk).length
+          } else {
+            stats.value.atRiskStudents = 0
+          }
+        }
+      } else {
+        // In demo mode, calculate from local data
+        if (Array.isArray(studentsData)) {
+          stats.value.atRiskStudents = studentsData.filter((s: any) => s.is_at_risk).length
+        }
       }
     }
   } catch {
@@ -500,6 +520,23 @@ const getTargetTypeLabel = (targetType: string) => {
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
   img.src = '/placeholder-announcement.jpg'
+}
+
+const generateSampleData = async () => {
+  try {
+    await Promise.all([
+      api.post('/students/generate-sample-data'),
+      api.post('/professors/generate-sample-data'),
+      api.post('/courses/generate-sample-data'),
+      api.post('/syllabi/generate-sample-data'),
+      api.post('/events/generate-sample')
+    ])
+    await fetchStats()
+    alert('Sample data generated successfully!')
+  } catch (error) {
+    console.error('Failed to generate sample data:', error)
+    alert('Failed to generate sample data')
+  }
 }
 
 onMounted(() => {
@@ -745,6 +782,9 @@ onUnmounted(() => clearInterval(timer))
   background: #f3f4f6; border: 1px solid #e5e7eb;
   color: #6b7280;
 }
+.tag-chip.demo-mode {
+  background: #fef3c7; border-color: #f59e0b; color: #d97706;
+}
 .welcome-right { flex-shrink: 0; }
 .time-display {
   text-align: right;
@@ -773,6 +813,16 @@ onUnmounted(() => clearInterval(timer))
 }
 .action-btn svg { width: 14px; height: 14px; }
 .action-btn:hover { background: #f9fafb; border-color: #f97316; color: #f97316; }
+.action-btn.secondary {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+.action-btn.secondary:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+  color: #374151;
+}
 
 /* Stat cards */
 .stats-grid {

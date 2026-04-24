@@ -47,8 +47,8 @@ export interface CreateAnnouncementData {
 class AnnouncementService {
   // Original methods (keep existing functionality)
   async getAnnouncements(): Promise<Announcement[]> {
-    const response = await api.get('/announcements?per_page=all')
-    return response.data
+    const response = await api.get('/announcements?per_page=100')
+    return response.data.data || response.data
   }
 
   async getAnnouncement(id: number): Promise<Announcement> {

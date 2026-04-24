@@ -107,7 +107,7 @@ const router = createRouter({
     {
       path: '/announcements',
       name: 'announcements',
-      component: () => import('../views/announcements/AnnouncementListView.vue'),
+      component: () => import('../views/AnnouncementsView.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -127,6 +127,12 @@ const router = createRouter({
       name: 'announcement-edit',
       component: () => import('../views/announcements/AnnouncementFormView.vue'),
       meta: { requiresAuth: true, roles: ['admin', 'professor'] }
+    },
+    {
+      path: '/events',
+      name: 'events',
+      component: () => import('../views/EventsView.vue'),
+      meta: { requiresAuth: true }
     },
     // Academic Management Routes
     {
@@ -154,6 +160,30 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
+      path: '/syllabi',
+      name: 'syllabi',
+      component: () => import('../views/syllabi/SyllabusListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/syllabi/create',
+      name: 'syllabus-create',
+      component: () => import('../views/syllabi/SyllabusFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/syllabi/:id',
+      name: 'syllabus-detail',
+      component: () => import('../views/syllabi/SyllabusDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/syllabi/:id/edit',
+      name: 'syllabus-edit',
+      component: () => import('../views/syllabi/SyllabusFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
@@ -164,6 +194,11 @@ const router = createRouter({
       name: 'settings',
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/test-login',
+      name: 'test-login',
+      component: () => import('../views/TestLoginView.vue')
     }
   ]
 })
@@ -176,7 +211,11 @@ router.beforeEach((to, from) => {
   }
   
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    return '/dashboard'
+    const role = authStore.user?.role || 'student'
+    const dashboardRoute = role === 'admin' ? '/dashboard' : 
+                          role === 'professor' ? '/dashboard' : 
+                          '/dashboard'
+    return dashboardRoute
   }
   
   if (to.meta.roles && Array.isArray(to.meta.roles)) {

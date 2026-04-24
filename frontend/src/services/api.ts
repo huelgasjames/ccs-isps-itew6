@@ -3,6 +3,12 @@ import { offlineService } from './offline'
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api'
 
+// Helper function to check if using demo mode
+const isDemoMode = () => {
+  const token = localStorage.getItem('auth_token')
+  return token ? token.startsWith('demo-') : false
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -12,17 +18,29 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
+  console.log('API Request:', config.method?.toUpperCase(), config.url, config.data || 'no body')
   const token = localStorage.getItem('auth_token')
   if (token) {
+    // Add Authorization header for both real and demo tokens
     config.headers.Authorization = `Bearer ${token}`
+    console.log('Adding auth token:', token.substring(0, 20) + '...')
+  } else {
+    console.warn('No auth token found in localStorage')
   }
   return config
 })
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.status, response.config.url)
+    return response
+  },
   (error) => {
-    if (error.response?.status === 401) {
+    console.error('API Error:', error.response?.status, error.config?.url, error.response?.data)
+    
+    // Only auto-logout for real backend tokens, not demo tokens
+    if (error.response?.status === 401 && !isDemoMode()) {
+      console.warn('401 Unauthorized - logging out')
       localStorage.removeItem('auth_token')
       localStorage.removeItem('user')
       window.location.href = '/login'
