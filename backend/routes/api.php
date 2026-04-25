@@ -18,6 +18,8 @@ use App\Http\Controllers\StudentActivityController;
 use App\Http\Controllers\StudentAcademicHistoryController;
 use App\Http\Controllers\StudentAffiliationController;
 use App\Http\Controllers\SyllabusController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ScheduleController;
 
 Route::get('/test', function () {
     return response()->json([
@@ -148,6 +150,10 @@ Route::middleware('demo.auth')->group(function () {
     Route::post('/courses/{course}/bulk-enroll', [CourseController::class, 'bulkEnroll']);
     Route::post('/courses/{course}/bulk-drop', [CourseController::class, 'bulkDrop']);
     Route::get('/courses/{course}/enrollment-stats', [CourseController::class, 'enrollmentStats']);
+
+    // Rooms and schedules routes
+    Route::apiResource('rooms', RoomController::class);
+    Route::apiResource('schedules', ScheduleController::class);
     
     // Syllabus routes
     Route::apiResource('syllabi', SyllabusController::class);

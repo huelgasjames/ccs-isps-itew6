@@ -190,19 +190,18 @@ export const useCourseStore = defineStore('course', () => {
     loading.value = true
     error.value = ''
     try {
-      // Convert camelCase to snake_case for the API
       const apiData = {
-        course_code: courseData.courseCode,
-        course_name: courseData.courseName,
+        courseCode: courseData.courseCode,
+        courseName: courseData.courseName,
         description: courseData.description,
         credits: courseData.credits,
         department: courseData.department,
         semester: courseData.semester,
-        academic_year: courseData.academicYear,
+        academicYear: courseData.academicYear,
         instructor: courseData.instructor,
         schedule: courseData.schedule,
         room: courseData.room,
-        max_students: courseData.maxStudents,
+        maxStudents: courseData.maxStudents,
         status: courseData.status,
         prerequisites: courseData.prerequisites
       }
@@ -224,19 +223,18 @@ export const useCourseStore = defineStore('course', () => {
     loading.value = true
     error.value = ''
     try {
-      // Convert camelCase to snake_case for the API
       const apiData = {
-        course_code: courseData.courseCode,
-        course_name: courseData.courseName,
+        courseCode: courseData.courseCode,
+        courseName: courseData.courseName,
         description: courseData.description,
         credits: courseData.credits,
         department: courseData.department,
         semester: courseData.semester,
-        academic_year: courseData.academicYear,
+        academicYear: courseData.academicYear,
         instructor: courseData.instructor,
         schedule: courseData.schedule,
         room: courseData.room,
-        max_students: courseData.maxStudents,
+        maxStudents: courseData.maxStudents,
         status: courseData.status,
         prerequisites: courseData.prerequisites
       }

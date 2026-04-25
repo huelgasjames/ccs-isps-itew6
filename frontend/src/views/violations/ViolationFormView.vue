@@ -63,12 +63,12 @@
                 <label class="field-label">VIOLATION TYPE</label>
                 <div class="field-wrap">
                   <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-                  <select v-model="form.violation_type" class="field-input field-select" required>
+                  <select v-model="form.type" class="field-input field-select" required>
                     <option value="">SELECT TYPE</option>
-                    <option value="Minor">MINOR</option>
-                    <option value="Major">MAJOR</option>
-                    <option value="Academic">ACADEMIC</option>
-                    <option value="Disciplinary">DISCIPLINARY</option>
+                    <option value="academic">ACADEMIC</option>
+                    <option value="disciplinary">DISCIPLINARY</option>
+                    <option value="attendance">ATTENDANCE</option>
+                    <option value="conduct">CONDUCT</option>
                   </select>
                 </div>
               </div>
@@ -77,8 +77,9 @@
                 <div class="field-wrap">
                   <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   <select v-model="form.status" class="field-input field-select" required>
-                    <option value="Pending">PENDING</option>
-                    <option value="Resolved">RESOLVED</option>
+                    <option value="pending">PENDING</option>
+                    <option value="resolved">RESOLVED</option>
+                    <option value="appealed">APPEALED</option>
                   </select>
                 </div>
               </div>
@@ -86,7 +87,18 @@
                 <label class="field-label">DATE COMMITTED</label>
                 <div class="field-wrap">
                   <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <input v-model="form.date_committed" type="date" class="field-input" required />
+                  <input v-model="form.date" type="date" class="field-input" required />
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">SEVERITY</label>
+                <div class="field-wrap">
+                  <select v-model="form.severity" class="field-input field-select" required>
+                    <option value="minor">MINOR</option>
+                    <option value="moderate">MODERATE</option>
+                    <option value="major">MAJOR</option>
+                    <option value="severe">SEVERE</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -142,7 +154,7 @@
                 <label class="field-label">SANCTIONS</label>
                 <div class="field-wrap">
                   <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/></svg>
-                  <textarea v-model="form.sanction" class="field-input field-textarea" placeholder="Specify the sanctions or punishment for this violation..." required rows="3"></textarea>
+                  <textarea v-model="form.consequence" class="field-input field-textarea" placeholder="Specify the sanctions or punishment for this violation..." required rows="3"></textarea>
                 </div>
               </div>
             </div>
@@ -188,11 +200,12 @@ const isEdit = computed(() => !!route.params.id)
 
 const form = ref({
   student_id: '',
-  violation_type: '',
+  type: '',
   description: '',
-  sanction: '',
-  date_committed: '',
-  status: 'Pending'
+  consequence: '',
+  date: '',
+  severity: 'minor',
+  status: 'pending'
 })
 
 const handleSubmit = async () => {
@@ -214,7 +227,15 @@ const handleSubmit = async () => {
 const fetchStudents = async () => {
   try {
     const response = await api.get('/students')
-    students.value = response.data
+    const data = response.data?.students || response.data?.data || response.data || []
+    students.value = Array.isArray(data)
+      ? data.map((s: any) => ({
+          id: s.id,
+          first_name: s.first_name || s.personalInfo?.firstName || '',
+          last_name: s.last_name || s.personalInfo?.lastName || '',
+          email: s.email || s.personalInfo?.email || '',
+        }))
+      : []
   } catch (error) {
     console.error('Error fetching students:', error)
   }

@@ -379,6 +379,11 @@ const handleSubmit = async () => {
       attachments.forEach((file: File) => {
         formDataToSend.append('attachments[]', file)
       })
+      // Use first selected image as announcement image for backend support.
+      const firstImage = attachments.find((file: File) => file.type.startsWith('image/'))
+      if (firstImage) {
+        formDataToSend.append('image', firstImage)
+      }
     }
 
     if (isEdit.value) {

@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 
 class ImageHelper
@@ -10,11 +9,15 @@ class ImageHelper
     public static function uploadAnnouncementImage(UploadedFile $image): string
     {
         $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        
-        // Store in public disk
-        $path = $image->storeAs('announcements', $filename, 'public');
-        
-        return $path;
+        $directory = public_path('img-announcements');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $image->move($directory, $filename);
+
+        return 'img-announcements/' . $filename;
     }
     
     public static function deleteAnnouncementImage(string $imagePath): bool
@@ -22,8 +25,13 @@ class ImageHelper
         if (!$imagePath) {
             return false;
         }
-        
-        return Storage::disk('public')->delete($imagePath);
+
+        $fullPath = public_path($imagePath);
+        if (file_exists($fullPath)) {
+            return unlink($fullPath);
+        }
+
+        return false;
     }
     
     public static function getImageUrl(string $imagePath): string
@@ -31,8 +39,12 @@ class ImageHelper
         if (!$imagePath) {
             return asset('images/default-announcement.jpg');
         }
-        
-        return Storage::url($imagePath);
+
+        if (preg_match('/^https?:\/\//', $imagePath)) {
+            return $imagePath;
+        }
+
+        return url($imagePath);
     }
     
     public static function validateImage(UploadedFile $image): array

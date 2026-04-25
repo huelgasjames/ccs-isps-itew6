@@ -196,6 +196,42 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/rooms',
+      name: 'rooms',
+      component: () => import('../views/rooms/RoomListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/rooms/create',
+      name: 'room-create',
+      component: () => import('../views/rooms/RoomFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/rooms/:id/edit',
+      name: 'room-edit',
+      component: () => import('../views/rooms/RoomFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/schedules',
+      name: 'schedules',
+      component: () => import('../views/schedules/ScheduleListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/schedules/create',
+      name: 'schedule-create',
+      component: () => import('../views/schedules/ScheduleFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/schedules/:id/edit',
+      name: 'schedule-edit',
+      component: () => import('../views/schedules/ScheduleFormView.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),

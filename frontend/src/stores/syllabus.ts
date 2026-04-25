@@ -3,6 +3,21 @@ import { ref, computed } from 'vue'
 import api from '@/services/api'
 import type { Syllabus, SyllabusFormData, SyllabusFilter, SyllabusStats } from '@/types/syllabus'
 
+const toCamelCase = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj
+  if (Array.isArray(obj)) return obj.map((item) => toCamelCase(item))
+  if (typeof obj !== 'object') return obj
+
+  const result: any = {}
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+      result[camelKey] = toCamelCase(obj[key])
+    }
+  }
+  return result
+}
+
 export const useSyllabusStore = defineStore('syllabus', () => {
   // State
   const syllabi = ref<Syllabus[]>([])
@@ -77,7 +92,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
     error.value = ''
     try {
       const response = await api.get('/syllabi', { params: filter.value })
-      syllabi.value = response.data.data || response.data
+      syllabi.value = toCamelCase(response.data.data || response.data)
       console.log('Syllabi fetched successfully:', syllabi.value.length, 'syllabi')
     } catch (err: any) {
       console.error('Error fetching syllabi:', err)
@@ -103,7 +118,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
     error.value = ''
     try {
       const response = await api.get(`/syllabi/${id}`)
-      const syllabus = response.data
+      const syllabus = toCamelCase(response.data)
       
       // Update in store if exists
       const index = syllabi.value.findIndex(s => s.id === id)
@@ -142,7 +157,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
       }
       
       const response = await api.post('/syllabi', apiData)
-      const newSyllabus = response.data.syllabus || response.data
+      const newSyllabus = toCamelCase(response.data.syllabus || response.data)
       syllabi.value.push(newSyllabus)
       return newSyllabus
     } catch (err: any) {
@@ -174,7 +189,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
       if (syllabusData.approved !== undefined) apiData.approved = syllabusData.approved
       
       const response = await api.put(`/syllabi/${id}`, apiData)
-      const updatedSyllabus = response.data.syllabus || response.data
+      const updatedSyllabus = toCamelCase(response.data.syllabus || response.data)
       
       // Update in store
       const index = syllabi.value.findIndex(s => s.id === id)
@@ -219,7 +234,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
     error.value = ''
     try {
       const response = await api.patch(`/syllabi/${id}/approve`)
-      const updatedSyllabus = response.data.syllabus || response.data
+      const updatedSyllabus = toCamelCase(response.data.syllabus || response.data)
       
       // Update in store
       const index = syllabi.value.findIndex(s => s.id === id)
@@ -242,7 +257,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
     error.value = ''
     try {
       const response = await api.patch(`/syllabi/${id}/reject`)
-      const updatedSyllabus = response.data.syllabus || response.data
+      const updatedSyllabus = toCamelCase(response.data.syllabus || response.data)
       
       // Update in store
       const index = syllabi.value.findIndex(s => s.id === id)
@@ -297,7 +312,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
     error.value = ''
     try {
       const response = await api.get(`/courses/${courseId}/syllabi`)
-      return response.data
+      return toCamelCase(response.data)
     } catch (err: any) {
       console.error('Error fetching course syllabi:', err)
       error.value = err.response?.data?.message || 'Failed to fetch course syllabi'
@@ -312,7 +327,7 @@ export const useSyllabusStore = defineStore('syllabus', () => {
     error.value = ''
     try {
       const response = await api.post('/syllabi/generate-sample-data')
-      const sampleSyllabi = response.data.syllabi || []
+      const sampleSyllabi = toCamelCase(response.data.syllabi || [])
       
       // Add to store
       syllabi.value.push(...sampleSyllabi)

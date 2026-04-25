@@ -5,6 +5,7 @@ export interface Announcement {
   title: string
   content: string
   image?: string
+  image_url?: string
   user_id: number
   status: 'draft' | 'published'
   target_users: number[] | null

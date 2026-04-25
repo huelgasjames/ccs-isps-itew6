@@ -10,6 +10,7 @@ use App\Helpers\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class AnnouncementController extends Controller
 {
@@ -49,7 +50,16 @@ class AnnouncementController extends Controller
                 ->paginate($perPage);
         }
 
-        return response()->json($announcements);
+        if (method_exists($announcements, 'getCollection')) {
+            $announcements->setCollection(
+                $announcements->getCollection()->map(fn ($announcement) => $this->transformAnnouncement($announcement))
+            );
+            return response()->json($announcements);
+        }
+
+        return response()->json(
+            $announcements->map(fn ($announcement) => $this->transformAnnouncement($announcement))
+        );
     }
 
     /**
@@ -74,7 +84,9 @@ class AnnouncementController extends Controller
             'target_students' => 'nullable|boolean',
             'target_professors' => 'nullable|boolean',
             'target_admins' => 'nullable|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar|max:102400'
         ]);
 
         $data = $request->except('image');
@@ -91,6 +103,13 @@ class AnnouncementController extends Controller
             
             $path = ImageHelper::uploadAnnouncementImage($image);
             $data['image'] = $path;
+        } elseif ($request->hasFile('attachments.0') && Str::startsWith($request->file('attachments.0')->getMimeType(), 'image/')) {
+            $image = $request->file('attachments.0');
+            $validationErrors = ImageHelper::validateImage($image);
+            if (!empty($validationErrors)) {
+                return response()->json(['errors' => $validationErrors], 422);
+            }
+            $data['image'] = ImageHelper::uploadAnnouncementImage($image);
         }
 
         // Set default values
@@ -108,7 +127,7 @@ class AnnouncementController extends Controller
 
         $announcement = Announcement::create($data);
 
-        return response()->json($announcement, 201);
+        return response()->json($this->transformAnnouncement($announcement->load('user')), 201);
     }
 
     /**
@@ -119,7 +138,7 @@ class AnnouncementController extends Controller
     $announcement = Announcement::with(['user', 'views'])
         ->findOrFail($id);
 
-    return response()->json($announcement);
+    return response()->json($this->transformAnnouncement($announcement));
 }
 
     /**
@@ -142,11 +161,27 @@ class AnnouncementController extends Controller
             'target_students' => 'boolean',
             'target_professors' => 'boolean',
             'target_admins' => 'boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar|max:102400'
         ]);
+        $data = $request->except(['image', 'attachments']);
 
-        $announcement->update($request->all());
+        if ($request->hasFile('image')) {
+            if (!empty($announcement->image)) {
+                ImageHelper::deleteAnnouncementImage($announcement->image);
+            }
+            $data['image'] = ImageHelper::uploadAnnouncementImage($request->file('image'));
+        } elseif ($request->hasFile('attachments.0') && Str::startsWith($request->file('attachments.0')->getMimeType(), 'image/')) {
+            if (!empty($announcement->image)) {
+                ImageHelper::deleteAnnouncementImage($announcement->image);
+            }
+            $data['image'] = ImageHelper::uploadAnnouncementImage($request->file('attachments.0'));
+        }
 
-        return response()->json($announcement->load('attachments'));
+        $announcement->update($data);
+
+        return response()->json($this->transformAnnouncement($announcement->load(['attachments', 'user'])));
     }
 
     /**
@@ -160,6 +195,10 @@ class AnnouncementController extends Controller
         foreach ($announcement->attachments as $attachment) {
             Storage::disk('public')->delete($attachment->file_path);
             $attachment->delete();
+        }
+
+        if (!empty($announcement->image)) {
+            ImageHelper::deleteAnnouncementImage($announcement->image);
         }
         
         $announcement->delete();
@@ -270,7 +309,9 @@ class AnnouncementController extends Controller
 
         $announcements = $query->get(['id', 'title', 'excerpt', 'publish_date', 'priority', 'type']);
 
-        return response()->json($announcements);
+        return response()->json(
+            $announcements->map(fn ($announcement) => $this->transformAnnouncement($announcement))
+        );
     }
 
     /**
@@ -287,5 +328,50 @@ class AnnouncementController extends Controller
         }
 
         return response()->download($filePath, $attachment->original_name);
+    }
+
+    private function transformAnnouncement(Announcement $announcement): array
+    {
+        return [
+            'id' => $announcement->id,
+            'title' => $announcement->title,
+            'excerpt' => $announcement->excerpt,
+            'content' => $announcement->content,
+            'image' => $announcement->image,
+            'image_url' => $announcement->image ? ImageHelper::getImageUrl($announcement->image) : null,
+            'type' => $announcement->type,
+            'priority' => $announcement->priority,
+            'status' => $announcement->status,
+            'publish_date' => optional($announcement->publish_date)->toISOString(),
+            'expires_at' => optional($announcement->expires_at)->toISOString(),
+            'target_type' => $announcement->target_type,
+            'target_users' => $announcement->target_users,
+            'target_all' => (bool) $announcement->target_all,
+            'target_students' => (bool) $announcement->target_students,
+            'target_professors' => (bool) $announcement->target_professors,
+            'target_admins' => (bool) $announcement->target_admins,
+            'views' => (int) $announcement->views,
+            'view_count' => (int) ($announcement->views()->count() ?? $announcement->views),
+            'likes' => (int) $announcement->likes,
+            'comments' => (int) $announcement->comments_count,
+            'user_id' => $announcement->user_id,
+            'author' => optional($announcement->user)->name,
+            'user' => $announcement->user ? [
+                'id' => $announcement->user->id,
+                'name' => $announcement->user->name,
+                'email' => $announcement->user->email,
+                'role' => $announcement->user->role,
+            ] : null,
+            'created_at' => optional($announcement->created_at)->toISOString(),
+            'updated_at' => optional($announcement->updated_at)->toISOString(),
+            'attachments' => $announcement->relationLoaded('attachments')
+                ? $announcement->attachments->map(fn ($attachment) => [
+                    'id' => $attachment->id,
+                    'name' => $attachment->original_name,
+                    'url' => Storage::url($attachment->file_path),
+                    'size' => $attachment->file_size,
+                ])->values()
+                : [],
+        ];
     }
 }

@@ -110,7 +110,7 @@
           
           <div v-if="announcement.image" class="announcement-image">
             <img 
-              :src="`http://127.0.0.1:8000/storage/${announcement.image}`" 
+              :src="announcement.image_url || `http://127.0.0.1:8000/${announcement.image}`" 
               :alt="announcement.title"
               @error="handleImageError"
             />

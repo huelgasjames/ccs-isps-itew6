@@ -244,7 +244,7 @@ const form = ref<CourseFormData>({
   instructor: '',
   schedule: '',
   room: '',
-  maxStudents: 300
+  maxStudents: 40
   ,
   status: 'active',
   prerequisites: []
