@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('course_enrollments', function (Blueprint $table) {
-            $table->unique(['student_id', 'course_id', 'semester', 'academic_year'], 'course_enrollment_unique');
-        });
+        // No-op: unique index is already created in create_course_enrollments migration.
     }
 
     /**
@@ -21,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('course_enrollments', function (Blueprint $table) {
-            $table->dropUnique('course_enrollment_unique');
-        });
+        // No-op because this migration no longer creates an index.
     }
 };

@@ -416,14 +416,17 @@ class ProfessorSeeder extends Seeder
         ];
 
         foreach ($professors as $professorData) {
-            $user = User::create([
-                'name' => $professorData['first_name'] . ' ' . $professorData['last_name'],
+            $user = User::updateOrCreate([
                 'email' => $professorData['email'],
+            ], [
+                'name' => $professorData['first_name'] . ' ' . $professorData['last_name'],
                 'password' => Hash::make('password'),
                 'role' => 'professor',
             ]);
 
-            Professor::create([
+            Professor::updateOrCreate([
+                'email' => $professorData['email'],
+            ], [
                 'professor_unique_id' => 'PROF-' . strtoupper(Str::random(8)),
                 'user_id' => $user->id,
                 'first_name' => $professorData['first_name'],

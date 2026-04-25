@@ -27,6 +27,8 @@ class DatabaseSeeder extends Seeder
         // Seed additional student data
         $this->call([
             CourseSeeder::class,
+            SyllabusSeeder::class,
+            ScheduleSeeder::class,
             CourseEnrollmentSeeder::class,
             EventSeeder::class,
             StudentSkillSeeder::class,

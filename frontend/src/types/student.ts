@@ -92,6 +92,17 @@ export interface Affiliation {
   description?: string
 }
 
+export interface EnrolledCourse {
+  id: number
+  courseId: number
+  courseCode?: string
+  courseName?: string
+  semester: string
+  academicYear: string
+  status: string
+  grade?: number | null
+}
+
 // Main Student Profile Interface
 export interface Student {
   id: number
@@ -102,6 +113,7 @@ export interface Student {
   violations: Violation[]
   skills: Skill[]
   affiliations: Affiliation[]
+  enrolledCourses?: EnrolledCourse[]
   createdAt: string
   updatedAt: string
   profileImage?: string

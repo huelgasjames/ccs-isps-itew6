@@ -170,7 +170,7 @@
           <option value="">All Violation Status</option>
           <option value="pending">Pending</option>
           <option value="resolved">Resolved</option>
-          <option value="under_review">Under Review</option>
+          <option value="appealed">Appealed</option>
         </select>
       </div>
       <button @click="resetFilters" class="btn btn-secondary">
@@ -258,7 +258,7 @@
         </tbody>
       </table>
       
-      <div v-if="filteredStudents.length === 0" class="no-results">
+      <div v-if="filteredStudentsList.length === 0" class="no-results">
         No students found matching your criteria.
       </div>
     </div>
@@ -296,6 +296,7 @@ const selectedStanding = ref('')
 const selectedSkill = ref('')
 const selectedAffiliation = ref('')
 const selectedViolationStatus = ref('')
+const allStudents = computed(() => Array.isArray(studentStore.students) ? studentStore.students : [])
 
 // Available options for filters
 const availableSkills = ref([
@@ -309,8 +310,8 @@ const availableActivities = ref(['basketball', 'volunteer', 'organization', 'spo
 // Computed lists for filter dropdowns
 const availableSkillsList = computed(() => {
   const allSkills = new Set<string>()
-  studentStore.students.forEach(student => {
-    student.skills.forEach(skill => {
+  allStudents.value.forEach(student => {
+    ;(student.skills || []).forEach(skill => {
       allSkills.add(skill.name)
     })
   })
@@ -319,8 +320,8 @@ const availableSkillsList = computed(() => {
 
 const availableAffiliationsList = computed(() => {
   const allAffiliations = new Set<string>()
-  studentStore.students.forEach(student => {
-    student.affiliations.forEach(affiliation => {
+  allStudents.value.forEach(student => {
+    ;(student.affiliations || []).forEach(affiliation => {
       allAffiliations.add(affiliation.name)
     })
   })
@@ -342,17 +343,17 @@ const {
 
 // Access store directly for reactive values
 const activeStudents = computed(() => 
-  studentStore.students.filter((s: Student) => s.isActive).length
+  allStudents.value.filter((s: Student) => s?.isActive).length
 )
 
 const averageGPA = computed(() => {
-  if (studentStore.students.length === 0) return 0
-  const total = studentStore.students.reduce((sum: number, student: Student) => sum + student.academicStanding.currentGPA, 0)
-  return total / studentStore.students.length
+  if (allStudents.value.length === 0) return 0
+  const total = allStudents.value.reduce((sum: number, student: Student) => sum + (student.academicStanding?.currentGPA || 0), 0)
+  return total / allStudents.value.length
 })
 
 const totalViolations = computed(() => 
-  studentStore.students.reduce((sum: number, student: Student) => sum + student.violations.length, 0)
+  allStudents.value.reduce((sum: number, student: Student) => sum + (student.violations?.length || 0), 0)
 )
 
 const visiblePages = computed(() => {
@@ -369,16 +370,16 @@ const visiblePages = computed(() => {
 
 // Enhanced Analytics Computed Properties
 const atRiskStudents = computed(() => 
-  studentStore.students.filter((s: Student) => 
-    s.academicStanding.standing === 'probation' || 
-    s.academicStanding.currentGPA < 2.5
+  allStudents.value.filter((s: Student) => 
+    s.academicStanding?.standing === 'probation' || 
+    (s.academicStanding?.currentGPA || 0) < 2.5
   ).length
 )
 
 const newStudentsThisMonth = computed(() => {
   const oneMonthAgo = new Date()
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-  return studentStore.students.filter((s: Student) => 
+  return allStudents.value.filter((s: Student) => 
     new Date(s.createdAt) > oneMonthAgo
   ).length
 })
@@ -386,8 +387,8 @@ const newStudentsThisMonth = computed(() => {
 const violationsThisMonth = computed(() => {
   const oneMonthAgo = new Date()
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-  return studentStore.students.reduce((count: number, student: Student) => {
-    const recentViolations = student.violations.filter(v => 
+  return allStudents.value.reduce((count: number, student: Student) => {
+    const recentViolations = (student.violations || []).filter(v => 
       new Date(v.date) > oneMonthAgo
     )
     return count + recentViolations.length
@@ -401,43 +402,43 @@ const gpaTrend = computed(() => {
 
 // Academic Standing Counts
 const excellentStandingCount = computed(() => 
-  studentStore.students.filter((s: Student) => 
-    s.academicStanding.currentGPA >= 3.5
+  allStudents.value.filter((s: Student) => 
+    (s.academicStanding?.currentGPA || 0) >= 3.5
   ).length
 )
 
 const goodStandingCount = computed(() => 
-  studentStore.students.filter((s: Student) => 
-    s.academicStanding.currentGPA >= 3.0 && s.academicStanding.currentGPA < 3.5
+  allStudents.value.filter((s: Student) => 
+    (s.academicStanding?.currentGPA || 0) >= 3.0 && (s.academicStanding?.currentGPA || 0) < 3.5
   ).length
 )
 
 const averageStandingCount = computed(() => 
-  studentStore.students.filter((s: Student) => 
-    s.academicStanding.currentGPA >= 2.5 && s.academicStanding.currentGPA < 3.0
+  allStudents.value.filter((s: Student) => 
+    (s.academicStanding?.currentGPA || 0) >= 2.5 && (s.academicStanding?.currentGPA || 0) < 3.0
   ).length
 )
 
 const probationCount = computed(() => 
-  studentStore.students.filter((s: Student) => 
-    s.academicStanding.currentGPA < 2.5
+  allStudents.value.filter((s: Student) => 
+    (s.academicStanding?.currentGPA || 0) < 2.5
   ).length
 )
 
 // StudentListView computed properties
 const atRiskCount = computed(() => 
-  studentStore.students.filter(student => ['average', 'probation'].includes(student.academicStanding.standing)).length
+  allStudents.value.filter(student => ['average', 'probation'].includes(student.academicStanding?.standing || '')).length
 )
 
 // Available years for filter
 const availableYears = computed(() => {
-  const years = [...new Set(studentStore.students.map(s => s.academicStanding.currentYear))].sort((a, b) => a - b)
+  const years = [...new Set(allStudents.value.map(s => s.academicStanding?.currentYear).filter(Boolean))].sort((a, b) => Number(a) - Number(b))
   return years
 })
 
 // Filtered students for StudentListView table
 const filteredStudentsList = computed(() => {
-  let filtered = studentStore.students
+  let filtered = allStudents.value
 
   // Search filter - now includes skills, affiliations, violations, and courses
   if (searchQuery.value) {
@@ -445,66 +446,65 @@ const filteredStudentsList = computed(() => {
     filtered = filtered.filter(student => {
       // Basic info search
       const basicMatch = 
-        student.personalInfo.firstName.toLowerCase().includes(query) ||
-        student.personalInfo.lastName.toLowerCase().includes(query) ||
-        student.personalInfo.email.toLowerCase().includes(query)
+        (student.personalInfo?.firstName || '').toLowerCase().includes(query) ||
+        (student.personalInfo?.lastName || '').toLowerCase().includes(query) ||
+        (student.personalInfo?.email || '').toLowerCase().includes(query)
       
       // Skills search
-      const skillsMatch = student.skills.some(skill => 
-        skill.name.toLowerCase().includes(query) ||
-        skill.category.toLowerCase().includes(query)
+      const skillsMatch = (student.skills || []).some(skill => 
+        (skill.name || '').toLowerCase().includes(query) ||
+        (skill.category || '').toLowerCase().includes(query)
       )
       
       // Affiliations search
-      const affiliationsMatch = student.affiliations.some(affiliation => 
-        affiliation.name.toLowerCase().includes(query) ||
-        affiliation.type.toLowerCase().includes(query)
+      const affiliationsMatch = (student.affiliations || []).some(affiliation => 
+        (affiliation.name || '').toLowerCase().includes(query) ||
+        (affiliation.type || '').toLowerCase().includes(query)
       )
       
       // Violations search
-      const violationsMatch = student.violations.some(violation => 
-        violation.type.toLowerCase().includes(query) ||
-        violation.description.toLowerCase().includes(query)
+      const violationsMatch = (student.violations || []).some(violation => 
+        (violation.type || '').toLowerCase().includes(query) ||
+        (violation.description || '').toLowerCase().includes(query)
       )
       
-      // Courses search (placeholder for when enrolled courses are added)
-      // const coursesMatch = student.enrolledCourses?.some(course => 
-      //   course.courseName.toLowerCase().includes(query) ||
-      //   course.courseCode.toLowerCase().includes(query)
-      // ) || false
+      const coursesMatch = (student.enrolledCourses || []).some(course =>
+        (course.courseName || '').toLowerCase().includes(query) ||
+        (course.courseCode || '').toLowerCase().includes(query)
+      )
       
-      return basicMatch || skillsMatch || affiliationsMatch || violationsMatch // || coursesMatch
+      return basicMatch || skillsMatch || affiliationsMatch || violationsMatch || coursesMatch
     })
   }
 
   // Year filter
   if (selectedYear.value) {
-    filtered = filtered.filter(student => student.academicStanding.currentYear === Number(selectedYear.value))
+    filtered = filtered.filter(student => student.academicStanding?.currentYear === Number(selectedYear.value))
   }
 
   // Standing filter
   if (selectedStanding.value) {
-    filtered = filtered.filter(student => student.academicStanding.standing === selectedStanding.value)
+    filtered = filtered.filter(student => student.academicStanding?.standing === selectedStanding.value)
   }
   
   // Skill filter
   if (selectedSkill.value) {
     filtered = filtered.filter(student => 
-      student.skills.some(skill => skill.name === selectedSkill.value)
+      (student.skills || []).some(skill => skill.name === selectedSkill.value)
     )
   }
   
   // Affiliation filter
   if (selectedAffiliation.value) {
     filtered = filtered.filter(student => 
-      student.affiliations.some(affiliation => affiliation.name === selectedAffiliation.value)
+      (student.affiliations || []).some(affiliation => affiliation.name === selectedAffiliation.value)
     )
   }
   
   // Violation status filter
   if (selectedViolationStatus.value) {
     filtered = filtered.filter(student => 
-      student.violations.some(violation => violation.status === selectedViolationStatus.value)
+      (student.violations || []).some(violation => violation.status === selectedViolationStatus.value)
     )
   }
 
@@ -513,8 +513,8 @@ const filteredStudentsList = computed(() => {
 
 // Year Level Distribution
 const yearDistribution = computed(() => {
-  const yearGroups = studentStore.students.reduce((groups: any, student: Student) => {
-    const year = student.academicStanding.currentYear
+  const yearGroups = allStudents.value.reduce((groups: any, student: Student) => {
+    const year = student.academicStanding?.currentYear ?? 1
     if (!groups[year]) {
       groups[year] = {
         year,
@@ -524,12 +524,12 @@ const yearDistribution = computed(() => {
       }
     }
     groups[year].count++
-    groups[year].totalGPA += student.academicStanding.currentGPA
+    groups[year].totalGPA += student.academicStanding?.currentGPA || 0
     groups[year].students.push(student)
     return groups
   }, {})
 
-  const total = studentStore.students.length
+  const total = allStudents.value.length
   return Object.values(yearGroups)
     .map((group: any) => ({
       year: group.year,
@@ -650,7 +650,7 @@ const editStudent = (id: number) => {
 }
 
 const deleteStudent = async (id: number) => {
-  const student = studentStore.students.find(s => s.id === id)
+  const student = allStudents.value.find(s => s.id === id)
   const studentName = student ? `${student.personalInfo.firstName} ${student.personalInfo.lastName}` : 'this student'
   
   if (confirm(`Are you sure you want to archive ${studentName}? This will remove them from the active list but keep their data for records.`)) {
@@ -707,7 +707,7 @@ const getViolationClass = (violations: any[]) => {
 }
 
 const archiveStudent = async (studentId: number) => {
-  const student = studentStore.students.find(s => s.id === studentId)
+  const student = allStudents.value.find(s => s.id === studentId)
   const studentName = student ? `${student.personalInfo.firstName} ${student.personalInfo.lastName}` : 'this student'
   
   if (confirm(`Are you sure you want to archive ${studentName}? This will remove them from the active list but keep their data for records.`)) {

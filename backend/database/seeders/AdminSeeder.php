@@ -10,9 +10,10 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'System Administrator',
+        User::updateOrCreate([
             'email' => 'admin@ccs.edu',
+        ], [
+            'name' => 'System Administrator',
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);

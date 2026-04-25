@@ -6,44 +6,33 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 class StudentController extends Controller
 {
     public function index()
     {
         try {
-            $students = Student::get();
-            
-            \Log::info('Students found: ' . $students->count());
-            
-            $mapped = $students->map(function ($student) {
-                // Add computed attributes
-                $student->is_at_risk = $student->isAtRisk();
-                $student->full_name = $student->full_name;
-                
-                // Return flat structure matching what StudentListView expects
-                return [
-                    'id' => $student->id,
-                    'first_name' => $student->first_name,
-                    'middle_name' => $student->middle_name,
-                    'last_name' => $student->last_name,
-                    'student_number' => $student->student_id,
-                    'year_level' => $student->year_level ?? $student->current_year,
-                    'academic_standing' => $student->standing,
-                    'gpa' => $student->current_gpa,
-                    'phone' => $student->phone,
-                    'date_of_birth' => $student->date_of_birth,
-                    'gender' => $student->gender,
-                    'city' => $student->city,
-                    'emergency_contact_name' => $student->emergency_contact_name,
-                    'emergency_contact_phone' => $student->emergency_contact_phone,
-                    'created_at' => $student->created_at,
-                    'updated_at' => $student->updated_at,
-                ];
-            });
+            $students = Student::with([
+                'academicHistory',
+                'activities',
+                'skills',
+                'affiliations',
+                'violations',
+                'courseEnrollments.course',
+            ])->orderByDesc('id')->get();
 
-            return response()->json($mapped);
+            $mapped = $students->map(function (Student $student) {
+                return $this->transformStudentForFrontend($student);
+            })->values();
+
+            return response()->json([
+                'students' => $mapped,
+                'total' => $mapped->count(),
+                'page' => 1,
+                'limit' => max($mapped->count(), 1),
+                'totalPages' => 1,
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error in StudentController@index: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
@@ -137,7 +126,19 @@ class StudentController extends Controller
                 }
             }
 
-            return response()->json($student->load('user'), 201);
+            return response()->json(
+                $this->transformStudentForFrontend(
+                    $student->load([
+                        'academicHistory',
+                        'activities',
+                        'skills',
+                        'affiliations',
+                        'violations',
+                        'courseEnrollments.course',
+                    ])
+                ),
+                201
+            );
         }
 
         // Support both old flat structure and new nested structure from frontend
@@ -261,16 +262,33 @@ class StudentController extends Controller
             ]);
         }
 
-        return response()->json($student->load('user'), 201);
+        return response()->json(
+            $this->transformStudentForFrontend(
+                $student->load([
+                    'academicHistory',
+                    'activities',
+                    'skills',
+                    'affiliations',
+                    'violations',
+                    'courseEnrollments.course',
+                ])
+            ),
+            201
+        );
     }
 
     public function show(Student $student)
     {
-        $student->load(['user', 'skills', 'talents', 'sports', 'certificates', 'violations', 'organizations']);
-        $student->is_at_risk = $student->isAtRisk();
-        $student->full_name = $student->full_name;
+        $student->load([
+            'academicHistory',
+            'activities',
+            'skills',
+            'affiliations',
+            'violations',
+            'courseEnrollments.course',
+        ]);
 
-        return response()->json($student);
+        return response()->json($this->transformStudentForFrontend($student));
     }
 
     public function update(Request $request, Student $student)
@@ -371,7 +389,18 @@ class StudentController extends Controller
             }
         }
 
-        return response()->json($student->load('user'));
+        return response()->json(
+            $this->transformStudentForFrontend(
+                $student->load([
+                    'academicHistory',
+                    'activities',
+                    'skills',
+                    'affiliations',
+                    'violations',
+                    'courseEnrollments.course',
+                ])
+            )
+        );
     }
 
     public function destroy(Student $student)
@@ -590,5 +619,91 @@ class StudentController extends Controller
             'message' => count($created) . ' sample students generated',
             'students' => $created,
         ]);
+    }
+
+    private function transformStudentForFrontend(Student $student): array
+    {
+        return [
+            'id' => $student->id,
+            'personalInfo' => $student->personal_info,
+            'academicHistory' => $student->academicHistory->map(function ($history) {
+                return [
+                    'id' => $history->id,
+                    'schoolName' => $history->school_name,
+                    'degree' => $history->degree,
+                    'major' => $history->major,
+                    'startDate' => optional($history->start_date)->format('Y-m-d'),
+                    'endDate' => optional($history->end_date)->format('Y-m-d'),
+                    'gpa' => $history->gpa !== null ? (float) $history->gpa : null,
+                    'honors' => $history->honors ?? [],
+                    'status' => $history->status,
+                ];
+            })->values(),
+            'academicStanding' => $student->academic_standing,
+            'activities' => $student->activities->map(function ($activity) {
+                return [
+                    'id' => $activity->id,
+                    'name' => $activity->name,
+                    'type' => $activity->type,
+                    'role' => $activity->role,
+                    'startDate' => optional($activity->start_date)->format('Y-m-d'),
+                    'endDate' => optional($activity->end_date)->format('Y-m-d'),
+                    'description' => $activity->description,
+                    'achievements' => $activity->achievements ?? [],
+                    'level' => $activity->level,
+                ];
+            })->values(),
+            'violations' => $student->violations->map(function ($violation) {
+                return [
+                    'id' => $violation->id,
+                    'type' => $violation->type,
+                    'severity' => $violation->severity,
+                    'description' => $violation->description,
+                    'date' => optional($violation->date)->format('Y-m-d'),
+                    'status' => $violation->status,
+                    'sanctions' => $violation->consequence ? [$violation->consequence] : [],
+                    'points' => 0,
+                    'reportedBy' => 'System',
+                ];
+            })->values(),
+            'skills' => $student->skills->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                    'category' => $skill->category,
+                    'proficiency' => $skill->proficiency,
+                    'certifications' => $skill->certifications ? [$skill->certifications] : [],
+                    'yearsExperience' => $skill->years_experience,
+                    'lastUsed' => optional($skill->last_used)->format('Y-m-d'),
+                ];
+            })->values(),
+            'affiliations' => $student->affiliations->map(function ($affiliation) {
+                return [
+                    'id' => $affiliation->id,
+                    'name' => $affiliation->name,
+                    'type' => $affiliation->type,
+                    'role' => $affiliation->role,
+                    'startDate' => optional($affiliation->start_date)->format('Y-m-d'),
+                    'endDate' => optional($affiliation->end_date)->format('Y-m-d'),
+                    'position' => $affiliation->position,
+                    'description' => $affiliation->description,
+                ];
+            })->values(),
+            'enrolledCourses' => $student->courseEnrollments->map(function ($enrollment) {
+                return [
+                    'id' => $enrollment->id,
+                    'courseId' => $enrollment->course_id,
+                    'courseCode' => optional($enrollment->course)->code,
+                    'courseName' => optional($enrollment->course)->name,
+                    'semester' => $enrollment->semester,
+                    'academicYear' => $enrollment->academic_year,
+                    'status' => $enrollment->status,
+                    'grade' => $enrollment->grade !== null ? (float) $enrollment->grade : null,
+                ];
+            })->values(),
+            'createdAt' => optional($student->created_at)->toISOString(),
+            'updatedAt' => optional($student->updated_at)->toISOString(),
+            'isActive' => (bool) $student->is_active,
+        ];
     }
 }
