@@ -207,10 +207,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { useStudentStore } from '@/stores/student'
 
 const route = useRoute()
 const router = useRouter()
+const studentStore = useStudentStore()
 const isEdit = computed(() => !!route.params.id)
 const loading = ref(false)
 
@@ -232,41 +233,49 @@ const form = ref({
   gpa: '',
   emergency_contact_name: '',
   emergency_contact_phone: '',
-  skills: [],
-  activities: [],
-  academic_history: [],
-  affiliations: [],
-  violations: []
+  skills: [] as any[],
+  activities: [] as any[],
+  academic_history: [] as any[],
+  affiliations: [] as any[],
+  violations: [] as any[]
 })
 
 onMounted(async () => {
   if (isEdit.value) {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/students/${route.params.id}`)
-      const student = response.data
-      form.value = {
-        first_name: student.first_name || '',
-        middle_name: student.middle_name || '',
-        last_name: student.last_name || '',
-        email: student.user?.email || '',
-        password: '',
-        phone: student.phone || '',
-        date_of_birth: student.date_of_birth || '',
-        age: student.age || '',
-        gender: student.gender || '',
-        city: student.city || '',
-        student_number: student.student_number || '',
-        year_level: student.year_level || student.current_year || '',
-        program: student.program || '',
-        academic_standing: student.academic_standing || student.standing || '',
-        gpa: student.gpa || '',
-        emergency_contact_name: student.emergency_contact_name || '',
-        emergency_contact_phone: student.emergency_contact_phone || '',
-        skills: student.skills || [],
-        activities: student.activities || [],
-        academic_history: student.academic_history || [],
-        affiliations: student.affiliations || [],
-        violations: student.violations || []
+      // Try to get student from store first (for generated data)
+      let student = studentStore.students.find(s => s.id === Number(route.params.id))
+      
+      // If not found in store, try to fetch from API
+      if (!student) {
+        student = await studentStore.fetchStudentById(Number(route.params.id))
+      }
+      
+      if (student) {
+        form.value = {
+          first_name: student.personalInfo?.firstName || '',
+          middle_name: student.personalInfo?.middleName || '',
+          last_name: student.personalInfo?.lastName || '',
+          email: student.personalInfo?.email || '',
+          password: '',
+          phone: student.personalInfo?.phone || '',
+          date_of_birth: student.personalInfo?.dateOfBirth || '',
+          age: student.personalInfo?.age?.toString() || '',
+          gender: student.personalInfo?.gender || '',
+          city: student.personalInfo?.city || '',
+          student_number: student.personalInfo?.studentId || '',
+          year_level: student.academicStanding?.currentYear?.toString() || '',
+          program: student.academicHistory?.[0]?.major || '',
+          academic_standing: student.academicStanding?.standing || '',
+          gpa: student.academicStanding?.currentGPA?.toString() || '',
+          emergency_contact_name: student.personalInfo?.emergencyContact?.name || '',
+          emergency_contact_phone: student.personalInfo?.emergencyContact?.phone || '',
+          skills: student.skills || [],
+          activities: student.activities || [],
+          academic_history: student.academicHistory || [],
+          affiliations: student.affiliations || [],
+          violations: student.violations || []
+        }
       }
     } catch (error) {
       console.error('Error fetching student:', error)
@@ -293,24 +302,93 @@ async function handleSubmit() {
   loading.value = true
   try {
     if (isEdit.value) {
-      await axios.put(`http://127.0.0.1:8000/api/students/${route.params.id}`, form.value)
+      // Update existing student in store
+      const studentId = Number(route.params.id)
+      const updateData = {
+        id: studentId,
+        personalInfo: {
+          firstName: form.value.first_name,
+          middleName: form.value.middle_name,
+          lastName: form.value.last_name,
+          email: form.value.email,
+          phone: form.value.phone,
+          dateOfBirth: form.value.date_of_birth,
+          age: Number(form.value.age) || 0,
+          gender: form.value.gender as 'male' | 'female' | 'other',
+          address: '', // Add default empty values for required fields
+          city: form.value.city,
+          province: '', // Add default empty values
+          postalCode: '', // Add default empty values
+          studentId: form.value.student_number,
+          emergencyContact: {
+            name: form.value.emergency_contact_name,
+            relationship: 'Guardian', // Default relationship
+            phone: form.value.emergency_contact_phone
+          }
+        },
+        academicStanding: {
+          currentYear: Number(form.value.year_level) || 1,
+          currentSemester: 'first' as const,
+          currentGPA: Number(form.value.gpa) || 0,
+          totalUnits: 0, // Default value
+          standing: form.value.academic_standing as 'good' | 'warning' | 'probation',
+          advisor: 'TBD' // Default value
+        },
+        skills: form.value.skills,
+        activities: form.value.activities,
+        academicHistory: form.value.academic_history,
+        affiliations: form.value.affiliations,
+        violations: form.value.violations,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isActive: true
+      }
+      
+      await studentStore.updateStudent(studentId, updateData)
     } else {
-      await axios.post('http://127.0.0.1:8000/api/students', form.value)
+      // Create new student
+      const createData = {
+        personalInfo: {
+          firstName: form.value.first_name,
+          middleName: form.value.middle_name,
+          lastName: form.value.last_name,
+          email: form.value.email,
+          phone: form.value.phone,
+          dateOfBirth: form.value.date_of_birth,
+          age: Number(form.value.age) || 0,
+          gender: form.value.gender as 'male' | 'female' | 'other',
+          address: '', // Add default empty values for required fields
+          city: form.value.city,
+          province: '', // Add default empty values
+          postalCode: '', // Add default empty values
+          studentId: form.value.student_number,
+          emergencyContact: {
+            name: form.value.emergency_contact_name,
+            relationship: 'Guardian', // Default relationship
+            phone: form.value.emergency_contact_phone
+          }
+        },
+        academicStanding: {
+          currentYear: Number(form.value.year_level) || 1,
+          currentSemester: 'first' as const,
+          currentGPA: Number(form.value.gpa) || 0,
+          totalUnits: 0, // Default value
+          standing: form.value.academic_standing as 'good' | 'warning' | 'probation',
+          advisor: 'TBD' // Default value
+        }
+      }
+      
+      await studentStore.createStudent(createData)
     }
     router.push('/students')
   } catch (error: any) {
     console.error('Error saving student:', error)
-    console.error('Error response:', error.response?.data)
     
-    if (error.response?.data?.errors) {
-      const errors = error.response.data.errors
-      const errorMessages = Object.keys(errors).map(key => {
-        const fieldErrors = Array.isArray(errors[key]) ? errors[key] : [errors[key]]
-        return `${key}: ${fieldErrors.join(', ')}`
-      })
-      alert(`Validation errors:\n${errorMessages.join('\n')}`)
+    // Handle store errors
+    if (studentStore.error) {
+      alert(studentStore.error)
     } else {
-      alert(error.response?.data?.message || 'Failed to save student')
+      alert('Failed to save student. Please try again.')
     }
   } finally {
     loading.value = false

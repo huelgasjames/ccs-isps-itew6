@@ -154,6 +154,8 @@ Route::middleware('demo.auth')->group(function () {
     // Rooms and schedules routes
     Route::apiResource('rooms', RoomController::class);
     Route::apiResource('schedules', ScheduleController::class);
+    Route::get('/rooms/statistics', [RoomController::class, 'statistics']);
+    Route::get('/rooms/available', [RoomController::class, 'available']);
     
     // Syllabus routes
     Route::apiResource('syllabi', SyllabusController::class);

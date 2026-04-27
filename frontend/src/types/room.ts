@@ -1,12 +1,15 @@
 export interface Room {
   id: number
   name: string
-  building?: string | null
-  floor?: number | null
-  room_type: 'lecture' | 'lab' | 'computer_lab' | 'multimedia' | 'other'
+  room_code: string
+  type: 'lecture' | 'lab' | 'computer_lab' | 'multimedia' | 'conference'
   capacity: number
-  status: 'active' | 'inactive'
-  notes?: string | null
+  floor?: number | null
+  building?: string | null
+  description?: string | null
+  status: 'available' | 'maintenance' | 'occupied' | 'unavailable'
+  equipment?: string[] | null
+  hourly_rate?: number | null
   created_at?: string
   updated_at?: string
 }

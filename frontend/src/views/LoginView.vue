@@ -128,7 +128,7 @@ const handleLogin = async () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8f9fa;
+  background: url('/Untitled design.png') center/cover no-repeat, #f8f9fa;
   font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   position: relative;
 }
@@ -172,7 +172,7 @@ const handleLogin = async () => {
 .brand-title {
   font-size: 2.8rem;
   font-weight: 700;
-  color: #333;
+  color: #fff;
   line-height: 1.2;
   margin-bottom: 12px;
 }
@@ -302,7 +302,6 @@ const handleLogin = async () => {
 .login-footer {
   padding: 25px;
   text-align: center;
-  border-top: 1px solid #e9ecef;
   display: flex;
   justify-content: center;
   align-items: center;

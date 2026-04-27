@@ -258,6 +258,90 @@
         </tbody>
       </table>
       
+      <!-- Mobile Card View -->
+      <div class="mobile-cards-view">
+        <div v-for="student in filteredStudentsList" :key="student.id" class="mobile-student-card">
+          <div class="mobile-card-header">
+            <div class="mobile-student-info">
+              <h3>{{ student.personalInfo.firstName }} {{ student.personalInfo.lastName }}</h3>
+              <p>{{ student.personalInfo.email }}</p>
+              <span :class="['status-badge', student.academicStanding.standing]">
+                {{ formatStanding(student.academicStanding.standing) }}
+              </span>
+            </div>
+            <div class="mobile-student-id">
+              <strong>ID:</strong> {{ student.id }}
+            </div>
+          </div>
+          
+          <div class="mobile-card-body">
+            <div class="mobile-detail-row">
+              <div class="mobile-detail-label">Year Level:</div>
+              <div class="mobile-detail-value">{{ student.academicStanding.currentYear }}</div>
+            </div>
+            
+            <div class="mobile-detail-row">
+              <div class="mobile-detail-label">Skills:</div>
+              <div class="mobile-detail-value">
+                <div class="skills-tags">
+                  <span v-for="skill in student.skills.slice(0, 3)" :key="skill.id" class="skill-tag">
+                    {{ skill.name }}
+                  </span>
+                  <span v-if="student.skills.length > 3" class="more-skills">
+                    +{{ student.skills.length - 3 }} more
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mobile-detail-row">
+              <div class="mobile-detail-label">Affiliations:</div>
+              <div class="mobile-detail-value">
+                <div class="affiliations-tags">
+                  <span v-for="affiliation in student.affiliations.slice(0, 2)" :key="affiliation.id" class="affiliation-tag">
+                    {{ affiliation.name }}
+                  </span>
+                  <span v-if="student.affiliations.length > 2" class="more-affiliations">
+                    +{{ student.affiliations.length - 2 }} more
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mobile-detail-row">
+              <div class="mobile-detail-label">Violations:</div>
+              <div class="mobile-detail-value">
+                <div class="violations-info">
+                  <span :class="['violation-count', getViolationClass(student.violations)]">
+                    {{ student.violations.length }} violations
+                  </span>
+                  <div v-if="student.violations.length > 0" class="violation-types">
+                    <span v-for="(violation, index) in student.violations.slice(0, 2)" :key="violation.id" class="violation-type">
+                      {{ violation.type }}<span v-if="index < Math.min(student.violations.length - 1, 1)">,</span>
+                    </span>
+                    <span v-if="student.violations.length > 2" class="more-violations">
+                      +{{ student.violations.length - 2 }} more
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mobile-card-actions">
+            <router-link :to="`/students/${student.id}`" class="btn btn-sm btn-info">
+              View
+            </router-link>
+            <router-link :to="`/students/${student.id}/edit`" class="btn btn-sm btn-warning">
+              Edit
+            </router-link>
+            <button @click="archiveStudent(student.id)" class="btn btn-sm btn-danger">
+              Archive
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <div v-if="filteredStudentsList.length === 0" class="no-results">
         No students found matching your criteria.
       </div>
@@ -1757,50 +1841,575 @@ onMounted(() => {
   border-color: #3b82f6;
 }
 
+/* Mobile Card View Styles */
+.mobile-cards-view {
+  display: none; /* Hidden by default, shown on mobile */
+}
+
+.mobile-student-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.mobile-card-header {
+  padding: 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.mobile-student-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.mobile-student-info p {
+  margin: 0 0 0.75rem 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.mobile-student-id {
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.mobile-card-body {
+  padding: 1rem;
+}
+
+.mobile-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.mobile-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-detail-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.mobile-detail-value {
+  flex: 1;
+  text-align: right;
+}
+
+.affiliations-tags {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.affiliation-tag {
+  padding: 0.25rem 0.5rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.more-affiliations {
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.violations-info {
+  text-align: right;
+}
+
+.violation-count {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.violation-count.none {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.violation-count.low {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.violation-count.moderate {
+  background: #fed7aa;
+  color: #ea580c;
+}
+
+.violation-count.high {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+.violation-types {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.violation-type {
+  margin-right: 0.25rem;
+}
+
+.more-violations {
+  color: #9ca3af;
+}
+
+.mobile-card-actions {
+  padding: 1rem;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mobile-card-actions .btn {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-  .list-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+  .student-profiling-view {
+    padding: 1rem 0.5rem;
   }
-  
-  .list-controls {
-    width: 100%;
-    flex-direction: column;
-  }
-  
-  .search-input {
-    width: 100%;
-  }
-  
-  .quick-filters-bar {
-    flex-direction: column;
-  }
-  
-  .quick-filter {
-    width: 100%;
+
+  .page-header {
+    padding: 1rem;
     text-align: center;
   }
-  
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
+
+  .actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .stat-icon {
+    margin-bottom: 0.5rem;
+  }
+
+  .analytics-section {
+    padding: 1rem;
+  }
+
+  .year-distribution {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .year-card {
+    padding: 1rem;
+  }
+
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .filters-container {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .student-table-container {
+    overflow-x: auto;
+    margin: 0 1rem;
+  }
+
+  .student-table {
+    min-width: 600px;
+    font-size: 0.875rem;
+  }
+
+  .student-table th,
+  .student-table td {
+    padding: 0.5rem;
+  }
+
+  .skills-tags {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .btn-icon {
+    padding: 0.75rem;
+    width: 100%;
+    justify-content: center;
+  }
+
   .cards-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 1rem;
   }
-  
+
+  .student-card {
+    margin-bottom: 1rem;
+  }
+
+  .card-header {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .card-actions {
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .compact-list {
+    margin: 0 1rem;
+  }
+
   .compact-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding: 1rem;
   }
-  
+
+  .compact-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+
   .compact-actions {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
-  
+
   .pagination {
     flex-direction: column;
     gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .page-number {
+    padding: 0.5rem;
+    min-width: 36px;
+    font-size: 0.875rem;
+  }
+
+  .pagination-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  /* Hide table on mobile, show cards */
+  .student-table {
+    display: none;
+  }
+
+  .mobile-cards-view {
+    display: block;
+    padding: 0 1rem;
+  }
+
+  .mobile-student-card {
+    margin-bottom: 1rem;
+  }
+
+  .mobile-card-header {
+    padding: 0.75rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mobile-student-id {
+    align-self: flex-start;
+  }
+
+  .mobile-detail-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .mobile-detail-label {
+    min-width: auto;
+  }
+
+  .mobile-detail-value {
+    text-align: left;
+  }
+
+  .affiliations-tags {
+    justify-content: flex-start;
+  }
+
+  .violations-info {
+    text-align: left;
+  }
+}
+
+/* Extra small screens (phones) */
+@media (max-width: 480px) {
+  .student-profiling-view {
+    padding: 0.5rem;
+  }
+
+  .page-header {
+    padding: 0.75rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .page-header p {
+    font-size: 0.875rem;
+  }
+
+  .stats-grid {
+    padding: 0 0.5rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .analytics-section {
+    padding: 0.75rem;
+  }
+
+  .year-card {
+    padding: 0.75rem;
+  }
+
+  .stats-container {
+    grid-template-columns: 1fr;
+    padding: 0 0.5rem;
+  }
+
+  .filters-container {
+    padding: 0.75rem;
+  }
+
+  .student-table-container {
+    margin: 0 0.5rem;
+  }
+
+  .student-table {
+    min-width: 500px;
+    font-size: 0.75rem;
+  }
+
+  .student-table th,
+  .student-table td {
+    padding: 0.375rem;
+  }
+
+  .cards-grid {
+    padding: 0 0.5rem;
+  }
+
+  .card-header {
+    padding: 0.75rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+
+  .compact-list {
+    margin: 0 0.5rem;
+  }
+
+  .compact-item {
+    padding: 0.75rem;
+  }
+
+  .compact-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .pagination {
+    padding: 0 0.5rem;
+  }
+
+  .page-number {
+    padding: 0.375rem;
+    min-width: 32px;
+    font-size: 0.75rem;
+  }
+
+  .pagination-btn {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .icon-small {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Landscape orientation for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .year-distribution {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filters-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 150px;
+  }
+}
+
+/* Desktop and Tablet styles - show table, hide mobile cards */
+@media (min-width: 769px) {
+  .student-table {
+    display: table;
+  }
+
+  .mobile-cards-view {
+    display: none;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .year-distribution {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filters-container {
+    flex-wrap: wrap;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 200px;
   }
 }
 </style>
