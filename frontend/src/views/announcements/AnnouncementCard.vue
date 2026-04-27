@@ -40,7 +40,7 @@
       <!-- Image -->
       <div v-if="announcement.image" class="mb-4">
         <img 
-          :src="getImageUrl(announcement.image)" 
+          :src="announcement.image_url || getImageUrl(announcement.image)" 
           :alt="announcement.title"
           class="w-full h-48 object-cover rounded-lg"
           @error="handleImageError"
@@ -182,6 +182,8 @@ const formatDate = (dateString: string) => {
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return '/placeholder-announcement.jpg'
   if (imagePath.startsWith('http')) return imagePath
+  // image field contains a relative path like "img-announcements/filename.jpg"
+  // served directly from Laravel's public folder
   return `http://127.0.0.1:8000/${imagePath}`
 }
 

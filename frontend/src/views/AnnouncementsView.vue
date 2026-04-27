@@ -2,12 +2,6 @@
   <div class="announcements-view">
     <!-- Header -->
     <div class="header">
-      <div class="breadcrumb">
-        <router-link to="/dashboard" class="breadcrumb-link">Dashboard</router-link>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">Announcements</span>
-      </div>
-      
       <div class="header-content">
         <div>
           <h1 class="page-title">Announcements</h1>
@@ -212,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Announcement } from '@/services/announcements'
 import { announcementService } from '@/services/announcements'
 import { useAuthStore } from '@/stores/auth'
@@ -417,7 +411,20 @@ const handleImageError = (event: Event) => {
 // Initialize
 onMounted(() => {
   loadAnnouncements()
+  // Close modal on Escape key
+  window.addEventListener('keydown', handleKeydown)
 })
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    closeModal()
+    cancelDelete()
+  }
+}
 </script>
 
 <style scoped>
@@ -433,33 +440,6 @@ onMounted(() => {
 /* Header */
 .header {
   margin-bottom: 2rem;
-}
-
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-}
-
-.breadcrumb-link {
-  color: #6b7280;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.breadcrumb-link:hover {
-  color: #f97316;
-}
-
-.breadcrumb-separator {
-  color: #d1d5db;
-}
-
-.breadcrumb-current {
-  color: #111827;
-  font-weight: 500;
 }
 
 .header-content {

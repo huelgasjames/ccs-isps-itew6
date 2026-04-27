@@ -4,12 +4,20 @@
     
     <div class="modal-container">
       <form @submit.prevent="handleSubmit" class="modal-form">
-        <div class="modal-header">
-          <h3 class="modal-title">
-            {{ announcement ? 'Edit Announcement' : 'Create New Announcement' }}
-          </h3>
+        <div class="modal-header text-end">
+          <div class="modal-header-top">
+            <h3 class="modal-title">
+              {{ announcement ? 'Edit Announcement' : 'Create New Announcement' }}
+            </h3>
+            <button type="button" class="modal-close-btn " @click="$emit('close')" aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
           <p class="modal-subtitle">
-            {{ announcement ? 'Update the announcement details below.' : 'Fill in the details to create a new announcement.' }}
+            {{ announcement ? 'Update the announcement details below.' : '' }}
           </p>
         </div>
 
@@ -47,15 +55,16 @@
           <!-- Image -->
           <div class="form-group">
             <label class="form-label">
-              Image
+              Image <span class="form-hint-inline">(JPG, PNG, GIF, WEBP · max 2 MB)</span>
             </label>
             <div class="image-upload-area">
               <input 
                 type="file" 
-                accept="image/*"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                 @change="handleImageChange"
                 class="form-input"
               />
+              <span v-if="errors['image']" class="form-error">{{ errors['image'] }}</span>
               <div v-if="imagePreview" class="image-preview">
                 <img 
                   :src="imagePreview" 
@@ -147,24 +156,29 @@
 
         <!-- Actions -->
         <div class="modal-footer">
-          <button 
-            type="submit"
-            :disabled="submitting"
-            class="btn-primary"
-          >
-            <span v-if="submitting" class="flex items-center">
-              <div class="loading-spinner-small"></div>
-              Saving...
-            </span>
-            <span v-else>{{ announcement ? 'Update' : 'Create' }} Announcement</span>
-          </button>
-          <button 
-            type="button"
-            @click="$emit('close')"
-            class="btn-secondary"
-          >
-            Cancel
-          </button>
+          <div v-if="errors['general']" class="general-error">
+            {{ errors['general'] }}
+          </div>
+          <div class="footer-buttons">
+            <button 
+              type="button"
+              @click="$emit('close')"
+              class="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              :disabled="submitting"
+              class="btn-primary"
+            >
+              <span v-if="submitting" class="flex items-center">
+                <div class="loading-spinner-small"></div>
+                Saving...
+              </span>
+              <span v-else>{{ announcement ? 'Update' : 'Create' }} Announcement</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -248,8 +262,19 @@ const handleSubmit = async () => {
     }
 
     emit('saved')
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving announcement:', error)
+    // Surface Laravel validation errors into the form
+    if (error.response?.data?.errors) {
+      const serverErrors = error.response.data.errors
+      Object.keys(serverErrors).forEach(field => {
+        errors[field] = Array.isArray(serverErrors[field])
+          ? serverErrors[field][0]
+          : serverErrors[field]
+      })
+    } else if (error.response?.data?.message) {
+      errors['general'] = error.response.data.message
+    }
   } finally {
     submitting.value = false
   }
@@ -258,8 +283,26 @@ const handleSubmit = async () => {
 const handleImageChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
+  // Clear previous image error
+  delete errors['image']
+
   if (file) {
+    // Validate type
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowed.includes(file.type)) {
+      errors['image'] = 'Invalid file type. Allowed: JPG, PNG, GIF, WEBP'
+      target.value = ''
+      return
+    }
+    // Validate size — backend limit is 5120 KB (5 MB), ImageHelper limit is 2048 KB (2 MB)
+    const maxKB = 2048
+    if (file.size > maxKB * 1024) {
+      errors['image'] = `Image must be smaller than ${maxKB / 1024} MB`
+      target.value = ''
+      return
+    }
+
     form.image = file
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -333,7 +376,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -346,12 +389,14 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 0;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
 }
 
 .modal-container {
   position: relative;
+  z-index: 1;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -381,11 +426,41 @@ onMounted(() => {
   border-color: #334155;
 }
 
+.modal-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.modal-close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-close-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .dark .modal-title {
@@ -491,6 +566,12 @@ onMounted(() => {
   margin-top: 0.25rem;
 }
 
+.form-hint-inline {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
 .dark .current-image-label {
   color: #9ca3af;
 }
@@ -570,7 +651,7 @@ onMounted(() => {
 /* Modal Footer */
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 0.75rem;
   padding: 1.5rem;
   border-top: 1px solid #e5e7eb;
@@ -578,6 +659,21 @@ onMounted(() => {
 
 .dark .modal-footer {
   border-color: #334155;
+}
+
+.general-error {
+  font-size: 0.875rem;
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 /* Buttons */

@@ -168,6 +168,21 @@ Route::middleware('demo.auth')->group(function () {
     // Events routes
     Route::apiResource('events', EventController::class);
     Route::post('/events/generate-sample', [EventController::class, 'generateSampleData']);
+
+    // Announcement write routes (accessible with demo tokens too)
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::post('/announcements/{id}', [AnnouncementController::class, 'update']); // _method=PUT spoofing
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+
+    // Announcement interactions
+    Route::post('/announcements/{id}/view', [AnnouncementController::class, 'markAsViewed']);
+    Route::post('/announcements/{id}/like', [AnnouncementController::class, 'toggleLike']);
+    Route::get('/announcements/{id}/views', [AnnouncementController::class, 'getViews']);
+    Route::get('/announcements/{id}/comments', [AnnouncementController::class, 'getComments']);
+    Route::post('/announcements/{id}/comments', [AnnouncementController::class, 'addComment']);
+    Route::delete('/announcements/{announcementId}/comments/{commentId}', [AnnouncementController::class, 'deleteComment']);
+    Route::get('/announcements/attachments/{id}/download', [AnnouncementController::class, 'downloadAttachment']);
 });
 
 // Protected routes - require real authentication
@@ -197,23 +212,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{event}/register', [EventController::class, 'register']);
     Route::post('/events/{event}/unregister', [EventController::class, 'unregister']);
     Route::get('/events/my-registrations', [EventController::class, 'myRegistrations']);
-    
-    // Protected announcement routes
-    Route::post('/announcements', [AnnouncementController::class, 'store']);
-    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
-    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
-    
-    // Announcement comments
-    Route::get('/announcements/{id}/comments', [AnnouncementController::class, 'getComments']);
-    Route::post('/announcements/{id}/comments', [AnnouncementController::class, 'addComment']);
-    Route::delete('/announcements/{announcementId}/comments/{commentId}', [AnnouncementController::class, 'deleteComment']);
-    
-    // Announcement likes
-    Route::post('/announcements/{id}/like', [AnnouncementController::class, 'toggleLike']);
-    
-    // Announcement views
-    Route::post('/announcements/{id}/view', [AnnouncementController::class, 'markAsViewed']);
-    
-    // Announcement attachments
-    Route::get('/announcements/attachments/{id}/download', [AnnouncementController::class, 'downloadAttachment']);
 });
