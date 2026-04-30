@@ -1866,23 +1866,401 @@ async function exportSkillsReportPDF() {
   font-style: italic;
 }
 
-/* Responsive */
+/* Mobile Responsive Design */
+@media (max-width: 1024px) {
+  .students-profiling-view {
+    padding: 1.5rem;
+  }
+  
+  .stats-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .skills-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
+  .students-profiling-view {
+    padding: 1rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .page-header p {
+    font-size: 0.875rem;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .header-actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .export-dropdown {
+    width: 100%;
+  }
+  
+  .export-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0.5rem 0.5rem 0 0;
+    margin: 0;
+  }
+  
+  .stats-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  
   .filters-container {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
   
   .search-box {
     min-width: auto;
+    order: -1;
   }
   
   .filter-group {
     min-width: auto;
   }
   
-  .stats-container {
+  .students-table-container {
+    overflow-x: auto;
+  }
+  
+  .students-table {
+    min-width: 800px;
+    font-size: 0.875rem;
+  }
+  
+  .students-table th,
+  .students-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .skills-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .skill-item {
+    padding: 0.5rem;
+  }
+  
+  .skill-name {
+    font-size: 0.75rem;
+  }
+  
+  .skill-count {
+    font-size: 0.625rem;
+  }
+  
+  .student-card {
+    padding: 1rem;
+  }
+  
+  .student-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .student-info h3 {
+    font-size: 1rem;
+  }
+  
+  .student-details {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .student-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .violation-item {
+    padding: 0.5rem;
+  }
+  
+  .violation-type {
+    font-size: 0.7rem;
+  }
+  
+  .more-violations {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .students-profiling-view {
+    padding: 0.75rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .page-header p {
+    font-size: 0.8rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .icon-small {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .stat-card {
+    padding: 0.75rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 0.75rem auto;
+  }
+  
+  .stat-number {
+    font-size: 1.75rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .students-table {
+    min-width: 700px;
+    font-size: 0.75rem;
+  }
+  
+  .students-table th,
+  .students-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .students-table th {
+    font-size: 0.7rem;
+  }
+  
+  .status-badge {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.5rem;
+  }
+  
+  .student-id {
+    font-size: 0.7rem;
+  }
+  
+  .student-email {
+    font-size: 0.75rem;
+  }
+  
+  .student-gpa {
+    font-size: 0.875rem;
+  }
+  
+  .student-status {
+    font-size: 0.7rem;
+  }
+  
+  .skills-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .skill-item {
+    padding: 0.375rem;
+  }
+  
+  .skill-name {
+    font-size: 0.7rem;
+  }
+  
+  .skill-count {
+    font-size: 0.6rem;
+  }
+  
+  .student-card {
+    padding: 0.75rem;
+  }
+  
+  .student-info h3 {
+    font-size: 0.875rem;
+  }
+  
+  .student-email {
+    font-size: 0.7rem;
+  }
+  
+  .student-gpa {
+    font-size: 0.75rem;
+  }
+  
+  .student-actions .btn-sm {
+    font-size: 0.65rem;
+    padding: 0.125rem 0.375rem;
+  }
+  
+  .violation-item {
+    padding: 0.375rem;
+  }
+  
+  .violation-type {
+    font-size: 0.65rem;
+  }
+  
+  .more-violations {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .students-profiling-view {
+    padding: 0.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .page-header p {
+    font-size: 0.75rem;
+  }
+  
+  .btn,
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .stat-card {
+    padding: 0.5rem;
+  }
+  
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .students-table {
+    min-width: 600px;
+    font-size: 0.7rem;
+  }
+  
+  .students-table th,
+  .students-table td {
+    padding: 0.375rem 0.125rem;
+  }
+  
+  .students-table th {
+    font-size: 0.65rem;
+  }
+  
+  .status-badge {
+    font-size: 0.6rem;
+    padding: 0.125rem 0.375rem;
+  }
+  
+  .student-card {
+    padding: 0.5rem;
+  }
+  
+  .student-info h3 {
+    font-size: 0.75rem;
+  }
+  
+  .student-details {
+    font-size: 0.65rem;
+  }
+  
+  .student-gpa {
+    font-size: 0.7rem;
+  }
+  
+  .skills-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+  
+  .skill-item {
+    padding: 0.25rem;
+  }
+  
+  .skill-name {
+    font-size: 0.65rem;
+  }
+  
+  .skill-count {
+    font-size: 0.55rem;
+  }
+  
+  .violation-item {
+    padding: 0.25rem;
+  }
+  
+  .violation-type {
+    font-size: 0.6rem;
+  }
+  
+  .more-violations {
+    font-size: 0.5rem;
+  }
+  
+  .no-results,
+  .loading,
+  .error {
+    padding: 1.5rem;
+    font-size: 0.875rem;
   }
 }
 </style>

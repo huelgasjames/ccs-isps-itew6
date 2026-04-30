@@ -12,7 +12,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
               <path d="M12 2v20M17 7l-5-5-5 5M17 17l-5 5-5-5"/>
             </svg>
-            Generate Sample Data
+            Refresh Data
           </button>
           <div class="export-dropdown">
             <button @click="toggleExportMenu" class="btn btn-success btn-small" :disabled="generatingPDF">
@@ -1217,6 +1217,20 @@ onUnmounted(() => {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .course-list-view {
+    padding: 1.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .department-distribution {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .course-list-view {
     padding: 1rem;
@@ -1225,15 +1239,19 @@ onUnmounted(() => {
   .header-content {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
   }
   
   .header-actions {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .department-distribution {
@@ -1243,10 +1261,12 @@ onUnmounted(() => {
   .filters-container {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
   
   .search-box {
     min-width: auto;
+    order: -1;
   }
   
   .filter-group {
@@ -1255,21 +1275,40 @@ onUnmounted(() => {
   
   .course-table {
     font-size: 0.75rem;
+    min-width: 800px;
   }
   
   .course-table th,
   .course-table td {
     padding: 0.75rem 0.5rem;
   }
+  
+  .export-menu {
+    right: 0;
+    left: auto;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  .course-list-view {
+    padding: 0.75rem;
+  }
+  
   .header-left h1 {
     font-size: 1.5rem;
   }
   
+  .header-left p {
+    font-size: 0.875rem;
+  }
+  
+  .header-actions {
+    gap: 0.5rem;
+  }
+  
   .btn {
     font-size: 0.75rem;
+    padding: 0.5rem 1rem;
   }
   
   .btn-small {
@@ -1285,10 +1324,107 @@ onUnmounted(() => {
   .stat-card {
     flex-direction: column;
     text-align: center;
+    padding: 1rem;
   }
   
   .stat-icon {
     margin: 0 auto 1rem auto;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .course-table {
+    font-size: 0.7rem;
+    min-width: 700px;
+  }
+  
+  .course-table th,
+  .course-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .course-code {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .status-badge {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .course-list-view {
+    padding: 0.5rem;
+  }
+  
+  .header-left h1 {
+    font-size: 1.25rem;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn,
+  .btn-small,
+  .btn-sm {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .export-dropdown {
+    width: 100%;
+  }
+  
+  .export-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0.5rem 0.5rem 0 0;
+    margin: 0;
+  }
+  
+  .stat-card {
+    padding: 0.75rem;
+  }
+  
+  .stat-number {
+    font-size: 1.75rem;
+  }
+  
+  .course-table {
+    font-size: 0.65rem;
+    min-width: 600px;
+  }
+  
+  .course-table th,
+  .course-table td {
+    padding: 0.375rem 0.125rem;
+  }
+  
+  .course-table th {
+    font-size: 0.6rem;
+  }
+  
+  .action-buttons .btn-sm {
+    font-size: 0.65rem;
+    padding: 0.125rem 0.375rem;
   }
 }
 </style>

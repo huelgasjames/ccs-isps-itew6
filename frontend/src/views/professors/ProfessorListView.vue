@@ -7,18 +7,12 @@
 
     <div class="actions">
       
-      <button @click="fetchProfessors" class="btn btn-info btn-small">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
-          <path d="M23 4v6h-6M1 20v-6h6"/>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-        </svg>
-        Refresh Data
-      </button>
+      
       <button @click="generateSampleData" class="btn btn-secondary btn-small">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
-       Refresh Data
+        Refresh Data
       </button>
       <router-link to="/professors/create" class="btn btn-success btn-small">
         Create New Professor
@@ -364,9 +358,9 @@
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       filtered = filtered.filter(professor =>
-        professor.first_name.toLowerCase().includes(query) ||
-        professor.last_name.toLowerCase().includes(query) ||
-        professor.email.toLowerCase().includes(query)
+        professor.first_name?.toLowerCase().includes(query) ||
+        professor.last_name?.toLowerCase().includes(query) ||
+        professor.email?.toLowerCase().includes(query)
       )
     }
 
@@ -411,12 +405,12 @@
   for (let i = 0; i < 50; i++) {
     sampleProfessors.push({
       id: i + 1,
-      first_name: firstNames[i % firstNames.length],
-      last_name: lastNames[i % lastNames.length],
-      email: `${firstNames[i % firstNames.length].toLowerCase()}.${lastNames[i % lastNames.length].toLowerCase()}@university.edu`,
-      department: departments[Math.floor(Math.random() * departments.length)],
-      employment_type: employmentTypes[Math.floor(Math.random() * employmentTypes.length)],
-      role: roles[Math.floor(Math.random() * roles.length)],
+      first_name: firstNames[i % firstNames.length] || '',
+      last_name: lastNames[i % lastNames.length] || '',
+      email: `${(firstNames[i % firstNames.length] || '').toLowerCase()}.${(lastNames[i % lastNames.length] || '').toLowerCase()}@university.edu`,
+      department: departments[Math.floor(Math.random() * departments.length)] || '',
+      employment_type: employmentTypes[Math.floor(Math.random() * employmentTypes.length)] || '',
+      role: roles[Math.floor(Math.random() * roles.length)] || '',
       createdAt: new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString()
     })
   }
@@ -1249,4 +1243,346 @@ function getEmploymentClass(type: string) {
   color: #ef4444;
   font-size: 1rem;
 }
+
+/* Mobile Responsive Design */
+@media (max-width: 1024px) {
+  .professor-profiling-view {
+    padding: 1.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .department-distribution {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .employment-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .professor-profiling-view {
+    padding: 1rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .page-header p {
+    font-size: 0.875rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .export-dropdown {
+    width: 100%;
+  }
+  
+  .export-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0.5rem 0.5rem 0 0;
+    margin: 0;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .department-distribution {
+    grid-template-columns: 1fr;
+  }
+  
+  .employment-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .search-box {
+    min-width: auto;
+    order: -1;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .professor-table-container {
+    overflow-x: auto;
+  }
+  
+  .professor-table {
+    min-width: 700px;
+    font-size: 0.875rem;
+  }
+  
+  .professor-table th,
+  .professor-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .analytics-section {
+    margin: 2rem 0;
+  }
+  
+  .analytics-section h2 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .professor-profiling-view {
+    padding: 0.75rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .page-header p {
+    font-size: 0.8rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .icon-small {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .stat-card {
+    padding: 0.75rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 0.75rem auto;
+  }
+  
+  .stat-number {
+    font-size: 1.75rem;
+  }
+  
+  .stat-content h3 {
+    font-size: 0.75rem;
+  }
+  
+  .stat-change {
+    font-size: 0.625rem;
+  }
+  
+  .dept-card {
+    padding: 1rem;
+  }
+  
+  .dept-header h3 {
+    font-size: 1rem;
+  }
+  
+  .dept-count {
+    font-size: 0.75rem;
+  }
+  
+  .employment-card {
+    padding: 1rem;
+  }
+  
+  .employment-header h4 {
+    font-size: 0.875rem;
+  }
+  
+  .employment-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+  
+  .employment-number {
+    font-size: 1.5rem;
+  }
+  
+  .employment-percentage {
+    font-size: 0.75rem;
+  }
+  
+  .professor-table {
+    min-width: 600px;
+    font-size: 0.75rem;
+  }
+  
+  .professor-table th,
+  .professor-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .professor-table th {
+    font-size: 0.7rem;
+  }
+  
+  .status-badge {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.5rem;
+  }
+  
+  .analytics-section h2 {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .professor-profiling-view {
+    padding: 0.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .page-header p {
+    font-size: 0.75rem;
+  }
+  
+  .btn,
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .stat-card {
+    padding: 0.5rem;
+  }
+  
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-content h3 {
+    font-size: 0.7rem;
+  }
+  
+  .stat-change {
+    font-size: 0.6rem;
+  }
+  
+  .dept-card {
+    padding: 0.75rem;
+  }
+  
+  .dept-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .employment-card {
+    padding: 0.75rem;
+  }
+  
+  .employment-header {
+    gap: 0.5rem;
+  }
+  
+  .employment-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.625rem;
+  }
+  
+  .employment-number {
+    font-size: 1.25rem;
+  }
+  
+  .professor-table {
+    min-width: 500px;
+    font-size: 0.7rem;
+  }
+  
+  .professor-table th,
+  .professor-table td {
+    padding: 0.375rem 0.125rem;
+  }
+  
+  .professor-table th {
+    font-size: 0.65rem;
+  }
+  
+  .status-badge {
+    font-size: 0.6rem;
+    padding: 0.125rem 0.375rem;
+  }
+  
+  .no-results,
+  .loading,
+  .error {
+    padding: 2rem;
+    font-size: 0.875rem;
+  }
+  
+  .analytics-section {
+    margin: 1.5rem 0;
+  }
+  
+  .analytics-section h2 {
+    font-size: 1rem;
+  }
+}
+  
+  .analytics-section {
+    margin: 1.5rem 0;
+  }
+  
+  .analytics-section h2 {
+    font-size: 1rem;
+  }
 </style>

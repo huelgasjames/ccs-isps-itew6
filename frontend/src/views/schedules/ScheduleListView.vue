@@ -1451,4 +1451,466 @@ onUnmounted(() => {
     gap: 4px;
   }
 }
+
+/* Enhanced Mobile Responsive Design */
+@media (max-width: 1024px) {
+  .schedule-list-view {
+    padding: 1.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .day-distribution {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .room-type-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-list-view {
+    padding: 1rem;
+  }
+  
+  .header-left h1 {
+    font-size: 1.75rem;
+  }
+  
+  .header-left p {
+    font-size: 0.875rem;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .header-actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .export-dropdown {
+    width: 100%;
+  }
+  
+  .export-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0.5rem 0.5rem 0 0;
+    margin: 0;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .day-distribution {
+    grid-template-columns: 1fr;
+  }
+  
+  .day-card {
+    padding: 1rem;
+  }
+  
+  .day-header h3 {
+    font-size: 1rem;
+  }
+  
+  .day-count {
+    font-size: 0.75rem;
+  }
+  
+  .day-percentage {
+    font-size: 0.875rem;
+  }
+  
+  .day-usage {
+    font-size: 0.7rem;
+  }
+  
+  .room-type-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .room-type-card {
+    padding: 1rem;
+  }
+  
+  .room-type-header h4 {
+    font-size: 0.875rem;
+  }
+  
+  .room-type-count {
+    font-size: 0.75rem;
+  }
+  
+  .room-type-percentage {
+    font-size: 0.875rem;
+  }
+  
+  .room-type-usage {
+    font-size: 0.7rem;
+  }
+  
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .search-box {
+    min-width: auto;
+    order: -1;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .schedule-table-container {
+    overflow-x: auto;
+  }
+  
+  .schedule-table {
+    min-width: 800px;
+    font-size: 0.875rem;
+  }
+  
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .time-slot {
+    font-size: 0.75rem;
+  }
+  
+  .course-name {
+    font-size: 0.8rem;
+  }
+  
+  .professor-name {
+    font-size: 0.75rem;
+  }
+  
+  .room-info {
+    font-size: 0.7rem;
+  }
+  
+  .actions-cell {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.65rem;
+    padding: 0.125rem 0.375rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .schedule-list-view {
+    padding: 0.75rem;
+  }
+  
+  .header-left h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-left p {
+    font-size: 0.8rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .icon-small {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .stat-card {
+    padding: 0.75rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 0.75rem auto;
+  }
+  
+  .stat-number {
+    font-size: 1.75rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .day-card {
+    padding: 0.75rem;
+  }
+  
+  .day-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .day-header h3 {
+    font-size: 0.875rem;
+  }
+  
+  .day-count {
+    font-size: 0.7rem;
+  }
+  
+  .day-percentage {
+    font-size: 0.75rem;
+  }
+  
+  .day-usage {
+    font-size: 0.65rem;
+  }
+  
+  .room-type-card {
+    padding: 0.75rem;
+  }
+  
+  .room-type-header {
+    gap: 0.5rem;
+  }
+  
+  .room-type-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.625rem;
+  }
+  
+  .room-type-header h4 {
+    font-size: 0.75rem;
+  }
+  
+  .room-type-count {
+    font-size: 0.7rem;
+  }
+  
+  .room-type-percentage {
+    font-size: 0.75rem;
+  }
+  
+  .room-type-usage {
+    font-size: 0.65rem;
+  }
+  
+  .schedule-table {
+    min-width: 700px;
+    font-size: 0.75rem;
+  }
+  
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .schedule-table th {
+    font-size: 0.7rem;
+  }
+  
+  .time-slot {
+    font-size: 0.7rem;
+  }
+  
+  .course-name {
+    font-size: 0.75rem;
+  }
+  
+  .professor-name {
+    font-size: 0.7rem;
+  }
+  
+  .room-info {
+    font-size: 0.65rem;
+  }
+  
+  .status-badge {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.5rem;
+  }
+  
+  .actions-cell .btn-sm {
+    font-size: 0.6rem;
+    padding: 0.125rem 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .schedule-list-view {
+    padding: 0.5rem;
+  }
+  
+  .header-left h1 {
+    font-size: 1.25rem;
+  }
+  
+  .header-left p {
+    font-size: 0.75rem;
+  }
+  
+  .btn,
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .stat-card {
+    padding: 0.5rem;
+  }
+  
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .day-card {
+    padding: 0.5rem;
+  }
+  
+  .day-header h3 {
+    font-size: 0.75rem;
+  }
+  
+  .day-count {
+    font-size: 0.65rem;
+  }
+  
+  .day-percentage {
+    font-size: 0.7rem;
+  }
+  
+  .day-usage {
+    font-size: 0.6rem;
+  }
+  
+  .room-type-card {
+    padding: 0.5rem;
+  }
+  
+  .room-type-header {
+    gap: 0.375rem;
+  }
+  
+  .room-type-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 0.55rem;
+  }
+  
+  .room-type-header h4 {
+    font-size: 0.7rem;
+  }
+  
+  .room-type-count {
+    font-size: 0.65rem;
+  }
+  
+  .room-type-percentage {
+    font-size: 0.7rem;
+  }
+  
+  .room-type-usage {
+    font-size: 0.6rem;
+  }
+  
+  .schedule-table {
+    min-width: 600px;
+    font-size: 0.7rem;
+  }
+  
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.375rem 0.125rem;
+  }
+  
+  .schedule-table th {
+    font-size: 0.65rem;
+  }
+  
+  .time-slot {
+    font-size: 0.65rem;
+  }
+  
+  .course-name {
+    font-size: 0.7rem;
+  }
+  
+  .professor-name {
+    font-size: 0.65rem;
+  }
+  
+  .room-info {
+    font-size: 0.6rem;
+  }
+  
+  .status-badge {
+    font-size: 0.6rem;
+    padding: 0.125rem 0.375rem;
+  }
+  
+  .actions-cell .btn-sm {
+    font-size: 0.55rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .no-results,
+  .loading,
+  .error {
+    padding: 1.5rem;
+    font-size: 0.875rem;
+  }
+}
 </style>

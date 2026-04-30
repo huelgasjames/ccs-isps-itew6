@@ -164,6 +164,7 @@ export const useCourseStore = defineStore('course', () => {
       if (courses.value.length === 0) {
         console.log('No courses in store, generating sample data as fallback')
         generateSampleData()
+        console.log('Sample data generated with exactly 1000 total students')
       }
     } finally {
       loading.value = false
@@ -384,7 +385,7 @@ export const useCourseStore = defineStore('course', () => {
         schedule: i % 2 === 0 ? 'TTH 9:00-10:30 AM' : 'MWF 1:00-2:30 PM',
         room: `Room ${100 + i}`,
         maxStudents: 50 + (i % 4) * 25,  // 50, 75, 100, 125, 150, 175, 200
-        currentStudents: Math.floor((50 + (i % 4) * 25) * 0.85),  // 85% capacity on average
+        currentStudents: 20, // Will be recalculated below
         status: i <= 40 ? 'active' : i <= 45 ? 'inactive' : 'archived',
         prerequisites: i > 4 ? [`CCS ${99 + Math.floor(Math.random() * 3) + i - 4}`] : [],
         createdAt: new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString(),
@@ -392,7 +393,60 @@ export const useCourseStore = defineStore('course', () => {
       })
     }
 
+    // Distribute exactly 1000 students across all courses
+    const totalStudents = 1000
+    const totalCourses = sampleCourses.length
+    let remainingStudents = totalStudents
+    
+    // Calculate base students per course
+    const baseStudentsPerCourse = Math.floor(totalStudents / totalCourses)
+    const extraStudents = totalStudents % totalCourses
+    
+    // Distribute students
+    sampleCourses.forEach((course, index) => {
+      let studentCount = baseStudentsPerCourse
+      
+      // Distribute extra students to first few courses
+      if (index < extraStudents) {
+        studentCount += 1
+      }
+      
+      // Ensure we don't exceed max capacity
+      const maxCapacity = course.maxStudents || 50
+      studentCount = Math.min(studentCount, maxCapacity)
+      
+      course.currentStudents = studentCount
+      remainingStudents -= studentCount
+    })
+    
+    // If there are still remaining students (due to capacity limits), distribute them
+    if (remainingStudents > 0) {
+      // Sort courses by available capacity
+      const sortedCourses = [...sampleCourses].sort((a, b) => 
+        (b.maxStudents - b.currentStudents) - (a.maxStudents - a.currentStudents)
+      )
+      
+      for (const course of sortedCourses) {
+        if (remainingStudents <= 0) break
+        
+        const availableCapacity = course.maxStudents - course.currentStudents
+        if (availableCapacity > 0) {
+          const additionalStudents = Math.min(remainingStudents, availableCapacity)
+          course.currentStudents += additionalStudents
+          remainingStudents -= additionalStudents
+        }
+      }
+    }
+
     courses.value = sampleCourses
+    
+    // Verify total students is exactly 1000
+    const actualTotalStudents = sampleCourses.reduce((sum, course) => sum + course.currentStudents, 0)
+    console.log(`Generated ${sampleCourses.length} courses with exactly ${actualTotalStudents} total students`)
+    
+    if (actualTotalStudents !== 1000) {
+      console.warn(`Warning: Expected 1000 students, got ${actualTotalStudents}`)
+    }
   }
 
   const setFilter = (newFilter: Partial<CourseFilter>) => {
