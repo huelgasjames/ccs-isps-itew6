@@ -220,6 +220,213 @@ class OfflineService {
       this.setLocalStudents(this.getDummyStudents())
     }
   }
+
+  getLocalProfessors(): any[] {
+    const stored = localStorage.getItem('professors')
+    return stored ? JSON.parse(stored) : this.getDummyProfessors()
+  }
+
+  getLocalViolations(): any[] {
+    const stored = localStorage.getItem('violations')
+    return stored ? JSON.parse(stored) : this.getDummyViolations()
+  }
+
+  getLocalCourses(): any[] {
+    const stored = localStorage.getItem('courses')
+    return stored ? JSON.parse(stored) : this.getDummyCourses()
+  }
+
+  getLocalEvents(): any[] {
+    const stored = localStorage.getItem('events')
+    return stored ? JSON.parse(stored) : this.getDummyEvents()
+  }
+
+  getLocalRooms(): any[] {
+    const stored = localStorage.getItem('rooms')
+    return stored ? JSON.parse(stored) : this.getDummyRooms()
+  }
+
+  getLocalSchedules(): any[] {
+    const stored = localStorage.getItem('schedules')
+    return stored ? JSON.parse(stored) : this.getDummySchedules()
+  }
+
+  getLocalSyllabi(): any[] {
+    const stored = localStorage.getItem('syllabi')
+    return stored ? JSON.parse(stored) : this.getDummySyllabi()
+  }
+
+  getDummyProfessors(): any[] {
+    const professors = []
+    const departments = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Engineering', 'Business', 'Arts']
+    const firstNames = ['Dr. Smith', 'Dr. Johnson', 'Dr. Williams', 'Dr. Brown', 'Dr. Davis', 'Dr. Miller', 'Dr. Wilson', 'Dr. Moore', 'Dr. Taylor', 'Dr. Anderson']
+    const lastNames = ['Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson']
+    
+    for (let i = 0; i < 20; i++) {
+      professors.push({
+        id: i + 1,
+        firstName: firstNames[i % firstNames.length],
+        lastName: lastNames[i % lastNames.length],
+        email: `professor${i + 1}@university.edu`,
+        department: departments[i % departments.length],
+        specialization: `Specialization ${i + 1}`,
+        hireDate: `${2010 + Math.floor(Math.random() * 10)}-09-01`,
+        status: Math.random() > 0.1 ? 'active' : 'inactive',
+        courses: Math.floor(Math.random() * 5) + 1,
+        rating: (Math.random() * 2 + 3).toFixed(1),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return professors
+  }
+
+  getDummyViolations(): any[] {
+    const violations = []
+    const types = ['Academic Dishonesty', 'Attendance Policy', 'Code of Conduct', 'Plagiarism', 'Late Submission', 'Disruptive Behavior']
+    const severities = ['minor', 'moderate', 'major', 'severe']
+    
+    for (let i = 0; i < 50; i++) {
+      violations.push({
+        id: i + 1,
+        studentId: Math.floor(Math.random() * 1000) + 1,
+        type: types[i % types.length],
+        description: `Violation description ${i + 1}`,
+        date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        severity: severities[Math.floor(Math.random() * severities.length)],
+        status: Math.random() > 0.3 ? 'resolved' : 'pending',
+        consequence: `Consequence ${i + 1}`,
+        reportedBy: `Professor ${Math.floor(Math.random() * 20) + 1}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return violations
+  }
+
+  getDummyCourses(): any[] {
+    const courses = []
+    const subjects = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Engineering', 'Business', 'Arts', 'Literature', 'History']
+    const levels = ['100', '200', '300', '400']
+    
+    for (let i = 0; i < 30; i++) {
+      courses.push({
+        id: i + 1,
+        code: `${subjects[i % subjects.length].substring(0, 3).toUpperCase()}${levels[i % levels.length]}${Math.floor(Math.random() * 99) + 1}`,
+        name: `Course ${i + 1}: ${subjects[i % subjects.length]} Fundamentals`,
+        description: `Description for course ${i + 1}`,
+        credits: Math.floor(Math.random() * 4) + 1,
+        level: levels[i % levels.length],
+        department: subjects[i % subjects.length],
+        professorId: Math.floor(Math.random() * 20) + 1,
+        semester: ['Fall', 'Spring', 'Summer'][i % 3],
+        year: 2024,
+        capacity: Math.floor(Math.random() * 50) + 20,
+        enrolled: Math.floor(Math.random() * 40) + 10,
+        status: Math.random() > 0.1 ? 'active' : 'inactive',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return courses
+  }
+
+  getDummyEvents(): any[] {
+    const events = []
+    const types = ['Academic', 'Sports', 'Cultural', 'Workshop', 'Seminar', 'Conference']
+    
+    for (let i = 0; i < 25; i++) {
+      const startDate = new Date(Date.now() + Math.random() * 90 * 24 * 60 * 60 * 1000)
+      events.push({
+        id: i + 1,
+        title: `Event ${i + 1}: ${types[i % types.length]} Activity`,
+        description: `Description for event ${i + 1}`,
+        type: types[i % types.length],
+        startDate: startDate.toISOString(),
+        endDate: new Date(startDate.getTime() + Math.random() * 8 * 60 * 60 * 1000).toISOString(),
+        location: `Location ${i + 1}`,
+        organizer: `Organizer ${i + 1}`,
+        capacity: Math.floor(Math.random() * 200) + 50,
+        registered: Math.floor(Math.random() * 150) + 20,
+        status: Math.random() > 0.2 ? 'upcoming' : 'completed',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return events
+  }
+
+  getDummyRooms(): any[] {
+    const rooms = []
+    const buildings = ['Science Building', 'Engineering Hall', 'Business Tower', 'Arts Center', 'Library']
+    const types = ['Lecture Hall', 'Laboratory', 'Seminar Room', 'Computer Lab', 'Conference Room']
+    
+    for (let i = 0; i < 40; i++) {
+      rooms.push({
+        id: i + 1,
+        number: `Room ${Math.floor(Math.random() * 900) + 100}`,
+        building: buildings[i % buildings.length],
+        type: types[i % types.length],
+        capacity: Math.floor(Math.random() * 100) + 20,
+        equipment: ['Projector', 'Whiteboard', 'Computer', 'Sound System'].slice(0, Math.floor(Math.random() * 4) + 1),
+        floor: Math.floor(Math.random() * 5) + 1,
+        status: Math.random() > 0.1 ? 'available' : 'maintenance',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return rooms
+  }
+
+  getDummySchedules(): any[] {
+    const schedules = []
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    const times = ['08:00', '10:00', '13:00', '15:00', '17:00']
+    
+    for (let i = 0; i < 60; i++) {
+      schedules.push({
+        id: i + 1,
+        courseId: Math.floor(Math.random() * 30) + 1,
+        professorId: Math.floor(Math.random() * 20) + 1,
+        roomId: Math.floor(Math.random() * 40) + 1,
+        day: days[i % days.length],
+        startTime: times[i % times.length],
+        endTime: times[(i % times.length) + 1] || '19:00',
+        semester: 'Fall 2024',
+        status: Math.random() > 0.1 ? 'active' : 'cancelled',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return schedules
+  }
+
+  getDummySyllabi(): any[] {
+    const syllabi = []
+    const courses = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology']
+    
+    for (let i = 0; i < 20; i++) {
+      syllabi.push({
+        id: i + 1,
+        courseId: Math.floor(Math.random() * 30) + 1,
+        title: `Syllabus for ${courses[i % courses.length]} Course ${i + 1}`,
+        description: `Course description and objectives for syllabus ${i + 1}`,
+        objectives: [`Objective ${i + 1}.1`, `Objective ${i + 1}.2`, `Objective ${i + 1}.3`],
+        topics: [`Topic ${i + 1}.1`, `Topic ${i + 1}.2`, `Topic ${i + 1}.3`, `Topic ${i + 1}.4`],
+        gradingPolicy: {
+          assignments: '30%',
+          midterm: '30%',
+          final: '40%'
+        },
+        attendancePolicy: 'Mandatory attendance required',
+        officeHours: 'MW 14:00-16:00',
+        status: Math.random() > 0.1 ? 'published' : 'draft',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    return syllabi
+  }
 }
 
 export const offlineService = new OfflineService()

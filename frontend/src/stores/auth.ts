@@ -84,6 +84,11 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('auth_token', demoToken)
         localStorage.setItem('demo_user', JSON.stringify(demoUser))
         
+        // Initialize demo data
+        import('@/services/offline').then(({ offlineService }) => {
+          offlineService.initializeDummyData()
+        })
+        
         return {
           user: demoUser,
           token: demoToken,
@@ -117,6 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = null
       localStorage.removeItem('auth_token')
       localStorage.removeItem('user')
+      localStorage.removeItem('demo_user')
     }
   }
 
@@ -154,7 +160,7 @@ export const useAuthStore = defineStore('auth', () => {
             user.value = {
               id: demoUser.id,
               name: demoUser.name,
-              email: demoUser.username,
+              email: demoUser.email,
               role: demoUser.role as 'admin' | 'student' | 'professor',
               department: demoUser.department || 'CCS Department'
             }

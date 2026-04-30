@@ -56,15 +56,16 @@ api.interceptors.response.use(
   }
 )
 
-// Fallback handler for offline mode
+// Fallback handler for offline mode and demo mode
 export const apiWithFallback = {
   async get(url: string, config?: any) {
     try {
-      if (offlineService.isOnline()) {
+      // Always try API first if online and not in demo mode
+      if (offlineService.isOnline() && !isDemoMode()) {
         return await api.get(url, config)
       }
     } catch (error) {
-      console.warn('API failed, falling back to offline mode:', error)
+      console.warn('API failed, falling back to offline/demo mode:', error)
     }
     
     // Fallback to localStorage
@@ -91,6 +92,76 @@ export const apiWithFallback = {
         data: url.includes('/students/') && !url.endsWith('/students') 
           ? students.find(s => s.id === parseInt(url.split('/').pop() || '0'))
           : { students, total: students.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Professors endpoint
+    if (url.includes('/professors')) {
+      const professors = offlineService.getLocalProfessors?.() || []
+      return { 
+        data: url.includes('/professors/') && !url.endsWith('/professors')
+          ? professors.find(p => p.id === parseInt(url.split('/').pop() || '0'))
+          : { professors, total: professors.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Violations endpoint
+    if (url.includes('/violations')) {
+      const violations = offlineService.getLocalViolations?.() || []
+      return { 
+        data: url.includes('/violations/') && !url.endsWith('/violations')
+          ? violations.find(v => v.id === parseInt(url.split('/').pop() || '0'))
+          : { violations, total: violations.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Courses endpoint
+    if (url.includes('/courses')) {
+      const courses = offlineService.getLocalCourses?.() || []
+      return { 
+        data: url.includes('/courses/') && !url.endsWith('/courses')
+          ? courses.find(c => c.id === parseInt(url.split('/').pop() || '0'))
+          : { courses, total: courses.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Events endpoint
+    if (url.includes('/events')) {
+      const events = offlineService.getLocalEvents?.() || []
+      return { 
+        data: url.includes('/events/') && !url.endsWith('/events')
+          ? events.find(e => e.id === parseInt(url.split('/').pop() || '0'))
+          : { events, total: events.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Rooms endpoint
+    if (url.includes('/rooms')) {
+      const rooms = offlineService.getLocalRooms?.() || []
+      return { 
+        data: url.includes('/rooms/') && !url.endsWith('/rooms')
+          ? rooms.find(r => r.id === parseInt(url.split('/').pop() || '0'))
+          : { rooms, total: rooms.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Schedules endpoint
+    if (url.includes('/schedules')) {
+      const schedules = offlineService.getLocalSchedules?.() || []
+      return { 
+        data: url.includes('/schedules/') && !url.endsWith('/schedules')
+          ? schedules.find(s => s.id === parseInt(url.split('/').pop() || '0'))
+          : { schedules, total: schedules.length, page: 1, limit: 10, totalPages: 1 }
+      }
+    }
+    
+    // Syllabi endpoint
+    if (url.includes('/syllabi')) {
+      const syllabi = offlineService.getLocalSyllabi?.() || []
+      return { 
+        data: url.includes('/syllabi/') && !url.endsWith('/syllabi')
+          ? syllabi.find(s => s.id === parseInt(url.split('/').pop() || '0'))
+          : { syllabi, total: syllabi.length, page: 1, limit: 10, totalPages: 1 }
       }
     }
     

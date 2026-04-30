@@ -148,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits, withDefaults } from 'vue'
+import { ref, computed } from 'vue'
 import api from '@/services/api'
 
 // Props
@@ -485,12 +485,13 @@ const generateAnalyticsReport = (data: any[]) => {
         <div class="chart-data">
   `
 
-  Object.entries(yearDistribution).forEach(([year, count]) => {
-    const percentage = ((count / data.length) * 100).toFixed(1)
+  Object.entries(yearDistribution).forEach(([year, count]: [string, unknown]) => {
+    const countNum = count as number
+    const percentage = ((countNum / data.length) * 100).toFixed(1)
     html += `
       <div class="chart-item">
         <span class="label">Year ${year}:</span>
-        <span class="value">${count} (${percentage}%)</span>
+        <span class="value">${countNum} (${percentage}%)</span>
       </div>
     `
   })
@@ -504,12 +505,13 @@ const generateAnalyticsReport = (data: any[]) => {
         <div class="chart-data">
   `
 
-  Object.entries(standingDistribution).forEach(([standing, count]) => {
-    const percentage = ((count / data.length) * 100).toFixed(1)
+  Object.entries(standingDistribution).forEach(([standing, count]: [string, unknown]) => {
+    const countNum = count as number
+    const percentage = ((countNum / data.length) * 100).toFixed(1)
     html += `
       <div class="chart-item">
         <span class="label">${formatStanding(standing)}:</span>
-        <span class="value">${count} (${percentage}%)</span>
+        <span class="value">${countNum} (${percentage}%)</span>
       </div>
     `
   })

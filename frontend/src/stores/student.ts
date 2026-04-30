@@ -10,7 +10,7 @@ import type {
   DisplayMode,
   StudentStatistics
 } from '@/types/student'
-import api from '@/services/api'
+import { apiWithFallback } from '@/services/api'
 
 export const useStudentStore = defineStore('student', () => {
   // State
@@ -128,7 +128,7 @@ export const useStudentStore = defineStore('student', () => {
     error.value = null
     
     try {
-      const response = await api.get<StudentListResponse>('/students', {
+      const response = await apiWithFallback.get('/students', {
         params: { page, limit, include: 'skills,affiliations' }
       })
       
@@ -293,7 +293,7 @@ const fetchStudentById = async (id: number) => {
     error.value = null
     
     try {
-      const response = await api.get<Student>(`/students/${id}`)
+      const response = await apiWithFallback.get(`/students/${id}`)
       currentStudent.value = response.data
       return response.data
     } catch (err) {
@@ -310,7 +310,7 @@ const fetchStudentById = async (id: number) => {
     error.value = null
     
     try {
-      const response = await api.post<Student>('/students', studentData)
+      const response = await apiWithFallback.post('/students', studentData)
       students.value.unshift(response.data)
       totalStudents.value += 1
       return response.data
@@ -328,7 +328,7 @@ const fetchStudentById = async (id: number) => {
     error.value = null
     
     try {
-      const response = await api.put<Student>(`/students/${id}`, updates)
+      const response = await apiWithFallback.put(`/students/${id}`, updates)
       
       // Update in array
       const index = students.value.findIndex(s => s.id === id)
@@ -356,7 +356,7 @@ const fetchStudentById = async (id: number) => {
     error.value = null
     
     try {
-      await api.delete(`/students/${id}`)
+      await apiWithFallback.delete(`/students/${id}`)
       
       // Remove from array
       const index = students.value.findIndex(s => s.id === id)
@@ -381,7 +381,7 @@ const fetchStudentById = async (id: number) => {
 
   const addSkill = async (studentId: number, skill: Omit<Student['skills'][0], 'id'>) => {
     try {
-      const response = await api.post(`/students/${studentId}/skills`, skill)
+      const response = await apiWithFallback.post(`/students/${studentId}/skills`, skill)
       
       // Update local state
       const student = students.value.find(s => s.id === studentId)
@@ -403,7 +403,7 @@ const fetchStudentById = async (id: number) => {
 
   const removeSkill = async (studentId: number, skillId: number) => {
     try {
-      await api.delete(`/students/${studentId}/skills/${skillId}`)
+      await apiWithFallback.delete(`/students/${studentId}/skills/${skillId}`)
       
       // Update local state
       const student = students.value.find(s => s.id === studentId)
