@@ -31,6 +31,19 @@
       <router-link to="/students/create" class="btn btn-success btn-small">
         Create New Student
       </router-link>
+      <ReportGenerator 
+        :data="filteredStudentsList" 
+        report-title="Students"
+        :filters="{
+          searchQuery,
+          selectedYear,
+          selectedStanding,
+          selectedSkill,
+          selectedAffiliation,
+          selectedViolationStatus
+        }"
+        @generate-report="handleReportGeneration"
+      />
     </div>
 
     <div class="stats-grid">
@@ -176,6 +189,75 @@
       <button @click="resetFilters" class="btn btn-secondary">
         Reset Filters
       </button>
+    </div>
+
+    <!-- Skills Filter Container -->
+    <div class="skills-filter-container">
+      <div class="skills-header">
+        <h3>Filter by Skills</h3>
+        <div class="selected-skill-info" v-if="selectedSkill">
+          <span class="selected-skill-label">Selected:</span>
+          <span class="selected-skill-name">{{ selectedSkill }}</span>
+          <button @click="selectedSkill = ''" class="clear-skill-btn">×</button>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <button 
+          v-for="skill in availableSkillsWithCounts" 
+          :key="skill.name"
+          @click="toggleSkillFilter(skill.name)"
+          :class="['skill-tag', { active: selectedSkill === skill.name }]"
+        >
+          {{ skill.name }}
+          <span class="skill-count">({{ skill.count }})</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Affiliations Filter Container -->
+    <div class="affiliations-filter-container">
+      <div class="affiliations-header">
+        <h3>Filter by Affiliations</h3>
+        <div class="selected-affiliation-info" v-if="selectedAffiliation">
+          <span class="selected-affiliation-label">Selected:</span>
+          <span class="selected-affiliation-name">{{ selectedAffiliation }}</span>
+          <button @click="selectedAffiliation = ''" class="clear-affiliation-btn">×</button>
+        </div>
+      </div>
+      <div class="affiliation-tags">
+        <button 
+          v-for="affiliation in availableAffiliationsWithCounts" 
+          :key="affiliation.name"
+          @click="toggleAffiliationFilter(affiliation.name)"
+          :class="['affiliation-tag', { active: selectedAffiliation === affiliation.name }]"
+        >
+          {{ affiliation.name }}
+          <span class="affiliation-count">({{ affiliation.count }})</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Violations Filter Container -->
+    <div class="violations-filter-container">
+      <div class="violations-header">
+        <h3>Filter by Violation Status</h3>
+        <div class="selected-violation-info" v-if="selectedViolationStatus">
+          <span class="selected-violation-label">Selected:</span>
+          <span class="selected-violation-name">{{ formatViolationStatus(selectedViolationStatus) }}</span>
+          <button @click="selectedViolationStatus = ''" class="clear-violation-btn">×</button>
+        </div>
+      </div>
+      <div class="violation-tags">
+        <button 
+          v-for="status in violationStatuses" 
+          :key="status.value"
+          @click="toggleViolationFilter(status.value)"
+          :class="['violation-tag', { active: selectedViolationStatus === status.value }]"
+        >
+          {{ status.label }}
+          <span class="violation-count">({{ getViolationStatusCount(status.value) }})</span>
+        </button>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">Loading...</div>
@@ -354,6 +436,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStudentStore } from '@/stores/student'
 import type { StudentFilter, DisplayMode, Student } from '@/types/student'
+import ReportGenerator from '@/components/ReportGenerator.vue'
 
 const router = useRouter()
 const studentStore = useStudentStore()
@@ -411,6 +494,76 @@ const availableAffiliationsList = computed(() => {
   })
   return Array.from(allAffiliations).sort()
 })
+
+// Available skills with counts for filter containers
+const availableSkillsWithCounts = computed(() => {
+  const skillCounts = new Map<string, number>()
+  
+  // Count students for each skill
+  allStudents.value.forEach(student => {
+    ;(student.skills || []).forEach(skill => {
+      skillCounts.set(skill.name, (skillCounts.get(skill.name) || 0) + 1)
+    })
+  })
+  
+  // Get all skills
+  const allSkills = new Set<string>()
+  const hardcodedSkills = [
+    'Leadership', 'Database Management', 'Machine Learning',
+    'JavaScript', 'Python', 'Java', 'C++', 'PHP', 'React', 'Vue.js', 'Node.js', 
+    'HTML/CSS', 'SQL', 'MongoDB', 'Docker', 'Git', 'Data Analysis', 
+    'UI/UX Design', 'Laravel', 'Angular', 'TypeScript', 'Flutter', 'Swift', 'Kotlin', 
+    'AWS', 'Azure', 'Google Cloud', 'TensorFlow', 'PyTorch', 'Communication', 'Teamwork'
+  ]
+  
+  hardcodedSkills.forEach(skill => allSkills.add(skill))
+  allStudents.value.forEach(student => {
+    ;(student.skills || []).forEach(skill => allSkills.add(skill.name))
+  })
+  
+  return Array.from(allSkills).map(skillName => ({
+    name: skillName,
+    count: skillCounts.get(skillName) || 0
+  })).sort((a, b) => b.count - a.count)
+})
+
+// Available affiliations with counts for filter containers
+const availableAffiliationsWithCounts = computed(() => {
+  const affiliationCounts = new Map<string, number>()
+  
+  // Count students for each affiliation
+  allStudents.value.forEach(student => {
+    ;(student.affiliations || []).forEach(affiliation => {
+      affiliationCounts.set(affiliation.name, (affiliationCounts.get(affiliation.name) || 0) + 1)
+    })
+  })
+  
+  // Get all affiliations
+  const allAffiliations = new Set<string>()
+  const hardcodedAffiliations = [
+    'Computer Science Society', 'Student Council', 'Coding Club', 'Debate Team', 'Sports Club',
+    'Drama Club', 'Music Society', 'Art Club', 'Photography Club', 'Environmental Club',
+    'Business Club', 'Engineering Society', 'Medical Club', 'Law Society', 'Literature Club'
+  ]
+  
+  hardcodedAffiliations.forEach(affiliation => allAffiliations.add(affiliation))
+  allStudents.value.forEach(student => {
+    ;(student.affiliations || []).forEach(affiliation => allAffiliations.add(affiliation.name))
+  })
+  
+  return Array.from(allAffiliations).map(affiliationName => ({
+    name: affiliationName,
+    count: affiliationCounts.get(affiliationName) || 0
+  })).sort((a, b) => b.count - a.count)
+})
+
+// Violation statuses for filter
+const violationStatuses = ref([
+  { value: 'pending', label: 'Pending' },
+  { value: 'resolved', label: 'Resolved' },
+  { value: 'under_review', label: 'Under Review' },
+  { value: 'appealed', label: 'Appealed' }
+])
 
 // Computed
 const {
@@ -764,6 +917,51 @@ const fetchStudents = () => {
 
 const generateSampleData = () => {
   studentStore.generateSampleData()
+}
+
+// Filter toggle functions for containers
+const toggleSkillFilter = (skillName: string) => {
+  if (selectedSkill.value === skillName) {
+    selectedSkill.value = '' // Deselect if already selected
+  } else {
+    selectedSkill.value = skillName // Select new skill
+  }
+}
+
+const toggleAffiliationFilter = (affiliationName: string) => {
+  if (selectedAffiliation.value === affiliationName) {
+    selectedAffiliation.value = '' // Deselect if already selected
+  } else {
+    selectedAffiliation.value = affiliationName // Select new affiliation
+  }
+}
+
+const toggleViolationFilter = (status: string) => {
+  if (selectedViolationStatus.value === status) {
+    selectedViolationStatus.value = '' // Deselect if already selected
+  } else {
+    selectedViolationStatus.value = status // Select new status
+  }
+}
+
+// Format violation status for display
+const formatViolationStatus = (status: string) => {
+  return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+// Get violation status count
+const getViolationStatusCount = (status: string) => {
+  return allStudents.value.reduce((count, student) => {
+    const studentViolations = student.violations || []
+    const matchingViolations = studentViolations.filter(violation => violation.status === status)
+    return count + matchingViolations.length
+  }, 0)
+}
+
+const handleReportGeneration = (reportData: any) => {
+  console.log('Report generation requested:', reportData)
+  // You can add additional logic here if needed
+  // For example, logging to analytics, showing notifications, etc.
 }
 
 // StudentListView methods
@@ -2410,6 +2608,178 @@ onMounted(() => {
   .filter-group {
     flex: 1;
     min-width: 200px;
+  }
+}
+
+/* Filter Container Styles */
+.skills-filter-container,
+.affiliations-filter-container,
+.violations-filter-container {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.skills-header,
+.affiliations-header,
+.violations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.skills-header h3,
+.affiliations-header h3,
+.violations-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.selected-skill-info,
+.selected-affiliation-info,
+.selected-violation-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.selected-skill-label,
+.selected-affiliation-label,
+.selected-violation-label {
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.selected-skill-name,
+.selected-affiliation-name,
+.selected-violation-name {
+  color: #0c4a6e;
+  font-weight: 600;
+}
+
+.clear-skill-btn,
+.clear-affiliation-btn,
+.clear-violation-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.clear-skill-btn:hover,
+.clear-affiliation-btn:hover,
+.clear-violation-btn:hover {
+  background: #dc2626;
+}
+
+.skill-tags,
+.affiliation-tags,
+.violation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-tag,
+.affiliation-tag,
+.violation-tag {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.skill-tag:hover,
+.affiliation-tag:hover,
+.violation-tag:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.skill-tag.active,
+.affiliation-tag.active,
+.violation-tag.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #2563eb;
+}
+
+.skill-tag.active:hover,
+.affiliation-tag.active:hover,
+.violation-tag.active:hover {
+  background: #2563eb;
+}
+
+.skill-count,
+.affiliation-count,
+.violation-count {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.skill-tag.active .skill-count,
+.affiliation-tag.active .affiliation-count,
+.violation-tag.active .violation-count {
+  opacity: 0.9;
+}
+
+/* Responsive design for filter containers */
+@media (max-width: 768px) {
+  .skills-filter-container,
+  .affiliations-filter-container,
+  .violations-filter-container {
+    padding: 1rem;
+  }
+  
+  .skills-header,
+  .affiliations-header,
+  .violations-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .selected-skill-info,
+  .selected-affiliation-info,
+  .selected-violation-info {
+    align-self: stretch;
+    justify-content: center;
+  }
+  
+  .skill-tags,
+  .affiliation-tags,
+  .violation-tags {
+    justify-content: center;
   }
 }
 </style>

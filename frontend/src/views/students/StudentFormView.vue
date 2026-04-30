@@ -110,6 +110,33 @@
               class="form-control"
             />
           </div>
+          <div class="form-group">
+            <label for="address">Address</label>
+            <input 
+              id="address"
+              v-model="form.address"
+              type="text"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="province">Province</label>
+            <input 
+              id="province"
+              v-model="form.province"
+              type="text"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="postal_code">Postal Code</label>
+            <input 
+              id="postal_code"
+              v-model="form.postal_code"
+              type="text"
+              class="form-control"
+            />
+          </div>
         </div>
       </div>
 
@@ -148,8 +175,9 @@
             <label for="academic_standing">Academic Standing *</label>
             <select id="academic_standing" v-model="form.academic_standing" class="form-control" required>
               <option value="">Select Standing</option>
-              <option value="good">Good Standing</option>
-              <option value="at_risk">At Risk</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="average">Average</option>
               <option value="probation">Probation</option>
             </select>
           </div>
@@ -181,6 +209,16 @@
             />
           </div>
           <div class="form-group">
+            <label for="emergency_contact_relationship">Relationship</label>
+            <select id="emergency_contact_relationship" v-model="form.emergency_contact_relationship" class="form-control">
+              <option value="Guardian">Guardian</option>
+              <option value="Parent">Parent</option>
+              <option value="Spouse">Spouse</option>
+              <option value="Sibling">Sibling</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label for="emergency_contact_phone">Emergency Contact Phone</label>
             <input 
               id="emergency_contact_phone"
@@ -207,6 +245,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import type { CreateStudentRequest, UpdateStudentRequest, Student, BackendCreateStudentRequest } from '@/types/student'
 import { useStudentStore } from '@/stores/student'
 
 const route = useRoute()
@@ -225,62 +264,23 @@ const form = ref({
   date_of_birth: '',
   age: '',
   gender: '',
+  address: '',
   city: '',
+  province: '',
+  postal_code: '',
   student_number: '',
   year_level: '',
   program: '',
   academic_standing: '',
   gpa: '',
   emergency_contact_name: '',
+  emergency_contact_relationship: 'Guardian',
   emergency_contact_phone: '',
   skills: [] as any[],
   activities: [] as any[],
   academic_history: [] as any[],
   affiliations: [] as any[],
   violations: [] as any[]
-})
-
-onMounted(async () => {
-  if (isEdit.value) {
-    try {
-      // Try to get student from store first (for generated data)
-      let student = studentStore.students.find(s => s.id === Number(route.params.id))
-      
-      // If not found in store, try to fetch from API
-      if (!student) {
-        student = await studentStore.fetchStudentById(Number(route.params.id))
-      }
-      
-      if (student) {
-        form.value = {
-          first_name: student.personalInfo?.firstName || '',
-          middle_name: student.personalInfo?.middleName || '',
-          last_name: student.personalInfo?.lastName || '',
-          email: student.personalInfo?.email || '',
-          password: '',
-          phone: student.personalInfo?.phone || '',
-          date_of_birth: student.personalInfo?.dateOfBirth || '',
-          age: student.personalInfo?.age?.toString() || '',
-          gender: student.personalInfo?.gender || '',
-          city: student.personalInfo?.city || '',
-          student_number: student.personalInfo?.studentId || '',
-          year_level: student.academicStanding?.currentYear?.toString() || '',
-          program: student.academicHistory?.[0]?.major || '',
-          academic_standing: student.academicStanding?.standing || '',
-          gpa: student.academicStanding?.currentGPA?.toString() || '',
-          emergency_contact_name: student.personalInfo?.emergencyContact?.name || '',
-          emergency_contact_phone: student.personalInfo?.emergencyContact?.phone || '',
-          skills: student.skills || [],
-          activities: student.activities || [],
-          academic_history: student.academicHistory || [],
-          affiliations: student.affiliations || [],
-          violations: student.violations || []
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching student:', error)
-    }
-  }
 })
 
 function calculateAge() {
@@ -297,6 +297,53 @@ function calculateAge() {
     form.value.age = age.toString()
   }
 }
+
+onMounted(async () => {
+  if (isEdit.value) {
+    try {
+      // Try to get student from store first (for generated data)
+      let student = studentStore.students.find(s => s.id === Number(route.params.id))
+      
+      // If not found in store, try to fetch from API
+      if (!student) {
+        student = await studentStore.fetchStudentById(Number(route.params.id))
+      }
+      
+      if (form.value) {
+        form.value = {
+          first_name: student.personalInfo?.firstName || '',
+          middle_name: student.personalInfo?.middleName || '',
+          last_name: student.personalInfo?.lastName || '',
+          email: student.personalInfo?.email || '',
+          password: '',
+          phone: student.personalInfo?.phone || '',
+          date_of_birth: student.personalInfo?.dateOfBirth || '',
+          age: student.personalInfo?.age?.toString() || '',
+          gender: student.personalInfo?.gender || '',
+          address: student.personalInfo?.address || '',
+          city: student.personalInfo?.city || '',
+          province: student.personalInfo?.province || '',
+          postal_code: student.personalInfo?.postalCode || '',
+          student_number: student.personalInfo?.studentId || '',
+          year_level: student.academicStanding?.currentYear?.toString() || '',
+          program: student.academicHistory?.[0]?.major || '',
+          academic_standing: student.academicStanding?.standing || '',
+          gpa: student.academicStanding?.currentGPA?.toString() || '',
+          emergency_contact_name: student.personalInfo?.emergencyContact?.name || '',
+          emergency_contact_relationship: student.personalInfo?.emergencyContact?.relationship || 'Guardian',
+          emergency_contact_phone: student.personalInfo?.emergencyContact?.phone || '',
+          skills: student.skills || [],
+          activities: student.activities || [],
+          academic_history: student.academicHistory || [],
+          affiliations: student.affiliations || [],
+          violations: student.violations || []
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching student:', error)
+    }
+  }
+})
 
 async function handleSubmit() {
   loading.value = true
@@ -315,14 +362,14 @@ async function handleSubmit() {
           dateOfBirth: form.value.date_of_birth,
           age: Number(form.value.age) || 0,
           gender: form.value.gender as 'male' | 'female' | 'other',
-          address: '', // Add default empty values for required fields
+          address: form.value.address,
           city: form.value.city,
-          province: '', // Add default empty values
-          postalCode: '', // Add default empty values
+          province: form.value.province,
+          postalCode: form.value.postal_code,
           studentId: form.value.student_number,
           emergencyContact: {
             name: form.value.emergency_contact_name,
-            relationship: 'Guardian', // Default relationship
+            relationship: form.value.emergency_contact_relationship,
             phone: form.value.emergency_contact_phone
           }
         },
@@ -346,38 +393,40 @@ async function handleSubmit() {
       
       await studentStore.updateStudent(studentId, updateData)
     } else {
+      // Debug: Log form values
+      console.log('Form values:', form.value)
+      
       // Create new student
-      const createData = {
-        personalInfo: {
-          firstName: form.value.first_name,
-          middleName: form.value.middle_name,
-          lastName: form.value.last_name,
-          email: form.value.email,
-          phone: form.value.phone,
-          dateOfBirth: form.value.date_of_birth,
-          age: Number(form.value.age) || 0,
-          gender: form.value.gender as 'male' | 'female' | 'other',
-          address: '', // Add default empty values for required fields
-          city: form.value.city,
-          province: '', // Add default empty values
-          postalCode: '', // Add default empty values
-          studentId: form.value.student_number,
-          emergencyContact: {
-            name: form.value.emergency_contact_name,
-            relationship: 'Guardian', // Default relationship
-            phone: form.value.emergency_contact_phone
-          }
-        },
-        academicStanding: {
-          currentYear: Number(form.value.year_level) || 1,
-          currentSemester: 'first' as const,
-          currentGPA: Number(form.value.gpa) || 0,
-          totalUnits: 0, // Default value
-          standing: form.value.academic_standing as 'good' | 'warning' | 'probation',
-          advisor: 'TBD' // Default value
-        }
+      const createData: BackendCreateStudentRequest = {
+        first_name: form.value.first_name,
+        middle_name: form.value.middle_name,
+        last_name: form.value.last_name,
+        email: form.value.email,
+        password: 'password123', // Default password for demo
+        phone: form.value.phone,
+        date_of_birth: form.value.date_of_birth,
+        gender: form.value.gender as 'male' | 'female' | 'other',
+        address: form.value.address,
+        city: form.value.city,
+        province: form.value.province,
+        postal_code: form.value.postal_code,
+        student_number: form.value.student_number,
+        year_level: Number(form.value.year_level) || 1,
+        academic_standing: form.value.academic_standing as 'excellent' | 'good' | 'average' | 'probation',
+        gpa: Number(form.value.gpa) || 0,
+        emergency_contact_name: form.value.emergency_contact_name,
+        emergency_contact_relationship: form.value.emergency_contact_relationship,
+        emergency_contact_phone: form.value.emergency_contact_phone,
+        // Add nested data if present
+        skills: form.value.skills || [],
+        activities: form.value.activities || [],
+        academic_history: form.value.academic_history || [],
+        affiliations: form.value.affiliations || [],
+        violations: form.value.violations || []
       }
       
+      // Debug: Log what we're sending
+      console.log('Sending student data:', createData)
       await studentStore.createStudent(createData)
     }
     router.push('/students')

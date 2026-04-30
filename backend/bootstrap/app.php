@@ -18,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'demo.auth' => \App\Http\Middleware\DemoAuthMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

@@ -153,6 +153,34 @@ export interface CreateStudentRequest {
   academicStanding: AcademicStanding
 }
 
+// Backend API Student Creation Request (flat structure)
+export interface BackendCreateStudentRequest {
+  first_name: string
+  middle_name?: string
+  last_name: string
+  email: string
+  password: string
+  phone?: string
+  date_of_birth?: string
+  gender?: 'male' | 'female' | 'other'
+  address?: string
+  city?: string
+  province?: string
+  postal_code?: string
+  student_number: string
+  year_level: number
+  academic_standing: 'excellent' | 'good' | 'average' | 'probation'
+  gpa?: number
+  emergency_contact_name?: string
+  emergency_contact_relationship?: string
+  emergency_contact_phone?: string
+  skills?: any[]
+  activities?: any[]
+  academic_history?: any[]
+  affiliations?: any[]
+  violations?: any[]
+}
+
 export interface UpdateStudentRequest extends Partial<Student> {
   id: number
 }

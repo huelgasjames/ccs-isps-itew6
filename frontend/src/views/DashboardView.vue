@@ -232,7 +232,7 @@
                     <div class="pstat-label">Experience</div>
                   </div>
                   <div class="pstat">
-                    <div class="pstat-val">{{ (currentProf?.courses_handled ?? '').split(',').filter(Boolean).length }}</div>
+                    <div class="pstat-val">{{ String(currentProf?.courses_handled ?? '').split(',').filter(Boolean).length }}</div>
                     <div class="pstat-label">Courses</div>
                   </div>
                 </div>
@@ -377,315 +377,6 @@
 </template>
 
 
-/* Analytics Carousel */
-.carousel-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.carousel-btn {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
-}
-
-.carousel-btn:hover:not(:disabled) {
-  border-color: #f97316;
-  color: #f97316;
-  background: #fffbeb;
-}
-
-.carousel-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.carousel-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.carousel-indicator {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-  min-width: 50px;
-  text-align: center;
-}
-
-.carousel-container {
-  position: relative;
-  overflow: hidden;
-  min-height: 500px;
-}
-
-.carousel-slide {
-  width: 100%;
-}
-
-/* Slide Transitions */
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: all 0.4s ease;
-}
-
-.slide-left-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-.slide-left-leave-to {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-.slide-right-enter-from {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-.slide-right-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-/* Analytics Content */
-.analytics-content {
-  padding: 0.5rem 0;
-}
-
-.analytics-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.analytics-title svg {
-  width: 24px;
-  height: 24px;
-  color: #f97316;
-}
-
-.analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.analytics-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.25rem;
-  transition: all 0.3s;
-}
-
-.analytics-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #f97316;
-}
-
-.analytics-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.analytics-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.analytics-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.analytics-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.analytics-icon.blue {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  color: #2563eb;
-}
-
-.analytics-icon.green {
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-  color: #059669;
-}
-
-.analytics-icon.amber {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  color: #d97706;
-}
-
-.analytics-icon.red {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-  color: #dc2626;
-}
-
-.analytics-icon.purple {
-  background: linear-gradient(135deg, #e9d5ff, #d8b4fe);
-  color: #9333ea;
-}
-
-.analytics-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #111827;
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.analytics-trend {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.analytics-trend.positive {
-  color: #059669;
-}
-
-.analytics-trend.negative {
-  color: #dc2626;
-}
-
-.analytics-trend svg {
-  width: 14px;
-  height: 14px;
-}
-
-.analytics-percentage {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-/* Chart Section */
-.chart-section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.chart-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 1.5rem;
-}
-
-.bar-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.bar-item {
-  display: grid;
-  grid-template-columns: 120px 1fr 60px;
-  align-items: center;
-  gap: 1rem;
-}
-
-.bar-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-}
-
-.bar-container {
-  background: #f3f4f6;
-  border-radius: 8px;
-  height: 32px;
-  position: relative;
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.75rem;
-  transition: width 0.6s ease;
-  position: relative;
-}
-
-.bar-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.bar-percentage {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-align: right;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .analytics-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .welcome-right {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .weather-widget {
-    width: 100%;
-  }
-  
-  .analytics-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .bar-item {
-    grid-template-columns: 100px 1fr 50px;
-    gap: 0.5rem;
-  }
-  
-  .carousel-container {
-    min-height: 600px;
-  }
-}
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
@@ -721,10 +412,12 @@ const carouselDir = ref('slide-left')
 const currentStudent = computed(() => students.value[studentIdx.value] ?? null)
 
 const nextStudent = () => {
+  if (students.value.length === 0) return
   carouselDir.value = 'slide-left'
   studentIdx.value = (studentIdx.value + 1) % students.value.length
 }
 const prevStudent = () => {
+  if (students.value.length === 0) return
   carouselDir.value = 'slide-right'
   studentIdx.value = (studentIdx.value - 1 + students.value.length) % students.value.length
 }
@@ -737,10 +430,12 @@ const profIdx = ref(0)
 const currentProf = computed(() => professors.value[profIdx.value] ?? null)
 
 const nextProf = () => {
+  if (professors.value.length === 0) return
   carouselDir.value = 'slide-left'
   profIdx.value = (profIdx.value + 1) % professors.value.length
 }
 const prevProf = () => {
+  if (professors.value.length === 0) return
   carouselDir.value = 'slide-right'
   profIdx.value = (profIdx.value - 1 + professors.value.length) % professors.value.length
 }
@@ -879,7 +574,7 @@ const fetchStats = async () => {
     const pd = pRes.data.data ?? pRes.data
     stats.value.totalStudents = Array.isArray(sd) ? sd.length : 0
     stats.value.totalProfessors = Array.isArray(pd) ? pd.length : 0
-    if (Array.isArray(sd)) stats.value.atRiskStudents = sd.filter((s: any) => s.is_at_risk).length
+    if (Array.isArray(sd)) stats.value.atRiskStudents = sd.filter((s: any) => s.is_at_risk === true).length
   } catch {
     // Generate sample data when backend is unavailable
     generateSampleAnalytics()

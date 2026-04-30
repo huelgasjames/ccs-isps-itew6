@@ -11,121 +11,11 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'admin')
   const isStudent = computed(() => user.value?.role === 'student')
   const isProfessor = computed(() => user.value?.role === 'professor')
-  const isDemoMode = computed(() => token.value ? token.value.startsWith('demo-') : false)
-
+  
   const login = async (credentials: LoginCredentials) => {
     loading.value = true
     try {
-      // Map usernames to emails for demo accounts
-      const emailMap: Record<string, string> = {
-        'admin': 'admin@ccs.edu',
-        'professor': 'professor@ccs.edu', 
-        'student': 'student@ccs.edu',
-        'maria': 'maria@ccs.edu'
-      }
-      
-      // Convert username to email if needed
-      const normalizedCredentials = {
-        ...credentials,
-        email: emailMap[credentials.email] || credentials.email
-      }
-      
-      // Check for hardcoded demo credentials for different roles
-      const demoCredentials = [
-        // Admin credentials - username only
-        {
-          email: 'admin',
-          password: 'password',
-          user: {
-            id: 1,
-            email: 'admin@ccs.edu',
-            name: 'Demo Admin',
-            role: 'admin' as const,
-            department: 'College of Computing Studies',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          token: 'demo-admin-token-' + Date.now()
-        },
-        // Admin credentials - full email
-        {
-          email: 'admin@ccs.edu',
-          password: 'password',
-          user: {
-            id: 1,
-            email: 'admin@ccs.edu',
-            name: 'System Administrator',
-            role: 'admin' as const,
-            department: 'College of Computing Studies',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          token: 'demo-admin-token-' + Date.now()
-        },
-        // Professor credentials
-        {
-          email: 'professor',
-          password: 'password',
-          user: {
-            id: 2,
-            email: 'professor@ccs.edu',
-            name: 'Demo Professor',
-            role: 'professor' as const,
-            department: 'College of Computing Studies',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          token: 'demo-professor-token-' + Date.now()
-        },
-                // Student credentials
-        {
-          email: 'student',
-          password: 'password',
-          user: {
-            id: 3,
-            email: 'student@ccs.edu',
-            name: 'Demo Student',
-            role: 'student' as const,
-            department: 'College of Computing Studies',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          token: 'demo-student-token-' + Date.now()
-        },
-        // Maria - Specific student account
-        {
-          email: 'maria',
-          password: 'password',
-          user: {
-            id: 4,
-            email: 'maria@ccs.edu',
-            name: 'Maria Santos',
-            role: 'student' as const,
-            department: 'College of Computing Studies',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          token: 'demo-maria-token-' + Date.now()
-        },
-              ]
-
-      // Check if credentials match any demo account (using original input)
-      const demoAccount = demoCredentials.find(
-        cred => cred.email === credentials.email && cred.password === credentials.password
-      )
-      
-      if (demoAccount) {
-        user.value = demoAccount.user
-        token.value = demoAccount.token
-        
-        localStorage.setItem('auth_token', demoAccount.token)
-        localStorage.setItem('user', JSON.stringify(demoAccount.user))
-        
-        return { user: demoAccount.user, token: demoAccount.token }
-      }
-      
-      // Real backend login only
-      const response = await authService.login(normalizedCredentials)
+      const response = await authService.login(credentials)
       user.value = response.user
       token.value = response.token
       
@@ -196,7 +86,6 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     isStudent,
     isProfessor,
-    isDemoMode,
     login,
     logout,
     initAuth,

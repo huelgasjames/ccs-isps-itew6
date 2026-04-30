@@ -101,8 +101,8 @@ Route::get('/test-student-data', function () {
 });
 
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware(['demo.auth', 'auth:sanctum']);
-Route::get('/me', [AuthController::class, 'me'])->middleware(['demo.auth', 'auth:sanctum']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
 
 // Debug route
 Route::post('/debug-login', function(Request $request) {
@@ -131,8 +131,8 @@ Route::post('/students/{id}/restore', [StudentController::class, 'restore']);
 Route::apiResource('professors', ProfessorController::class);
 Route::post('/professors/generate-sample-data', [ProfessorController::class, 'generateSampleData']);
 
-// Demo routes - handle demo tokens without sanctum
-Route::middleware('demo.auth')->group(function () {
+// Demo routes
+Route::group(['middleware' => 'api'], function () {
     // Student skills and affiliations routes (for testing)
     Route::get('/students/{student}/skills', [SkillController::class, 'getStudentSkills']);
     Route::get('/students/{student}/affiliations', [StudentAffiliationController::class, 'getStudentAffiliations']);

@@ -38,6 +38,13 @@ api.interceptors.response.use(
   (error) => {
     console.error('API Error:', error.response?.status, error.config?.url, error.response?.data)
     
+    // Log detailed error information for 422 errors
+    if (error.response?.status === 422) {
+      console.error('Validation Errors:', error.response.data.errors)
+      console.error('Request Data:', error.config.data)
+      console.error('Request Headers:', error.config.headers)
+    }
+    
     // Only auto-logout for real backend tokens, not demo tokens
     if (error.response?.status === 401 && !isDemoMode()) {
       console.warn('401 Unauthorized - logging out')

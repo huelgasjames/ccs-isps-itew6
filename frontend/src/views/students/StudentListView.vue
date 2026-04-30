@@ -6,6 +6,25 @@
         <button @click="generateSampleData" class="btn btn-secondary">
           Generate Sample Data
         </button>
+        <div class="export-dropdown">
+          <button @click="toggleExportMenu" class="btn btn-success" :disabled="generatingPDF">
+            {{ generatingPDF ? '⏳ Generating...' : '📊 Export Reports' }}
+          </button>
+          <div v-if="showExportMenu" class="export-menu">
+            <button @click="exportStudentListPDF" class="export-item">
+              📄 Student List PDF
+            </button>
+            <button @click="exportStatisticsPDF" class="export-item">
+              📈 Statistics Report PDF
+            </button>
+            <button @click="exportFilteredStudentsPDF" class="export-item">
+              🔍 Filtered Students PDF
+            </button>
+            <button @click="exportSkillsReportPDF" class="export-item">
+              🛠️ Skills Analysis PDF
+            </button>
+          </div>
+        </div>
         <router-link to="/students/create" class="btn btn-primary">
           Create New Student
         </router-link>
@@ -224,8 +243,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 interface Student {
   id: number
@@ -256,6 +277,8 @@ const selectedStanding = ref('')
 const selectedSkill = ref('')
 const selectedAffiliation = ref('')
 const selectedViolationStatus = ref('')
+const showExportMenu = ref(false)
+const generatingPDF = ref(false)
 
 // Generate sample data for testing
 const generateSampleData = () => {
@@ -613,6 +636,387 @@ async function archiveStudent(studentId: number) {
     }
   }
 }
+
+// Export menu functions
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value
+}
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// PDF Export Functions
+async function exportStudentListPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4') // landscape orientation
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Complete Student List Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Total Students: ${totalStudents.value}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Table headers
+    const headers = ['ID', 'Name', 'Email', 'Year', 'Standing', 'Skills Count']
+    const startY = 50
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    students.value.forEach((student, index) => {
+      if (currentY > pageHeight - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        student.id.toString(),
+        `${student.first_name} ${student.last_name}`,
+        student.user?.email || 'N/A',
+        student.year_level.toString(),
+        formatStanding(student.academic_standing),
+        (student.skills?.length || 0).toString()
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        const text = data.length > 15 ? data.substring(0, 15) + '...' : data
+        pdf.text(text, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Student Management System', 20, pageHeight - 10)
+    
+    pdf.save(`student-list-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportStatisticsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Student Statistics Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Statistics
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Overall Statistics', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const stats = [
+      { label: 'Total Students', value: totalStudents.value },
+      { label: 'Students on Probation', value: probationCount.value },
+      { label: 'Students in Good Standing', value: goodStandingCount.value },
+      { label: 'At Risk Students', value: atRiskCount.value }
+    ]
+    
+    stats.forEach(stat => {
+      pdf.text(`${stat.label}: ${stat.value}`, 30, currentY)
+      currentY += 10
+    })
+    
+    // Year level distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Year Level Distribution', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    availableYears.value.forEach(year => {
+      const count = students.value.filter(s => s.year_level === year).length
+      const percentage = ((count / totalStudents.value) * 100).toFixed(1)
+      pdf.text(`Year ${year}: ${count} students (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Academic standing distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Academic Standing Distribution', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const standings = ['excellent', 'good', 'average', 'probation']
+    standings.forEach(standing => {
+      const count = students.value.filter(s => s.academic_standing === standing).length
+      const percentage = ((count / totalStudents.value) * 100).toFixed(1)
+      pdf.text(`${formatStanding(standing)}: ${count} students (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Student Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`student-statistics-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating statistics PDF:', error)
+    alert('Failed to generate statistics PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportFilteredStudentsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Filtered Students Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Filtered Students: ${filteredStudents.value.length} of ${totalStudents.value}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Active filters
+    let filterText = 'Active Filters: '
+    if (searchQuery.value) filterText += `Search: "${searchQuery.value}" `
+    if (selectedYear.value) filterText += `Year: ${selectedYear.value} `
+    if (selectedStanding.value) filterText += `Standing: ${selectedStanding.value} `
+    if (selectedSkill.value) filterText += `Skill: ${selectedSkill.value} `
+    if (selectedAffiliation.value) filterText += `Affiliation: ${selectedAffiliation.value} `
+    
+    if (filterText === 'Active Filters: ') filterText = 'No active filters'
+    
+    pdf.text(filterText, pageWidth / 2, 44, { align: 'center' })
+    
+    // Table
+    const headers = ['ID', 'Name', 'Email', 'Year', 'Standing', 'Skills', 'Affiliations']
+    const startY = 55
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    filteredStudents.value.forEach((student, index) => {
+      if (currentY > pageHeight - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const skills = student.skills?.slice(0, 2).map(s => s.name).join(', ') || 'None'
+      const affiliations = student.affiliations?.slice(0, 2).map(a => a.name).join(', ') || 'None'
+      
+      const rowData = [
+        student.id.toString(),
+        `${student.first_name} ${student.last_name}`,
+        student.user?.email || 'N/A',
+        student.year_level.toString(),
+        formatStanding(student.academic_standing),
+        skills.length > 15 ? skills.substring(0, 15) + '...' : skills,
+        affiliations.length > 15 ? affiliations.substring(0, 15) + '...' : affiliations
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        pdf.text(data, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    pdf.save(`filtered-students-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating filtered students PDF:', error)
+    alert('Failed to generate filtered students PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportSkillsReportPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Skills Analysis Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Skills summary
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Top Skills Overview', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    // Get top skills sorted by count
+    const topSkills = availableSkillsWithCounts.value
+      .filter(skill => skill.count > 0)
+      .slice(0, 15)
+    
+    topSkills.forEach((skill, index) => {
+      const percentage = ((skill.count / totalStudents.value) * 100).toFixed(1)
+      pdf.text(`${index + 1}. ${skill.name}: ${skill.count} students (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Skills by proficiency
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Skills by Proficiency Level', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const proficiencyStats = {
+      beginner: 0,
+      intermediate: 0,
+      advanced: 0
+    }
+    
+    students.value.forEach(student => {
+      student.skills?.forEach(skill => {
+        if (skill.proficiency === 'beginner') proficiencyStats.beginner++
+        else if (skill.proficiency === 'intermediate') proficiencyStats.intermediate++
+        else if (skill.proficiency === 'advanced') proficiencyStats.advanced++
+      })
+    })
+    
+    Object.entries(proficiencyStats).forEach(([level, count]) => {
+      const percentage = totalStudents.value > 0 ? ((count / totalStudents.value) * 100).toFixed(1) : 0
+      pdf.text(`${formatStanding(level)}: ${count} skills (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Students with most skills
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Students with Most Skills', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const studentsBySkillCount = students.value
+      .map(student => ({
+        name: `${student.first_name} ${student.last_name}`,
+        skillCount: student.skills?.length || 0
+      }))
+      .sort((a, b) => b.skillCount - a.skillCount)
+      .slice(0, 10)
+    
+    studentsBySkillCount.forEach((student, index) => {
+      pdf.text(`${index + 1}. ${student.name}: ${student.skillCount} skills`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Student Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`skills-analysis-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating skills report PDF:', error)
+    alert('Failed to generate skills report PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -631,6 +1035,56 @@ async function archiveStudent(studentId: number) {
   display: flex;
   gap: 1rem;
   align-items: center;
+}
+
+/* Export Dropdown */
+.export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+  margin-top: 0.5rem;
+}
+
+.export-item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.export-item:last-child {
+  border-bottom: none;
+}
+
+.export-item:hover {
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.export-item:first-child:hover {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.export-item:last-child:hover {
+  border-radius: 0 0 0.5rem 0.5rem;
 }
 
 /* Statistics Cards */
@@ -1068,6 +1522,15 @@ async function archiveStudent(studentId: number) {
 
 .btn-primary:hover {
   background-color: #2563eb;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #059669;
 }
 
 .btn-secondary {
