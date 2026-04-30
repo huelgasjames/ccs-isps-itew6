@@ -18,7 +18,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
-        Generate Sample Data
+       Refresh Data
       </button>
       <router-link to="/professors/create" class="btn btn-success btn-small">
         Create New Professor

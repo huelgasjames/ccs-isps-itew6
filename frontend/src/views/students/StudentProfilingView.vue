@@ -4,7 +4,7 @@
       <h1>Students List</h1>
       <div class="header-actions">
         <button @click="generateSampleData" class="btn btn-secondary">
-          Generate Sample Data
+         Refresh Data
         </button>
         <div class="export-dropdown">
           <button @click="toggleExportMenu" class="btn btn-success" :disabled="generatingPDF">
