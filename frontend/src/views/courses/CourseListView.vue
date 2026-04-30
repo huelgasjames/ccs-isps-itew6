@@ -14,6 +14,22 @@
             </svg>
             Generate Sample Data
           </button>
+          <div class="export-dropdown">
+            <button @click="toggleExportMenu" class="btn btn-success btn-small" :disabled="generatingPDF">
+              {{ generatingPDF ? '⏳ Generating...' : '📊 Export' }}
+            </button>
+            <div v-if="showExportMenu" class="export-menu">
+              <button @click="exportCourseListPDF" class="export-item">
+                📄 Course List PDF
+              </button>
+              <button @click="exportStatisticsPDF" class="export-item">
+                📈 Statistics Report PDF
+              </button>
+              <button @click="exportFilteredCoursesPDF" class="export-item">
+                🔍 Filtered Courses PDF
+              </button>
+            </div>
+          </div>
           <button @click="courseStore.fetchCourses" class="btn btn-info btn-small">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
               <path d="M23 4v6h-6M1 20v-6h6"/>
@@ -269,10 +285,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCourseStore } from '@/stores/course'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const courseStore = useCourseStore()
+const showExportMenu = ref(false)
+const generatingPDF = ref(false)
 
 const archiveCourse = async (courseId: number) => {
   if (confirm('Are you sure you want to archive this course? This will hide it from the active course list.')) {
@@ -307,8 +327,265 @@ const getEnrollmentStatus = (current: number, max: number) => {
   return 'Available'
 }
 
+// Export menu functions
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value
+}
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false
+  }
+}
+
+// PDF Export Functions
+async function exportCourseListPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Complete Course List Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Total Courses: ${courseStore.courses.length}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Table headers
+    const headers = ['Code', 'Name', 'Department', 'Credits', 'Semester', 'Year']
+    const startY = 50
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    courseStore.courses.forEach((course, index) => {
+      if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        course.courseCode,
+        course.courseName,
+        course.department,
+        course.credits.toString(),
+        course.semester,
+        course.academicYear
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        const text = data.length > 15 ? data.substring(0, 15) + '...' : data
+        pdf.text(text, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Course Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`course-list-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportStatisticsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Course Statistics Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Statistics
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Overall Statistics', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const totalCourses = courseStore.courses.length
+    const totalCredits = courseStore.courses.reduce((sum, course) => sum + course.credits, 0)
+    const departments = [...new Set(courseStore.courses.map(c => c.department))]
+    
+    const stats = [
+      { label: 'Total Courses', value: totalCourses },
+      { label: 'Total Credits', value: totalCredits },
+      { label: 'Total Departments', value: departments.length }
+    ]
+    
+    stats.forEach(stat => {
+      pdf.text(`${stat.label}: ${stat.value}`, 30, currentY)
+      currentY += 10
+    })
+    
+    // Department distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Department Distribution', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const deptGroups = courseStore.courses.reduce((groups: any, course: any) => {
+      const dept = course.department
+      if (!groups[dept]) groups[dept] = { count: 0, credits: 0 }
+      groups[dept].count++
+      groups[dept].credits += course.credits
+      return groups
+    }, {})
+    
+    Object.entries(deptGroups).forEach(([dept, data]: [string, any]) => {
+      pdf.text(`${dept}: ${data.count} courses (${data.credits} credits)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Course Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`course-statistics-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating statistics PDF:', error)
+    alert('Failed to generate statistics PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportFilteredCoursesPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Filtered Courses Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Filtered Courses: ${courseStore.filteredCourses.length} of ${courseStore.courses.length}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Active filters
+    let filterText = 'Active Filters: '
+    if (courseStore.filter.search) filterText += `Search: "${courseStore.filter.search}" `
+    if (courseStore.filter.department) filterText += `Department: ${courseStore.filter.department} `
+    if (courseStore.filter.semester) filterText += `Semester: ${courseStore.filter.semester} `
+    
+    if (filterText === 'Active Filters: ') filterText = 'No active filters'
+    
+    pdf.text(filterText, pageWidth / 2, 44, { align: 'center' })
+    
+    // Table
+    const headers = ['Code', 'Name', 'Department', 'Credits', 'Semester', 'Year']
+    const startY = 55
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    courseStore.filteredCourses.forEach((course, index) => {
+      if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        course.courseCode,
+        course.courseName,
+        course.department,
+        course.credits.toString(),
+        course.semester,
+        course.academicYear
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        pdf.text(data, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    pdf.save(`filtered-courses-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating filtered courses PDF:', error)
+    alert('Failed to generate filtered courses PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
   courseStore.fetchCourses()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 
 </script>
@@ -346,6 +623,50 @@ onMounted(() => {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+/* Export dropdown */
+.export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+  margin-top: 0.5rem;
+}
+
+.export-item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #374151;
+  transition: background-color 0.2s;
+}
+
+.export-item:hover {
+  background-color: #f3f4f6;
+}
+
+.export-item:first-child {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.export-item:last-child {
+  border-radius: 0 0 0.5rem 0.5rem;
 }
 
 .btn {

@@ -1,115 +1,33 @@
 <template>
-  <div class="student-profiling-view">
+  <div class="student-list-view">
     <div class="page-header">
-      <h1>Student Profiling</h1>
-      <p>Manage and monitor student information</p>
-    </div>
-
-    <div class="actions">
-      <router-link to="/students/list" class="btn btn-primary btn-small">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        View All Students
-      </router-link>
-      <button @click="fetchStudents" class="btn btn-info btn-small">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
-          <path d="M23 4v6h-6M1 20v-6h6"/>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-        </svg>
-        Refresh Data
-      </button>
-      <button @click="generateSampleData" class="btn btn-secondary btn-small">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-        </svg>
-        Generate Sample Data
-      </button>
-      <router-link to="/students/create" class="btn btn-success btn-small">
-        Create New Student
-      </router-link>
-      <ReportGenerator 
-        :data="filteredStudentsList" 
-        report-title="Students"
-        :filters="{
-          searchQuery,
-          selectedYear,
-          selectedStanding,
-          selectedSkill,
-          selectedAffiliation,
-          selectedViolationStatus
-        }"
-        @generate-report="handleReportGeneration"
-      />
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card primary">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <h3>Total Students</h3>
-          <p class="stat-number">{{ totalStudents }}</p>
-          <span class="stat-change">+{{ newStudentsThisMonth }} this month</span>
-        </div>
-      </div>
-
-      <div class="stat-card warning">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <h3>At Risk Students</h3>
-          <p class="stat-number">{{ atRiskStudents }}</p>
-          <span class="stat-change">{{ ((atRiskStudents / totalStudents) * 100).toFixed(1) }}% of total</span>
-        </div>
-      </div>
-
-      <div class="stat-card danger">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <h3>Total Violations</h3>
-          <p class="stat-number">{{ totalViolations }}</p>
-          <span class="stat-change">{{ violationsThisMonth }} this month</span>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- Year Level Distribution -->
-    <div class="analytics-section">
-      <h2>Year Level Distribution</h2>
-      <div class="year-distribution">
-        <div v-for="yearData in yearDistribution" :key="yearData.year" class="year-card">
-          <div class="year-header">
-            <h3>Year {{ yearData.year }}</h3>
-            <span class="year-count">{{ yearData.count }} students</span>
-          </div>
-          <div class="year-progress">
-            <div class="progress-bar" :style="{ width: yearData.percentage + '%' }"></div>
-          </div>
-          <div class="year-details">
-            <span class="year-percentage">{{ yearData.percentage.toFixed(1) }}%</span>
-            <span class="year-gpa">Avg GPA: {{ yearData.avgGPA.toFixed(2) }}</span>
+      <h1>Students List</h1>
+      <div class="header-actions">
+        <button @click="generateSampleData" class="btn btn-secondary">
+          Generate Sample Data
+        </button>
+        <div class="export-dropdown">
+          <button @click="toggleExportMenu" class="btn btn-success" :disabled="generatingPDF">
+            {{ generatingPDF ? '⏳ Generating...' : '📊 Export Reports' }}
+          </button>
+          <div v-if="showExportMenu" class="export-menu">
+            <button @click="exportStudentListPDF" class="export-item">
+              📄 Student List PDF
+            </button>
+            <button @click="exportStatisticsPDF" class="export-item">
+              📈 Statistics Report PDF
+            </button>
+            <button @click="exportFilteredStudentsPDF" class="export-item">
+              🔍 Filtered Students PDF
+            </button>
+            <button @click="exportSkillsReportPDF" class="export-item">
+              🛠️ Skills Analysis PDF
+            </button>
           </div>
         </div>
+        <router-link to="/students/create" class="btn btn-primary">
+          Create New Student
+        </router-link>
       </div>
     </div>
 
@@ -139,7 +57,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search by name, email, skills, affiliations, violations, or courses..."
+          placeholder="Search by name or email..."
           class="search-input"
         />
       </div>
@@ -158,32 +76,6 @@
           <option value="good">Good</option>
           <option value="average">Average</option>
           <option value="probation">Probation</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <select v-model="selectedSkill" class="filter-select">
-          <option value="">All Skills</option>
-          <option v-for="skill in availableSkillsList" :key="skill" :value="skill">
-            {{ skill }}
-          </option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <select v-model="selectedAffiliation" class="filter-select">
-
-          
-          <option value="">All Affiliations</option>
-          <option v-for="affiliation in availableAffiliationsList" :key="affiliation" :value="affiliation">
-            {{ affiliation }}
-          </option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <select v-model="selectedViolationStatus" class="filter-select">
-          <option value="">All Violation Status</option>
-          <option value="pending">Pending</option>
-          <option value="resolved">Resolved</option>
-          <option value="appealed">Appealed</option>
         </select>
       </div>
       <button @click="resetFilters" class="btn btn-secondary">
@@ -280,49 +172,52 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in filteredStudentsList" :key="student.id">
+          <tr v-for="student in filteredStudents" :key="student.id">
             <td>{{ student.id }}</td>
-            <td>{{ student.personalInfo.firstName }} {{ student.personalInfo.lastName }}</td>
-            <td>{{ student.personalInfo.email }}</td>
-            <td>{{ student.academicStanding.currentYear }}</td>
+            <td>{{ student.first_name }} {{ student.last_name }}</td>
+            <td>{{ student.user?.email }}</td>
+            <td>{{ student.year_level }}</td>
             <td>
-              <span :class="['status-badge', student.academicStanding.standing]">
-                {{ formatStanding(student.academicStanding.standing) }}
+              <span :class="['status-badge', student.academic_standing]">
+                {{ formatStanding(student.academic_standing) }}
               </span>
             </td>
             <td>
-              <div class="skills-tags">
-                <span v-for="skill in student.skills.slice(0, 2)" :key="skill.id" class="skill-tag">
-                  {{ skill.name }}
-                </span>
-                <span v-if="student.skills.length > 2" class="more-skills">
-                  +{{ student.skills.length - 2 }} more
-                </span>
+              <div class="skills-offers">
+                <h4>Skills</h4>
+                <div class="skills-list">
+                  <div v-for="skill in getDisplaySkills(student)" :key="skill.name" class="skill-item">
+                    <div class="skill-header">
+                      <strong>{{ skill.name }}</strong>
+                      <span :class="['proficiency-badge', skill.proficiency]">{{ skill.proficiency }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </td>
             <td>
-              <div class="affiliations-tags">
-                <span v-for="affiliation in student.affiliations.slice(0, 2)" :key="affiliation.id" class="affiliation-tag">
+              <div class="affiliations-list">
+                <div v-if="hasAffiliations(student)" v-for="affiliation in student.affiliations?.slice(0, 2)" :key="affiliation.name" class="affiliation-badge">
                   {{ affiliation.name }}
-                </span>
-                <span v-if="student.affiliations.length > 2" class="more-affiliations">
+                </div>
+                <span v-if="student.affiliations && student.affiliations.length > 2" class="more-affiliations">
                   +{{ student.affiliations.length - 2 }} more
                 </span>
+                <span v-if="!hasAffiliations(student)" class="no-affiliations">None</span>
               </div>
             </td>
             <td>
-              <div class="violations-info">
-                <span :class="['violation-count', getViolationClass(student.violations)]">
-                  {{ student.violations.length }} violations
-                </span>
-                <div v-if="student.violations.length > 0" class="violation-types">
-                  <span v-for="(violation, index) in student.violations.slice(0, 2)" :key="violation.id" class="violation-type">
-                    {{ violation.type }}<span v-if="index < Math.min(student.violations.length - 1, 1)">,</span>
-                  </span>
+              <div class="violations-list">
+                <div v-if="student.violations && student.violations.length > 0">
+                  <div v-for="violation in student.violations?.slice(0, 2)" :key="violation.type" class="violation-item">
+                    <span :class="['violation-status-badge', violation.status]">{{ formatViolationStatus(violation.status) }}</span>
+                    <span class="violation-type">{{ violation.type }}</span>
+                  </div>
                   <span v-if="student.violations.length > 2" class="more-violations">
                     +{{ student.violations.length - 2 }} more
                   </span>
                 </div>
+                <span v-else class="no-violations">None</span>
               </div>
             </td>
             <td>
@@ -340,91 +235,7 @@
         </tbody>
       </table>
       
-      <!-- Mobile Card View -->
-      <div class="mobile-cards-view">
-        <div v-for="student in filteredStudentsList" :key="student.id" class="mobile-student-card">
-          <div class="mobile-card-header">
-            <div class="mobile-student-info">
-              <h3>{{ student.personalInfo.firstName }} {{ student.personalInfo.lastName }}</h3>
-              <p>{{ student.personalInfo.email }}</p>
-              <span :class="['status-badge', student.academicStanding.standing]">
-                {{ formatStanding(student.academicStanding.standing) }}
-              </span>
-            </div>
-            <div class="mobile-student-id">
-              <strong>ID:</strong> {{ student.id }}
-            </div>
-          </div>
-          
-          <div class="mobile-card-body">
-            <div class="mobile-detail-row">
-              <div class="mobile-detail-label">Year Level:</div>
-              <div class="mobile-detail-value">{{ student.academicStanding.currentYear }}</div>
-            </div>
-            
-            <div class="mobile-detail-row">
-              <div class="mobile-detail-label">Skills:</div>
-              <div class="mobile-detail-value">
-                <div class="skills-tags">
-                  <span v-for="skill in student.skills.slice(0, 3)" :key="skill.id" class="skill-tag">
-                    {{ skill.name }}
-                  </span>
-                  <span v-if="student.skills.length > 3" class="more-skills">
-                    +{{ student.skills.length - 3 }} more
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mobile-detail-row">
-              <div class="mobile-detail-label">Affiliations:</div>
-              <div class="mobile-detail-value">
-                <div class="affiliations-tags">
-                  <span v-for="affiliation in student.affiliations.slice(0, 2)" :key="affiliation.id" class="affiliation-tag">
-                    {{ affiliation.name }}
-                  </span>
-                  <span v-if="student.affiliations.length > 2" class="more-affiliations">
-                    +{{ student.affiliations.length - 2 }} more
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mobile-detail-row">
-              <div class="mobile-detail-label">Violations:</div>
-              <div class="mobile-detail-value">
-                <div class="violations-info">
-                  <span :class="['violation-count', getViolationClass(student.violations)]">
-                    {{ student.violations.length }} violations
-                  </span>
-                  <div v-if="student.violations.length > 0" class="violation-types">
-                    <span v-for="(violation, index) in student.violations.slice(0, 2)" :key="violation.id" class="violation-type">
-                      {{ violation.type }}<span v-if="index < Math.min(student.violations.length - 1, 1)">,</span>
-                    </span>
-                    <span v-if="student.violations.length > 2" class="more-violations">
-                      +{{ student.violations.length - 2 }} more
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mobile-card-actions">
-            <router-link :to="`/students/${student.id}`" class="btn btn-sm btn-info">
-              View
-            </router-link>
-            <router-link :to="`/students/${student.id}/edit`" class="btn btn-sm btn-warning">
-              Edit
-            </router-link>
-            <button @click="archiveStudent(student.id)" class="btn btn-sm btn-danger">
-              Archive
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div v-if="filteredStudentsList.length === 0" class="no-results">
+      <div v-if="filteredStudents.length === 0" class="no-results">
         No students found matching your criteria.
       </div>
     </div>
@@ -432,81 +243,179 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useStudentStore } from '@/stores/student'
-import type { StudentFilter, DisplayMode, Student } from '@/types/student'
-import ReportGenerator from '@/components/ReportGenerator.vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
+import axios from 'axios'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
-const router = useRouter()
-const studentStore = useStudentStore()
+interface Student {
+  id: number
+  first_name: string
+  last_name: string
+  user?: { email: string }
+  year_level: number
+  academic_standing: string
+  skills?: Array<{
+    id: string
+    name: string
+    category: string
+    proficiency: string
+    yearsExperience?: number
+    certifications?: string[]
+    lastUsed?: string
+  }>
+  affiliations?: Array<{ name: string; type: string }>
+  violations?: Array<{ type: string; status: string; description: string }>
+}
 
-// Local state
-const filterPanelOpen = ref(false)
-const showCreateModal = ref(false)
-const localFilter = ref<StudentFilter>({
-  search: '',
-  skills: [],
-  activities: [],
-  affiliations: [],
-  violationStatus: [],
-  academicStanding: [],
-  yearLevel: [],
-  gpaRange: { min: 0, max: 4 },
-  ageRange: { min: 16, max: 30 }
-})
-
-// StudentListView state
+const students = ref<Student[]>([])
+const loading = ref(true)
+const error = ref('')
 const searchQuery = ref('')
 const selectedYear = ref('')
 const selectedStanding = ref('')
 const selectedSkill = ref('')
 const selectedAffiliation = ref('')
 const selectedViolationStatus = ref('')
-const allStudents = computed(() => Array.isArray(studentStore.students) ? studentStore.students : [])
+const showExportMenu = ref(false)
+const generatingPDF = ref(false)
 
-// Available options for filters
-const availableSkills = ref([
-  'JavaScript', 'Python', 'Java', 'C++', 'PHP', 'React', 'Vue.js', 'Node.js', 
-  'HTML/CSS', 'SQL', 'MongoDB', 'Docker', 'Git', 'Machine Learning', 'Data Analysis', 
-  'UI/UX Design', 'Laravel', 'Angular', 'TypeScript', 'Flutter', 'Swift', 'Kotlin', 
-  'AWS', 'Azure', 'Google Cloud', 'TensorFlow', 'PyTorch', 'Leadership', 'Communication', 'Teamwork'
-])
-const availableActivities = ref(['basketball', 'volunteer', 'organization', 'sports', 'leadership'])
+// Generate sample data for testing
+const generateSampleData = () => {
+  const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Jennifer', 'Michael', 'Amanda', 'William', 'Jessica', 'Daniel', 'Ashley', 'Christopher', 'Sophia', 'Matthew', 'Olivia', 'Andrew', 'Emma', 'Joshua', 'Isabella', 'Ryan', 'Mia', 'Kevin', 'Charlotte', 'Tyler', 'Amelia', 'Jason', 'Harper', 'Ethan', 'Evelyn', 'Brandon', 'Abigail', 'Nathan', 'Emily', 'Alexander', 'Madison', 'Jacob', 'Sofia', 'Logan', 'Avery', 'Ethan', 'Aiden', 'Caleb', 'Jackson', 'Mason', 'Liam', 'Noah', 'Lucas', 'Henry', 'Alexander', 'Sebastian', 'Ezra', 'Jack', 'Owen', 'Daniel', 'Matthew', 'Joseph', 'David', 'Samuel', 'Carter', 'Wyatt', 'Jayden', 'John', 'Dylan', 'Luke', 'Gabriel', 'Anthony', 'Isaac', 'Lincoln', 'Christopher', 'Joshua', 'Andrew', 'Mateo', 'Ryan', 'Nathan', 'Aaron', 'Isaiah', 'Thomas', 'Charles', 'Caleb', 'Josiah', 'Christian', 'Jonathan', 'Landon', 'Evan', 'Gavin', 'Connor', 'Adrian', 'Asher', 'Jeremiah', 'Hudson', 'Robert', 'Nicholas', 'Brayden', 'Grayson', 'Eli', 'Ezekiel', 'Dominic', 'Oliver', 'Xavier', 'Jaxon', 'Maverick', 'Kai', 'Santiago', 'Leo', 'Aarav', 'Roman', 'Adam', 'Ronan', 'Emmett', 'Remington', 'Milo', 'Archer', 'Rowan', 'Karter', 'Wesley', 'Jaxson', 'Josiah', 'Elliot', 'Parker', 'Colton', 'Luca', 'Atlas', 'Jasper', 'Declan', 'Kayden', 'Maxwell', 'Ryker', 'Enzo', 'Kingston', 'Bennett', 'Carson', 'Raymond', 'Zion', 'Arlo', 'Theodore', 'Jude', 'Nolan', 'Antonio', 'Myles', 'Elliott', 'Gideon', 'Knox', 'Damon', 'Ace', 'Barrett', 'Amiri', 'Max', 'Javier', 'Silas', 'Cody', 'Beau', 'Amir', 'Adriel', 'Rory', 'Bodhi', 'Emiliano', 'Braxton', 'Khalil', 'Malachi', 'Makai', 'Ronin', 'Finn', 'Zayn', 'Kade', 'Rex', 'Cruz', 'Stellan', 'Joaquin', 'Koa', 'Lorenzo', 'Orion', 'Cassius', 'Armani', 'Frankie', 'Ermias', 'Kairo', 'Legend', 'Raphael', 'Zayne', 'Jesse', 'Sullivan', 'Cameron', 'Graham', 'Felix', 'August', 'River', 'Brooks', 'Bryce', 'Judah', 'Kellan', 'Abel', 'Colby', 'Hayes', 'Salvador', 'Kaden', 'Kamari', 'Solomon', 'Rhys', 'Jerry', 'Ricky', 'Tommy', 'Andre', 'Miguel', 'Hector', 'Sergio', 'Luis', 'Carlos', 'Juan', 'Jorge', 'Martin', 'Adrian', 'Diego', 'Ricardo', 'Antonio', 'Alejandro', 'Manuel', 'Pablo', 'Javier', 'Roberto', 'Pedro', 'Raul', 'Francisco', 'Angel', 'Gabriel', 'Miguel', 'Luis', 'Carlos', 'Jose', 'David', 'Daniel', 'Mario', 'Arturo', 'Rafael', 'Eduardo', 'Victor', 'Alberto', 'Oscar', 'Santiago', 'Andres', 'Marco', 'Fernando', 'Benjamin', 'Samuel', 'Isaac', 'Nathan', 'Caleb', 'Aaron', 'Lucas', 'Henry', 'Owen', 'Julian', 'Levi', 'Christian', 'Eli', 'Aaron', 'Evan', 'Parker', 'Adam', 'Ian', 'Connor', 'Leo', 'Xavier', 'Ryan', 'Colton', 'Angel', 'Adrian', 'Jonathan', 'Carson', 'Hunter', 'Brandon', 'Austin', 'Gavin', 'Nolan', 'Tyler', 'Caleb', 'Lucas', 'Henry', 'Owen', 'Julian', 'Levi', 'Christian', 'Eli', 'Aaron', 'Evan', 'Parker', 'Adam', 'Ian', 'Connor', 'Leo', 'Xavier', 'Ryan', 'Colton', 'Angel', 'Adrian', 'Jonathan', 'Carson', 'Hunter', 'Brandon', 'Austin', 'Gavin', 'Nolan', 'Tyler', 'Caleb']
+  
+  const lastNames = ['Doe', 'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards', 'Collins', 'Stewart', 'Sanchez', 'Morris', 'Rogers', 'Reed', 'Cook', 'Morgan', 'Bell', 'Murphy', 'Bailey', 'Rivera', 'Cooper', 'Richardson', 'Cox', 'Howard', 'Ward', 'Torres', 'Peterson', 'Gray', 'Ramirez', 'James', 'Watson', 'Brooks', 'Kelly', 'Sanders', 'Price', 'Bennett', 'Wood', 'Barnes', 'Ross', 'Henderson', 'Coleman', 'Jenkins', 'Perry', 'Powell', 'Long', 'Patterson', 'Hughes', 'Flores', 'Washington', 'Butler', 'Simmons', 'Foster', 'Gonzales', 'Bryant', 'Alexander', 'Russell', 'Griffin', 'Diaz', 'Hayes', 'Myers', 'Ford', 'Hamilton', 'Graham', 'Sullivan', 'Wallace', 'Woods', 'Cole', 'West', 'Jordan', 'Owens', 'Reynolds', 'Fisher', 'Ellis', 'Harrison', 'Gibson', 'Mcdonald', 'Cruz', 'Marshall', 'Ortiz', 'Gomez', 'Murray', 'Freeman', 'Wells', 'Webb', 'Simpson', 'Stevens', 'Tucker', 'Porter', 'Hunter', 'Hicks', 'Crawford', 'Henry', 'Boyd', 'Mason', 'Morales', 'Kennedy', 'Warren', 'Dixon', 'Ramos', 'Reyes', 'Burns', 'Gordon', 'Shaw', 'Holmes', 'Rice', 'Robertson', 'Hunt', 'Black', 'Daniels', 'Palmer', 'Mills', 'Nichols', 'Grant', 'Knight', 'Ferguson', 'Rose', 'Stone', 'Hawkins', 'Dunn', 'Perkins', 'Hudson', 'Spencer', 'Gardner', 'Stephens', 'Payne', 'Pierce', 'Berry', 'Matthews', 'Arnold', 'Wagner', 'Willis', 'Ray', 'Watkins', 'Olson', 'Carroll', 'Duncan', 'Snyder', 'Hart', 'Cunningham', 'Bradley', 'Lane', 'Andrews', 'Ruiz', 'Harper', 'Fox', 'Riley', 'Armstrong', 'Carpenter', 'Weaver', 'Greene', 'Lawrence', 'Elliott', 'Chavez', 'Sims', 'Austin', 'Peters', 'Kelley', 'Franklin', 'Lawson', 'Fields', 'Gutierrez', 'Ryan', 'Schmidt', 'Carr', 'Vasquez', 'Castillo', 'Wheeler', 'Chapman', 'Oliver', 'Montgomery', 'Richards', 'Williamson', 'Johnston', 'Banks', 'Meyer', 'Bauer', 'Fletcher', 'Giles', 'Floyd', 'Hogan', 'Luna', 'Phelps', 'McGuire', 'Allison', 'Bridges', 'Wilkerson', 'Stanley', 'Nguyen', 'George', 'Jacobs', 'Reid', 'Kim', 'Fuller', 'Lynch', 'Dean', 'Gilbert', 'Garza', 'Erickson', 'Vargas', 'Combs', 'Kramer', 'Molina', 'Huffman', 'Kelley', 'Dixon', 'Owens', 'Huffman', 'Kelley', 'Dixon', 'Owens', 'Huffman', 'Kelley', 'Dixon', 'Owens']
 
-// Computed lists for filter dropdowns
-const availableSkillsList = computed(() => {
-  const allSkills = new Set<string>()
-  allStudents.value.forEach(student => {
-    ;(student.skills || []).forEach(skill => {
-      allSkills.add(skill.name)
+  const sampleStudents: Student[] = []
+  
+  for (let i = 0; i < 1000; i++) {
+    const year = Math.floor(Math.random() * 4) + 1
+    const standings = ['excellent', 'good', 'average', 'probation']
+    const standing = standings[Math.floor(Math.random() * standings.length)]
+    
+    // Generate 2-4 skills per student
+    const skillCount = Math.floor(Math.random() * 3) + 2
+    const studentSkills = []
+    const availableSkillNames = ['JavaScript', 'Python', 'Java', 'React', 'Node.js', 'TypeScript', 'HTML/CSS', 'SQL', 'MongoDB', 'Docker', 'Git', 'AWS', 'Azure', 'Machine Learning', 'TensorFlow', 'Leadership', 'Communication', 'Teamwork', 'Project Management', 'Data Analysis', 'UI/UX Design', 'Flutter', 'Swift', 'Kotlin', 'Laravel', 'Vue.js', 'Angular', 'C++', 'PHP', 'Go', 'Ruby', 'Rust', 'Swift', 'Kubernetes']
+    
+    for (let j = 0; j < skillCount; j++) {
+      const skillName = availableSkillNames[Math.floor(Math.random() * availableSkillNames.length)]
+      const categories = ['technical', 'soft', 'creative']
+      const proficiencies = ['beginner', 'intermediate', 'advanced']
+      
+      studentSkills.push({
+        id: `skill${i}_${j}`,
+        name: skillName || 'Unknown Skill',
+        category: categories[Math.floor(Math.random() * categories.length)] || 'technical',
+        proficiency: proficiencies[Math.floor(Math.random() * proficiencies.length)] || 'beginner',
+        yearsExperience: Math.floor(Math.random() * 10) + 1,
+        certifications: Math.random() > 0.5 ? [`${skillName} Certification`, `Advanced ${skillName}`] : [],
+        lastUsed: new Date(2024 - Math.floor(Math.random() * 365), Math.floor(Math.random() * 12) + 1, Math.floor(Math.random() * 28)).toISOString().split('T')[0]
+      })
+    }
+    
+    // Generate 0-2 affiliations per student
+    const affiliationCount = Math.floor(Math.random() * 3)
+    const studentAffiliations = []
+    const affiliationNames = ['Computer Science Society', 'Student Council', 'Coding Club', 'Debate Team', 'Drama Club', 'Sports Club', 'Music Club', 'Art Club', 'Volunteer Group', 'Research Lab', 'Internship Program', 'Hackathon Team', 'Startup Incubator', 'Professional Association', 'Alumni Network', 'Mentorship Program']
+    const affiliationTypes = ['academic', 'leadership', 'extracurricular', 'professional']
+    
+    for (let k = 0; k < affiliationCount; k++) {
+      const affiliationName = affiliationNames[Math.floor(Math.random() * affiliationNames.length)]
+      const affiliationType = affiliationTypes[Math.floor(Math.random() * affiliationTypes.length)]
+      
+      studentAffiliations.push({
+        name: affiliationName || 'Unknown Affiliation',
+        type: affiliationType || 'academic'
+      })
+    }
+    
+    // Generate 0-3 violations per student
+    const violationCount = Math.floor(Math.random() * 4)
+    const studentViolations = []
+    const violationTypes = ['Academic', 'Behavioral', 'Attendance', 'Disciplinary', 'Honor Code']
+    const violationStatuses = ['pending', 'resolved', 'under_review']
+    const violationDescriptions = ['Late submission', 'Plagiarism suspicion', 'Excessive absences', 'Code violation', 'Disruptive behavior', 'Cheating incident', 'Library fine', 'Dress code violation', 'Bullying report', 'Social media policy breach', 'Academic integrity issue', 'Class disruption', 'Missing deadline', 'Poor performance']
+    
+    for (let l = 0; l < violationCount; l++) {
+      const violationType = violationTypes[Math.floor(Math.random() * violationTypes.length)]
+      const violationStatus = violationStatuses[Math.floor(Math.random() * violationStatuses.length)]
+      const violationDescription = violationDescriptions[Math.floor(Math.random() * violationDescriptions.length)]
+      
+      studentViolations.push({
+        type: violationType || 'Other',
+        status: violationStatus || 'pending',
+        description: violationDescription || 'No description'
+      })
+    }
+    
+    sampleStudents.push({
+      id: i + 1,
+      first_name: firstNames[i] || 'Student',
+      last_name: lastNames[i] || `Last${i}`,
+      user: { email: `${firstNames[i] || 'student'}.${lastNames[i] || 'name'}@university.edu` },
+      year_level: year,
+      academic_standing: standing || 'average',
+      skills: studentSkills,
+      affiliations: studentAffiliations,
+      violations: studentViolations
     })
-  })
-  return Array.from(allSkills).sort()
+  }
+  
+  students.value = sampleStudents
+  loading.value = false
+}
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/students', {
+      params: {
+        include: 'skills,affiliations'
+      }
+    })
+    students.value = response.data
+  } catch (err: any) {
+    console.log('API failed, using sample data for testing')
+    generateSampleData()
+    // error.value = err.response?.data?.message || 'Failed to fetch students'
+  } finally {
+    loading.value = false
+  }
 })
 
-const availableAffiliationsList = computed(() => {
-  const allAffiliations = new Set<string>()
-  allStudents.value.forEach(student => {
-    ;(student.affiliations || []).forEach(affiliation => {
-      allAffiliations.add(affiliation.name)
-    })
-  })
-  return Array.from(allAffiliations).sort()
+// Computed properties for statistics
+const totalStudents = computed(() => students.value.length)
+
+const probationCount = computed(() => 
+  students.value.filter(student => student.academic_standing === 'probation').length
+)
+
+const goodStandingCount = computed(() => 
+  students.value.filter(student => ['excellent', 'good'].includes(student.academic_standing)).length
+)
+
+const atRiskCount = computed(() => 
+  students.value.filter(student => ['average', 'probation'].includes(student.academic_standing)).length
+)
+
+// Available years for filter
+const availableYears = computed(() => {
+  const years = [...new Set(students.value.map(s => s.year_level))].sort((a, b) => a - b)
+  return years
 })
 
-// Available skills with counts for filter containers
+// Available skills for filter with counts
 const availableSkillsWithCounts = computed(() => {
   const skillCounts = new Map<string, number>()
   
   // Count students for each skill
-  allStudents.value.forEach(student => {
-    ;(student.skills || []).forEach(skill => {
+  students.value.forEach(student => {
+    student.skills?.forEach(skill => {
       skillCounts.set(skill.name, (skillCounts.get(skill.name) || 0) + 1)
     })
   })
   
-  // Get all skills
+  // Get all skills (hardcoded + from data)
   const allSkills = new Set<string>()
   const hardcodedSkills = [
     'Leadership', 'Database Management', 'Machine Learning',
@@ -517,410 +426,131 @@ const availableSkillsWithCounts = computed(() => {
   ]
   
   hardcodedSkills.forEach(skill => allSkills.add(skill))
-  allStudents.value.forEach(student => {
-    ;(student.skills || []).forEach(skill => allSkills.add(skill.name))
+  students.value.forEach(student => {
+    student.skills?.forEach(skill => {
+      allSkills.add(skill.name)
+    })
   })
   
-  return Array.from(allSkills).map(skillName => ({
-    name: skillName,
-    count: skillCounts.get(skillName) || 0
-  })).sort((a, b) => b.count - a.count)
+  // Return array with skill names and counts
+  return Array.from(allSkills)
+    .map(skillName => ({
+      name: skillName,
+      count: skillCounts.get(skillName) || 0
+    }))
+    .sort((a, b) => b.count - a.count) // Sort by count (most popular first)
 })
 
-// Available affiliations with counts for filter containers
+// Available affiliations for filter with counts
 const availableAffiliationsWithCounts = computed(() => {
   const affiliationCounts = new Map<string, number>()
   
   // Count students for each affiliation
-  allStudents.value.forEach(student => {
-    ;(student.affiliations || []).forEach(affiliation => {
+  students.value.forEach(student => {
+    student.affiliations?.forEach(affiliation => {
       affiliationCounts.set(affiliation.name, (affiliationCounts.get(affiliation.name) || 0) + 1)
     })
   })
   
-  // Get all affiliations
+  // Get all affiliations from student data
   const allAffiliations = new Set<string>()
-  const hardcodedAffiliations = [
-    'Computer Science Society', 'Student Council', 'Coding Club', 'Debate Team', 'Sports Club',
-    'Drama Club', 'Music Society', 'Art Club', 'Photography Club', 'Environmental Club',
-    'Business Club', 'Engineering Society', 'Medical Club', 'Law Society', 'Literature Club'
-  ]
-  
-  hardcodedAffiliations.forEach(affiliation => allAffiliations.add(affiliation))
-  allStudents.value.forEach(student => {
-    ;(student.affiliations || []).forEach(affiliation => allAffiliations.add(affiliation.name))
+  students.value.forEach(student => {
+    student.affiliations?.forEach(affiliation => {
+      allAffiliations.add(affiliation.name)
+    })
   })
   
-  return Array.from(allAffiliations).map(affiliationName => ({
-    name: affiliationName,
-    count: affiliationCounts.get(affiliationName) || 0
-  })).sort((a, b) => b.count - a.count)
+  // Return array with affiliation names and counts
+  return Array.from(allAffiliations)
+    .map(affiliationName => ({
+      name: affiliationName,
+      count: affiliationCounts.get(affiliationName) || 0
+    }))
+    .sort((a, b) => b.count - a.count) // Sort by count (most popular first)
 })
 
-// Violation statuses for filter
-const violationStatuses = ref([
+// Violation statuses with counts
+const violationStatuses = [
   { value: 'pending', label: 'Pending' },
   { value: 'resolved', label: 'Resolved' },
-  { value: 'under_review', label: 'Under Review' },
-  { value: 'appealed', label: 'Appealed' }
-])
+  { value: 'under_review', label: 'Under Review' }
+]
 
-// Computed
-const {
-  filteredStudents,
-  paginatedStudents,
-  loading,
-  error,
-  displayMode,
-  currentPage,
-  pageSize,
-  totalStudents,
-  totalPages
-} = studentStore
-
-// Access store directly for reactive values
-const activeStudents = computed(() => 
-  allStudents.value.filter((s: Student) => s?.isActive).length
-)
-
-const averageGPA = computed(() => {
-  if (allStudents.value.length === 0) return 0
-  const total = allStudents.value.reduce((sum: number, student: Student) => sum + (student.academicStanding?.currentGPA || 0), 0)
-  return total / allStudents.value.length
-})
-
-const totalViolations = computed(() => 
-  allStudents.value.reduce((sum: number, student: Student) => sum + (student.violations?.length || 0), 0)
-)
-
-const visiblePages = computed(() => {
-  const pages = []
-  const start = Math.max(1, (currentPage as any).value - 2)
-  const end = Math.min((totalPages as any).value, start + 4)
-  
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-  
-  return pages
-})
-
-// Enhanced Analytics Computed Properties
-const atRiskStudents = computed(() => 
-  allStudents.value.filter((s: Student) => 
-    s.academicStanding?.standing === 'probation' || 
-    (s.academicStanding?.currentGPA || 0) < 2.5
+const getViolationStatusCount = (status: string) => {
+  return students.value.filter(student => 
+    student.violations?.some(violation => violation.status === status)
   ).length
-)
+}
 
-const newStudentsThisMonth = computed(() => {
-  const oneMonthAgo = new Date()
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-  return allStudents.value.filter((s: Student) => 
-    new Date(s.createdAt) > oneMonthAgo
-  ).length
-})
+// Filtered students
+const filteredStudents = computed(() => {
+  let filtered = students.value
 
-const violationsThisMonth = computed(() => {
-  const oneMonthAgo = new Date()
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-  return allStudents.value.reduce((count: number, student: Student) => {
-    const recentViolations = (student.violations || []).filter(v => 
-      new Date(v.date) > oneMonthAgo
-    )
-    return count + recentViolations.length
-  }, 0)
-})
-
-const gpaTrend = computed(() => {
-  // Simulated trend - in real app this would compare with historical data
-  return Math.random() * 0.4 - 0.2 // Random between -0.2 and +0.2
-})
-
-// Academic Standing Counts
-const excellentStandingCount = computed(() => 
-  allStudents.value.filter((s: Student) => 
-    (s.academicStanding?.currentGPA || 0) >= 3.5
-  ).length
-)
-
-const goodStandingCount = computed(() => 
-  allStudents.value.filter((s: Student) => 
-    (s.academicStanding?.currentGPA || 0) >= 3.0 && (s.academicStanding?.currentGPA || 0) < 3.5
-  ).length
-)
-
-const averageStandingCount = computed(() => 
-  allStudents.value.filter((s: Student) => 
-    (s.academicStanding?.currentGPA || 0) >= 2.5 && (s.academicStanding?.currentGPA || 0) < 3.0
-  ).length
-)
-
-const probationCount = computed(() => 
-  allStudents.value.filter((s: Student) => 
-    (s.academicStanding?.currentGPA || 0) < 2.5
-  ).length
-)
-
-// StudentListView computed properties
-const atRiskCount = computed(() => 
-  allStudents.value.filter(student => ['average', 'probation'].includes(student.academicStanding?.standing || '')).length
-)
-
-// Available years for filter
-const availableYears = computed(() => {
-  const years = [...new Set(allStudents.value.map(s => s.academicStanding?.currentYear).filter(Boolean))].sort((a, b) => Number(a) - Number(b))
-  return years
-})
-
-// Filtered students for StudentListView table
-const filteredStudentsList = computed(() => {
-  let filtered = allStudents.value
-
-  // Search filter - now includes skills, affiliations, violations, and courses
+  // Search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(student => {
-      // Basic info search
       const basicMatch = 
-        (student.personalInfo?.firstName || '').toLowerCase().includes(query) ||
-        (student.personalInfo?.lastName || '').toLowerCase().includes(query) ||
-        (student.personalInfo?.email || '').toLowerCase().includes(query)
+        student.first_name.toLowerCase().includes(query) ||
+        student.last_name.toLowerCase().includes(query) ||
+        student.user?.email?.toLowerCase().includes(query)
       
       // Skills search
-      const skillsMatch = (student.skills || []).some(skill => 
-        (skill.name || '').toLowerCase().includes(query) ||
-        (skill.category || '').toLowerCase().includes(query)
-      )
+      const skillsMatch = student.skills?.some(skill => 
+        skill.name.toLowerCase().includes(query) ||
+        skill.category.toLowerCase().includes(query)
+      ) || false
       
       // Affiliations search
-      const affiliationsMatch = (student.affiliations || []).some(affiliation => 
-        (affiliation.name || '').toLowerCase().includes(query) ||
-        (affiliation.type || '').toLowerCase().includes(query)
-      )
+      const affiliationsMatch = student.affiliations?.some(affiliation => 
+        affiliation.name.toLowerCase().includes(query) ||
+        affiliation.type.toLowerCase().includes(query)
+      ) || false
       
-      // Violations search
-      const violationsMatch = (student.violations || []).some(violation => 
-        (violation.type || '').toLowerCase().includes(query) ||
-        (violation.description || '').toLowerCase().includes(query)
-      )
-      
-      const coursesMatch = (student.enrolledCourses || []).some(course =>
-        (course.courseName || '').toLowerCase().includes(query) ||
-        (course.courseCode || '').toLowerCase().includes(query)
-      )
-      
-      return basicMatch || skillsMatch || affiliationsMatch || violationsMatch || coursesMatch
+      return basicMatch || skillsMatch || affiliationsMatch
     })
   }
 
   // Year filter
   if (selectedYear.value) {
-    filtered = filtered.filter(student => student.academicStanding?.currentYear === Number(selectedYear.value))
+    filtered = filtered.filter(student => student.year_level === Number(selectedYear.value))
   }
 
   // Standing filter
   if (selectedStanding.value) {
-    filtered = filtered.filter(student => student.academicStanding?.standing === selectedStanding.value)
+    filtered = filtered.filter(student => student.academic_standing === selectedStanding.value)
   }
   
   // Skill filter
   if (selectedSkill.value) {
     filtered = filtered.filter(student => 
-      (student.skills || []).some(skill => skill.name === selectedSkill.value)
+      student.skills?.some(skill => skill.name === selectedSkill.value)
     )
   }
   
   // Affiliation filter
   if (selectedAffiliation.value) {
     filtered = filtered.filter(student => 
-      (student.affiliations || []).some(affiliation => affiliation.name === selectedAffiliation.value)
-    )
-  }
-  
-  // Violation status filter
-  if (selectedViolationStatus.value) {
-    filtered = filtered.filter(student => 
-      (student.violations || []).some(violation => violation.status === selectedViolationStatus.value)
+      student.affiliations?.some(affiliation => affiliation.name === selectedAffiliation.value)
     )
   }
 
   return filtered
 })
 
-// Year Level Distribution
-const yearDistribution = computed(() => {
-  const yearGroups = allStudents.value.reduce((groups: any, student: Student) => {
-    const year = student.academicStanding?.currentYear ?? 1
-    if (!groups[year]) {
-      groups[year] = {
-        year,
-        count: 0,
-        totalGPA: 0,
-        students: []
-      }
-    }
-    groups[year].count++
-    groups[year].totalGPA += student.academicStanding?.currentGPA || 0
-    groups[year].students.push(student)
-    return groups
-  }, {})
-
-  const total = allStudents.value.length
-  return Object.values(yearGroups)
-    .map((group: any) => ({
-      year: group.year,
-      count: group.count,
-      avgGPA: group.count > 0 ? group.totalGPA / group.count : 0,
-      percentage: total > 0 ? (group.count / total) * 100 : 0
-    }))
-    .sort((a: any, b: any) => a.year - b.year)
-})
-
-// Display modes
-const displayModes = [
-  { value: 'table', label: 'Table', icon: 'Table' },
-  { value: 'cards', label: 'Cards', icon: 'Grid' },
-  { value: 'compact', label: 'Compact', icon: 'List' }
-]
-
-// Quick filters
-const quickFilters = [
-  { name: 'highGPA', label: 'High GPA (3.5+)', filter: { gpaRange: { min: 3.5, max: 4 } } },
-  { name: 'atRisk', label: 'At Risk', filter: { academicStanding: ['probation'] } },
-  { name: 'programmers', label: 'Programmers', filter: { skills: ['programming'] } },
-  { name: 'athletes', label: 'Athletes', filter: { activities: ['basketball'] } },
-  { name: 'firstYear', label: 'First Year', filter: { yearLevel: [1] } },
-  { name: 'senior', label: 'Senior Students', filter: { yearLevel: [4] } }
-]
-
-// Methods
-const toggleFilterPanel = () => {
-  filterPanelOpen.value = !filterPanelOpen.value
+function formatStanding(standing: string) {
+  return standing.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-const updateFilter = () => {
-  studentStore.setFilter(localFilter.value)
+function resetFilters() {
+  searchQuery.value = ''
+  selectedYear.value = ''
+  selectedStanding.value = ''
+  selectedSkill.value = ''
+  selectedAffiliation.value = ''
 }
 
-const toggleSkill = (skill: string) => {
-  const skills = localFilter.value?.skills || []
-  const index = skills.indexOf(skill)
-  if (index > -1) {
-    skills.splice(index, 1)
-  } else {
-    skills.push(skill)
-  }
-  localFilter.value = { ...localFilter.value, skills: [...skills] }
-}
-
-const toggleActivity = (activity: string) => {
-  const activities = localFilter.value?.activities || []
-  const index = activities.indexOf(activity)
-  if (index > -1) {
-    activities.splice(index, 1)
-  } else {
-    activities.push(activity)
-  }
-  localFilter.value = { ...localFilter.value, activities: [...activities] }
-}
-
-const applyFilters = () => {
-  studentStore.setFilter(localFilter.value)
-  filterPanelOpen.value = false
-}
-
-const clearFilters = () => {
-  localFilter.value = {
-    search: '',
-    skills: [],
-    activities: [],
-    affiliations: [],
-    violationStatus: [],
-    academicStanding: [],
-    yearLevel: [],
-    gpaRange: { min: 0, max: 4 },
-    ageRange: { min: 16, max: 30 }
-  }
-  studentStore.clearFilter()
-}
-
-const applyQuickFilter = (filter: any) => {
-  Object.assign(localFilter.value, filter.filter)
-  applyFilters()
-}
-
-const isQuickFilterActive = (filter: any) => {
-  return Object.entries(filter.filter).every(([key, value]) => {
-    return (localFilter.value as any)[key] === value
-  })
-}
-
-const getInitials = (firstName: string, lastName: string) => {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
-}
-
-const getGPAClass = (gpa: number) => {
-  if (gpa >= 3.5) return 'excellent'
-  if (gpa >= 3.0) return 'good'
-  if (gpa >= 2.5) return 'average'
-  return 'low'
-}
-
-const getStandingClass = (standing: string) => {
-  switch (standing) {
-    case 'excellent': return 'excellent'
-    case 'good': return 'good'
-    case 'average': return 'average'
-    case 'warning': return 'warning'
-    case 'probation': return 'probation'
-    default: return 'average'
-  }
-}
-
-const viewStudent = (id: number) => {
-  router.push(`/students/${id}`)
-}
-
-const editStudent = (id: number) => {
-  router.push(`/students/${id}/edit`)
-}
-
-const deleteStudent = async (id: number) => {
-  const student = allStudents.value.find(s => s.id === id)
-  const studentName = student ? `${student.personalInfo.firstName} ${student.personalInfo.lastName}` : 'this student'
-  
-  if (confirm(`Are you sure you want to archive ${studentName}? This will remove them from the active list but keep their data for records.`)) {
-    try {
-      await studentStore.deleteStudent(id)
-      // Show success message
-      alert(`Student archived successfully!\n\nStudent: ${studentName}\nID: ${id}\nArchived at: ${new Date().toLocaleString()}`)
-    } catch (error) {
-      console.error('Failed to archive student:', error)
-      alert('Error: Failed to archive student')
-    }
-  }
-}
-
-const closeCreateModal = () => {
-  showCreateModal.value = false
-}
-
-const handleCreateStudent = () => {
-  // Implementation will be added
-  showCreateModal.value = false
-}
-
-const fetchStudents = () => {
-  studentStore.fetchStudents()
-}
-
-const generateSampleData = () => {
-  studentStore.generateSampleData()
-}
-
-// Filter toggle functions for containers
-const toggleSkillFilter = (skillName: string) => {
+function toggleSkillFilter(skillName: string) {
   if (selectedSkill.value === skillName) {
     selectedSkill.value = '' // Deselect if already selected
   } else {
@@ -928,7 +558,7 @@ const toggleSkillFilter = (skillName: string) => {
   }
 }
 
-const toggleAffiliationFilter = (affiliationName: string) => {
+function toggleAffiliationFilter(affiliationName: string) {
   if (selectedAffiliation.value === affiliationName) {
     selectedAffiliation.value = '' // Deselect if already selected
   } else {
@@ -936,7 +566,7 @@ const toggleAffiliationFilter = (affiliationName: string) => {
   }
 }
 
-const toggleViolationFilter = (status: string) => {
+function toggleViolationFilter(status: string) {
   if (selectedViolationStatus.value === status) {
     selectedViolationStatus.value = '' // Deselect if already selected
   } else {
@@ -944,59 +574,62 @@ const toggleViolationFilter = (status: string) => {
   }
 }
 
-// Format violation status for display
-const formatViolationStatus = (status: string) => {
+function formatViolationStatus(status: string) {
   return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-// Get violation status count
-const getViolationStatusCount = (status: string) => {
-  return allStudents.value.reduce((count, student) => {
-    const studentViolations = student.violations || []
-    const matchingViolations = studentViolations.filter(violation => violation.status === status)
-    return count + matchingViolations.length
-  }, 0)
+function hasAffiliations(student: Student) {
+  return student.affiliations && student.affiliations.length > 0
 }
 
-const handleReportGeneration = (reportData: any) => {
-  console.log('Report generation requested:', reportData)
-  // You can add additional logic here if needed
-  // For example, logging to analytics, showing notifications, etc.
+function hasAnyAffiliations() {
+  return students.value.some(student => hasAffiliations(student))
 }
 
-// StudentListView methods
-const formatStanding = (standing: string) => {
-  return standing.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+function formatDate(dateString?: string): string {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 }
 
-const resetFilters = () => {
-  searchQuery.value = ''
-  selectedYear.value = ''
-  selectedStanding.value = ''
-  selectedSkill.value = ''
-  selectedAffiliation.value = ''
-  selectedViolationStatus.value = ''
+function getDisplaySkills(student: Student) {
+  // Always return skills - either student's actual skills or a default skill
+  if (student.skills && student.skills.length > 0) {
+    return student.skills
+  }
+  
+  // Show at least one available skill for students without skills
+  const availableSkills = availableSkillsWithCounts.value.map(skill => skill.name)
+  const defaultSkill = availableSkills.length > 0 ? availableSkills[0] : 'JavaScript'
+  
+  return [{
+    id: 'display-skill',
+    name: defaultSkill,
+    category: 'technical',
+    proficiency: 'intermediate',
+    yearsExperience: 1,
+    certifications: ['Sample Certification'],
+    lastUsed: new Date().toISOString().split('T')[0]
+  }]
 }
 
-// Helper methods for new columns
-const getViolationClass = (violations: any[]) => {
-  if (violations.length === 0) return 'no-violations'
-  const hasCritical = violations.some(v => v.severity === 'critical')
-  const hasMajor = violations.some(v => v.severity === 'major')
-  if (hasCritical) return 'critical-violations'
-  if (hasMajor) return 'major-violations'
-  return 'minor-violations'
-}
-
-const archiveStudent = async (studentId: number) => {
-  const student = allStudents.value.find(s => s.id === studentId)
-  const studentName = student ? `${student.personalInfo.firstName} ${student.personalInfo.lastName}` : 'this student'
+async function archiveStudent(studentId: number) {
+  const student = students.value.find(s => s.id === studentId)
+  const studentName = student ? `${student.first_name} ${student.last_name}` : 'this student'
   
   if (confirm(`Are you sure you want to archive ${studentName}? This will remove them from the active list but keep their data for records.`)) {
     try {
-      await studentStore.deleteStudent(studentId)
+      const response = await axios.delete(`http://127.0.0.1:8000/api/students/${studentId}`)
+      
       // Show success message
-      alert(`Student archived successfully!\n\nStudent: ${studentName}\nID: ${studentId}\nArchived at: ${new Date().toLocaleString()}`)
+      const message = response.data?.message || 'Student archived successfully'
+      alert(`${message}\n\nStudent ID: ${response.data?.student_id}\nArchived at: ${new Date().toLocaleString()}`)
+      
+      // Remove from local list
+      students.value = students.value.filter(student => student.id !== studentId)
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Failed to archive student'
       alert(`Error: ${errorMessage}`)
@@ -1004,63 +637,471 @@ const archiveStudent = async (studentId: number) => {
   }
 }
 
-// Lifecycle
+// Export menu functions
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value
+}
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false
+  }
+}
+
 onMounted(() => {
-  fetchStudents()
+  document.addEventListener('click', handleClickOutside)
 })
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// PDF Export Functions
+async function exportStudentListPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4') // landscape orientation
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Complete Student List Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Total Students: ${totalStudents.value}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Table headers
+    const headers = ['ID', 'Name', 'Email', 'Year', 'Standing', 'Skills Count']
+    const startY = 50
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    students.value.forEach((student, index) => {
+      if (currentY > pageHeight - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        student.id.toString(),
+        `${student.first_name} ${student.last_name}`,
+        student.user?.email || 'N/A',
+        student.year_level.toString(),
+        formatStanding(student.academic_standing),
+        (student.skills?.length || 0).toString()
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        const text = data.length > 15 ? data.substring(0, 15) + '...' : data
+        pdf.text(text, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Student Management System', 20, pageHeight - 10)
+    
+    pdf.save(`student-list-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportStatisticsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Student Statistics Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Statistics
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Overall Statistics', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const stats = [
+      { label: 'Total Students', value: totalStudents.value },
+      { label: 'Students on Probation', value: probationCount.value },
+      { label: 'Students in Good Standing', value: goodStandingCount.value },
+      { label: 'At Risk Students', value: atRiskCount.value }
+    ]
+    
+    stats.forEach(stat => {
+      pdf.text(`${stat.label}: ${stat.value}`, 30, currentY)
+      currentY += 10
+    })
+    
+    // Year level distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Year Level Distribution', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    availableYears.value.forEach(year => {
+      const count = students.value.filter(s => s.year_level === year).length
+      const percentage = ((count / totalStudents.value) * 100).toFixed(1)
+      pdf.text(`Year ${year}: ${count} students (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Academic standing distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Academic Standing Distribution', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const standings = ['excellent', 'good', 'average', 'probation']
+    standings.forEach(standing => {
+      const count = students.value.filter(s => s.academic_standing === standing).length
+      const percentage = ((count / totalStudents.value) * 100).toFixed(1)
+      pdf.text(`${formatStanding(standing)}: ${count} students (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Student Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`student-statistics-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating statistics PDF:', error)
+    alert('Failed to generate statistics PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportFilteredStudentsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Filtered Students Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Filtered Students: ${filteredStudents.value.length} of ${totalStudents.value}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Active filters
+    let filterText = 'Active Filters: '
+    if (searchQuery.value) filterText += `Search: "${searchQuery.value}" `
+    if (selectedYear.value) filterText += `Year: ${selectedYear.value} `
+    if (selectedStanding.value) filterText += `Standing: ${selectedStanding.value} `
+    if (selectedSkill.value) filterText += `Skill: ${selectedSkill.value} `
+    if (selectedAffiliation.value) filterText += `Affiliation: ${selectedAffiliation.value} `
+    
+    if (filterText === 'Active Filters: ') filterText = 'No active filters'
+    
+    pdf.text(filterText, pageWidth / 2, 44, { align: 'center' })
+    
+    // Table
+    const headers = ['ID', 'Name', 'Email', 'Year', 'Standing', 'Skills', 'Affiliations']
+    const startY = 55
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    filteredStudents.value.forEach((student, index) => {
+      if (currentY > pageHeight - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const skills = student.skills?.slice(0, 2).map(s => s.name).join(', ') || 'None'
+      const affiliations = student.affiliations?.slice(0, 2).map(a => a.name).join(', ') || 'None'
+      
+      const rowData = [
+        student.id.toString(),
+        `${student.first_name} ${student.last_name}`,
+        student.user?.email || 'N/A',
+        student.year_level.toString(),
+        formatStanding(student.academic_standing),
+        skills.length > 15 ? skills.substring(0, 15) + '...' : skills,
+        affiliations.length > 15 ? affiliations.substring(0, 15) + '...' : affiliations
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        pdf.text(data, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    pdf.save(`filtered-students-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating filtered students PDF:', error)
+    alert('Failed to generate filtered students PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportSkillsReportPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Skills Analysis Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Skills summary
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Top Skills Overview', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    // Get top skills sorted by count
+    const topSkills = availableSkillsWithCounts.value
+      .filter(skill => skill.count > 0)
+      .slice(0, 15)
+    
+    topSkills.forEach((skill, index) => {
+      const percentage = ((skill.count / totalStudents.value) * 100).toFixed(1)
+      pdf.text(`${index + 1}. ${skill.name}: ${skill.count} students (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Skills by proficiency
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Skills by Proficiency Level', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const proficiencyStats = {
+      beginner: 0,
+      intermediate: 0,
+      advanced: 0
+    }
+    
+    students.value.forEach(student => {
+      student.skills?.forEach(skill => {
+        if (skill.proficiency === 'beginner') proficiencyStats.beginner++
+        else if (skill.proficiency === 'intermediate') proficiencyStats.intermediate++
+        else if (skill.proficiency === 'advanced') proficiencyStats.advanced++
+      })
+    })
+    
+    Object.entries(proficiencyStats).forEach(([level, count]) => {
+      const percentage = totalStudents.value > 0 ? ((count / totalStudents.value) * 100).toFixed(1) : 0
+      pdf.text(`${formatStanding(level)}: ${count} skills (${percentage}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Students with most skills
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Students with Most Skills', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const studentsBySkillCount = students.value
+      .map(student => ({
+        name: `${student.first_name} ${student.last_name}`,
+        skillCount: student.skills?.length || 0
+      }))
+      .sort((a, b) => b.skillCount - a.skillCount)
+      .slice(0, 10)
+    
+    studentsBySkillCount.forEach((student, index) => {
+      pdf.text(`${index + 1}. ${student.name}: ${student.skillCount} skills`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Student Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`skills-analysis-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating skills report PDF:', error)
+    alert('Failed to generate skills report PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
 </script>
 
 <style scoped>
-.student-profiling-view {
+.student-list-view {
   padding: 2rem;
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
 }
 
-.page-header h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  color: #666;
-}
-
-.actions {
+.header-actions {
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.2s;
-  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
-.btn-small {
-  padding: 0.5rem 1rem;
+/* Export Dropdown */
+.export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+  margin-top: 0.5rem;
+}
+
+.export-item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
   font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
 }
 
-.icon-small {
-  width: 16px;
-  height: 16px;
+.export-item:last-child {
+  border-bottom: none;
 }
 
-/* StudentListView Styles */
+.export-item:hover {
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.export-item:first-child:hover {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.export-item:last-child:hover {
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* Statistics Cards */
 .stats-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3b82f6;
 }
 
 .stat-card.probation {
@@ -1121,13 +1162,338 @@ onMounted(() => {
   min-width: 150px;
 }
 
+/* Skills Filter Container */
+.skills-filter-container {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3b82f6;
+}
+
+.skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skills-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.selected-skill-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #eff6ff;
+  border: 1px solid #3b82f6;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.selected-skill-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.selected-skill-name {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.clear-skill-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.clear-skill-btn:hover {
+  background: #2563eb;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Affiliations Filter Container */
+.affiliations-filter-container {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #10b981;
+}
+
+.affiliations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.affiliations-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.selected-affiliation-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #10b981;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.selected-affiliation-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.selected-affiliation-name {
+  color: #047857;
+  font-weight: 600;
+}
+
+.clear-affiliation-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.clear-affiliation-btn:hover {
+  background: #059669;
+}
+
+.affiliation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.affiliation-tag {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: white;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.affiliation-tag:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.affiliation-tag.active {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.affiliation-count {
+  font-size: 0.625rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.affiliation-tag.active .affiliation-count {
+  opacity: 0.9;
+}
+
+/* Violations Filter Container */
+.violations-filter-container {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #ef4444;
+}
+
+.violations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.violations-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.selected-violation-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.selected-violation-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.selected-violation-name {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.clear-violation-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.clear-violation-btn:hover {
+  background: #dc2626;
+}
+
+.violation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.violation-tag {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: white;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.violation-tag:hover {
+  border-color: #ef4444;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.violation-tag.active {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.violation-count {
+  font-size: 0.625rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.violation-tag.active .violation-count {
+  opacity: 0.9;
+}
+
+.skill-tag {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: white;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.skill-tag:hover {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+  color: #1e40af;
+}
+
+.skill-tag.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.skill-count {
+  font-size: 0.625rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.skill-tag.active .skill-count {
+  opacity: 0.9;
+}
+
 .filter-select {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  background-color: white;
+  background: white;
+  cursor: pointer;
   transition: border-color 0.2s;
 }
 
@@ -1137,108 +1503,16 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.btn-sm {
-  padding: 0.375rem 0.75rem;
+/* Buttons */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
   font-size: 0.875rem;
-}
-
-.btn-warning {
-  background-color: #f59e0b;
-  color: white;
-}
-
-.btn-warning:hover {
-  background-color: #d97706;
-}
-
-.btn-danger {
-  background-color: #ef4444;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #dc2626;
-}
-
-.student-table-container {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.student-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.student-table th,
-.student-table td {
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.student-table th {
-  background-color: #f9fafb;
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.student-table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
   font-weight: 500;
-  text-transform: capitalize;
-}
-
-.status-badge.excellent {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.status-badge.good {
-  background-color: #dbeafe;
-  color: #1e40af;
-}
-
-.status-badge.average {
-  background-color: #fed7aa;
-  color: #9a3412;
-}
-
-.status-badge.probation {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.no-results {
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-  font-size: 1rem;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-  font-size: 1rem;
-}
-
-.error {
-  text-align: center;
-  padding: 3rem;
-  color: #ef4444;
-  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
 }
 
 .btn-primary {
@@ -1268,6 +1542,12 @@ onMounted(() => {
   background-color: #4b5563;
 }
 
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.25rem;
+  font-size: 0.75rem;
+}
+
 .btn-info {
   background-color: #0ea5e9;
   color: white;
@@ -1277,1509 +1557,332 @@ onMounted(() => {
   background-color: #0284c7;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+.btn-warning {
+  background-color: #f59e0b;
+  color: white;
 }
 
-.stat-card {
+.btn-warning:hover {
+  background-color: #d97706;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+}
+
+/* Table */
+.student-table-container {
   background: white;
-  padding: 1.5rem;
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card h3 {
-  font-size: 0.875rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.stat-number {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #1f2937;
-}
-
-.stat-card.warning .stat-number {
-  color: #f59e0b;
-}
-
-/* Enhanced Stat Cards */
-.stat-card.primary {
-  border-left: 4px solid #3b82f6;
-}
-
-.stat-card.success {
-  border-left: 4px solid #10b981;
-}
-
-.stat-card.warning {
-  border-left: 4px solid #f59e0b;
-}
-
-.stat-card.danger {
-  border-left: 4px solid #ef4444;
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.stat-card.primary .stat-icon {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.stat-card.success .stat-icon {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.stat-card.warning .stat-icon {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
-
-.stat-card.danger .stat-icon {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-.stat-content {
-  text-align: center;
-}
-
-.stat-content h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.stat-change {
-  display: block;
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
-}
-
-.stat-change.positive {
-  color: #10b981;
-}
-
-.stat-change.negative {
-  color: #ef4444;
-}
-
-/* Analytics Sections */
-.analytics-section {
-  margin: 3rem 0;
-}
-
-.analytics-section h2 {
-  margin: 0 0 1.5rem 0;
-  color: #1f2937;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-/* Academic Standing Grid */
-.standing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.standing-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid;
-}
-
-.standing-card.excellent {
-  border-left-color: #10b981;
-}
-
-.standing-card.good {
-  border-left-color: #3b82f6;
-}
-
-.standing-card.average {
-  border-left-color: #f59e0b;
-}
-
-.standing-card.probation {
-  border-left-color: #ef4444;
-}
-
-.standing-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.standing-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.75rem;
-  color: white;
-}
-
-.standing-card.excellent .standing-icon {
-  background: #10b981;
-}
-
-.standing-card.good .standing-icon {
-  background: #3b82f6;
-}
-
-.standing-card.average .standing-icon {
-  background: #f59e0b;
-}
-
-.standing-card.probation .standing-icon {
-  background: #ef4444;
-}
-
-.standing-header h4 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.standing-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 1rem;
-}
-
-.standing-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.standing-percentage {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.standing-progress {
-  height: 8px;
-  background: #f3f4f6;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.standing-card.good .progress-bar {
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.standing-card.average .progress-bar {
-  background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
-}
-
-.standing-card.probation .progress-bar {
-  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-}
-
-/* Year Level Distribution */
-.year-distribution {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.year-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #3b82f6;
-}
-
-.year-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.year-header h3 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-.year-count {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.year-progress {
-  height: 8px;
-  background: #f3f4f6;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.year-card .progress-bar {
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.year-details {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.year-percentage {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.year-gpa {
-  font-size: 0.875rem;
-  color: #1f2937;
-  font-weight: 600;
-}
-
-/* Student List Section */
-.student-list-section {
-  margin-top: 2rem;
-}
-
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.list-header h2 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 1.5rem;
-}
-
-.list-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.search-box {
-  position: relative;
-}
-
-.search-input {
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  width: 300px;
-  transition: border-color 0.2s;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.search-box svg {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  color: #6b7280;
-}
-
-.view-toggle {
-  display: flex;
-  gap: 0.25rem;
-  background: #f3f4f6;
-  padding: 0.25rem;
-  border-radius: 8px;
-}
-
-.view-btn {
-  padding: 0.5rem;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
-}
-
-.view-btn:hover {
-  color: #374151;
-}
-
-.view-btn.active {
-  background: white;
-  color: #3b82f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.view-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Quick Filters */
-.quick-filters-bar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.quick-filter {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.quick-filter:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.quick-filter.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Loading and Error States */
-.loading-state, .error-state {
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-state svg {
-  width: 48px;
-  height: 48px;
-  color: #ef4444;
-  margin-bottom: 1rem;
-}
-
-/* Table Styles */
-.table-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.students-table {
+.student-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.students-table th {
-  background: #f8fafc;
+.student-table th,
+.student-table td {
   padding: 1rem;
   text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.student-table th {
+  background-color: #f9fafb;
   font-weight: 600;
   color: #374151;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-.students-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+.student-table tbody tr:hover {
+  background-color: #f9fafb;
 }
 
-.student-name-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.student-avatar {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-
-.student-avatar.large {
-  width: 48px;
-  height: 48px;
-  font-size: 1.125rem;
-}
-
-.gpa-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.gpa-badge.excellent { background: #10b981; color: white; }
-.gpa-badge.good { background: #3b82f6; color: white; }
-.gpa-badge.average { background: #f59e0b; color: white; }
-.gpa-badge.low { background: #ef4444; color: white; }
-
+/* Status Badges */
 .status-badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
-  background: #f3f4f6;
-  color: #6b7280;
+  text-transform: capitalize;
 }
 
-.status-badge.active {
-  background: #10b981;
-  color: white;
-}
-
-.skills-tags {
+/* Skills, Affiliations, and Violations Badges */
+.skills-list,
+.affiliations-list,
+.violations-list {
   display: flex;
-  gap: 0.25rem;
   flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 200px;
 }
 
-.skill-tag {
-  padding: 0.25rem 0.5rem;
-  background: #e5e7eb;
-  color: #374151;
-  border-radius: 12px;
-  font-size: 0.75rem;
+/* Skills Offers Display */
+.skills-offers {
+  max-width: 400px;
 }
 
-.more-skills {
-  padding: 0.25rem 0.5rem;
-  background: #f3f4f6;
-  color: #6b7280;
-  border-radius: 12px;
-  font-size: 0.75rem;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-icon {
-  padding: 0.5rem;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
-}
-
-.btn-icon:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.btn-icon.danger:hover {
-  background: #fef2f2;
-  color: #ef4444;
-}
-
-/* Cards View */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
-
-.student-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.student-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-}
-
-.card-header {
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.student-info h3 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 1.125rem;
-}
-
-.student-info p {
-  margin: 0.25rem 0 0 0;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.card-actions {
-  margin-left: auto;
-}
-
-.card-body {
-  padding: 1.5rem;
-}
-
-.student-details {
-  margin-bottom: 1.5rem;
-}
-
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.detail-item .label {
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.detail-item .value {
-  color: #1f2937;
-  font-weight: 500;
-}
-
-.skills-section h4 {
-  margin: 0 0 0.75rem 0;
-  color: #1f2937;
-  font-size: 0.875rem;
-}
-
-/* Compact View */
-.compact-list {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.compact-item {
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.compact-item:hover {
-  background: #f8fafc;
-}
-
-.compact-avatar {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.compact-info {
-  flex: 1;
-}
-
-.compact-info h4 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 1rem;
-}
-
-.compact-info p {
-  margin: 0.25rem 0 0 0;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.compact-meta {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.compact-actions {
-  display: flex;
-  align-items: center;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.pagination-btn {
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-numbers {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.page-number {
-  padding: 0.75rem;
-  min-width: 40px;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.page-number:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.page-number.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Mobile Card View Styles */
-.mobile-cards-view {
-  display: none; /* Hidden by default, shown on mobile */
-}
-
-.mobile-student-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-}
-
-.mobile-card-header {
-  padding: 1rem;
-  background: #f8fafc;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.mobile-student-info h3 {
+.skills-offers h4 {
   margin: 0 0 0.5rem 0;
   color: #1f2937;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
-.mobile-student-info p {
-  margin: 0 0 0.75rem 0;
-  color: #6b7280;
+.skills-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #f9fafb;
+}
+
+.skill-item {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.skill-item:last-child {
+  border-bottom: none;
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.skill-header strong {
+  color: #1f2937;
   font-size: 0.875rem;
 }
 
-.mobile-student-id {
-  background: #f3f4f6;
-  padding: 0.5rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
+.proficiency-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.proficiency-badge.beginner {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.proficiency-badge.intermediate {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.proficiency-badge.advanced {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.skill-details {
+  font-size: 0.75rem;
   color: #6b7280;
+  line-height: 1.4;
+}
+
+.skill-details span {
+  display: block;
+  margin-bottom: 0.125rem;
+}
+
+.no-skills {
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.skills-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+}
+
+.skill-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #3b82f6;
+  line-height: 1;
+}
+
+.skill-label {
+  font-size: 0.625rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.125rem;
+}
+
+.skill-badge,
+.affiliation-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: capitalize;
   white-space: nowrap;
 }
 
-.mobile-card-body {
-  padding: 1rem;
+.skill-badge.technical {
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
-.mobile-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-  gap: 1rem;
+.skill-badge.creative {
+  background-color: #fce7f3;
+  color: #a21caf;
 }
 
-.mobile-detail-row:last-child {
-  margin-bottom: 0;
+.skill-badge.soft {
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
-.mobile-detail-label {
-  font-weight: 600;
+.affiliation-badge {
+  background-color: #f3f4f6;
   color: #374151;
-  font-size: 0.875rem;
-  min-width: 100px;
-  flex-shrink: 0;
 }
 
-.mobile-detail-value {
-  flex: 1;
-  text-align: right;
+.more-skills,
+.more-affiliations {
+  font-size: 0.625rem;
+  color: #6b7280;
+  font-style: italic;
+  align-self: center;
 }
 
-.affiliations-tags {
+/* Violations Display */
+.violations-list {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.violation-item {
   display: flex;
+  flex-direction: column;
   gap: 0.25rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
 }
 
-.affiliation-tag {
-  padding: 0.25rem 0.5rem;
+.violation-status-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  align-self: flex-start;
+}
+
+.violation-status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.violation-status-badge.resolved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.violation-status-badge.under_review {
   background: #dbeafe;
   color: #1e40af;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.more-affiliations {
-  padding: 0.25rem 0.5rem;
-  background: #f3f4f6;
-  color: #6b7280;
-  border-radius: 12px;
-  font-size: 0.75rem;
-}
-
-.violations-info {
-  text-align: right;
-}
-
-.violation-count {
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: inline-block;
-}
-
-.violation-count.none {
-  background: #f0fdf4;
-  color: #16a34a;
-}
-
-.violation-count.low {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.violation-count.moderate {
-  background: #fed7aa;
-  color: #ea580c;
-}
-
-.violation-count.high {
-  background: #fecaca;
-  color: #dc2626;
-}
-
-.violation-types {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: #6b7280;
 }
 
 .violation-type {
-  margin-right: 0.25rem;
+  font-size: 0.75rem;
+  color: #374151;
+  font-weight: 500;
 }
 
 .more-violations {
+  font-size: 0.625rem;
+  color: #6b7280;
+  font-style: italic;
+  align-self: center;
+}
+
+.no-violations,
+.no-affiliations {
   color: #9ca3af;
+  font-style: italic;
+  font-size: 0.875rem;
 }
 
-.mobile-card-actions {
-  padding: 1rem;
-  background: #f8fafc;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
+.status-badge.excellent {
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
-.mobile-card-actions .btn {
-  flex: 1;
-  min-width: 80px;
+.status-badge.good {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.average {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.probation {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+/* States */
+.loading,
+.error {
   text-align: center;
+  padding: 2rem;
+  color: #666;
 }
 
-/* Responsive Design */
+.error {
+  color: #dc2626;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .student-profiling-view {
-    padding: 1rem 0.5rem;
-  }
-
-  .page-header {
-    padding: 1rem;
-    text-align: center;
-  }
-
-  .page-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .actions {
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0 1rem;
-  }
-
-  .actions .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 0 1rem;
-  }
-
-  .stat-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 1rem;
-  }
-
-  .stat-icon {
-    margin-bottom: 0.5rem;
-  }
-
-  .analytics-section {
-    padding: 1rem;
-  }
-
-  .year-distribution {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .year-card {
-    padding: 1rem;
-  }
-
-  .stats-container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    padding: 0 1rem;
-  }
-
   .filters-container {
     flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
+    align-items: stretch;
   }
-
-  .filter-group {
-    width: 100%;
-  }
-
-  .filter-select {
-    width: 100%;
-  }
-
+  
   .search-box {
-    width: 100%;
-  }
-
-  .search-input {
-    width: 100%;
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-
-  .student-table-container {
-    overflow-x: auto;
-    margin: 0 1rem;
-  }
-
-  .student-table {
-    min-width: 600px;
-    font-size: 0.875rem;
-  }
-
-  .student-table th,
-  .student-table td {
-    padding: 0.5rem;
-  }
-
-  .skills-tags {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .btn-icon {
-    padding: 0.75rem;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .cards-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 0 1rem;
-  }
-
-  .student-card {
-    margin-bottom: 1rem;
-  }
-
-  .card-header {
-    padding: 1rem;
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .card-actions {
-    margin-left: 0;
-    margin-top: 1rem;
-  }
-
-  .card-body {
-    padding: 1rem;
-  }
-
-  .compact-list {
-    margin: 0 1rem;
-  }
-
-  .compact-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-  }
-
-  .compact-avatar {
-    width: 50px;
-    height: 50px;
-    font-size: 1.25rem;
-  }
-
-  .compact-actions {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0 1rem;
-  }
-
-  .page-numbers {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .page-number {
-    padding: 0.5rem;
-    min-width: 36px;
-    font-size: 0.875rem;
-  }
-
-  .pagination-btn {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-  }
-
-  /* Hide table on mobile, show cards */
-  .student-table {
-    display: none;
-  }
-
-  .mobile-cards-view {
-    display: block;
-    padding: 0 1rem;
-  }
-
-  .mobile-student-card {
-    margin-bottom: 1rem;
-  }
-
-  .mobile-card-header {
-    padding: 0.75rem;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .mobile-student-id {
-    align-self: flex-start;
-  }
-
-  .mobile-detail-row {
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
-  }
-
-  .mobile-detail-label {
     min-width: auto;
   }
-
-  .mobile-detail-value {
-    text-align: left;
+  
+  .filter-group {
+    min-width: auto;
   }
-
-  .affiliations-tags {
-    justify-content: flex-start;
-  }
-
-  .violations-info {
-    text-align: left;
-  }
-}
-
-/* Extra small screens (phones) */
-@media (max-width: 480px) {
-  .student-profiling-view {
-    padding: 0.5rem;
-  }
-
-  .page-header {
-    padding: 0.75rem;
-  }
-
-  .page-header h1 {
-    font-size: 1.25rem;
-  }
-
-  .page-header p {
-    font-size: 0.875rem;
-  }
-
-  .stats-grid {
-    padding: 0 0.5rem;
-  }
-
-  .stat-card {
-    padding: 0.75rem;
-  }
-
-  .stat-number {
-    font-size: 1.5rem;
-  }
-
-  .analytics-section {
-    padding: 0.75rem;
-  }
-
-  .year-card {
-    padding: 0.75rem;
-  }
-
+  
   .stats-container {
     grid-template-columns: 1fr;
-    padding: 0 0.5rem;
-  }
-
-  .filters-container {
-    padding: 0.75rem;
-  }
-
-  .student-table-container {
-    margin: 0 0.5rem;
-  }
-
-  .student-table {
-    min-width: 500px;
-    font-size: 0.75rem;
-  }
-
-  .student-table th,
-  .student-table td {
-    padding: 0.375rem;
-  }
-
-  .cards-grid {
-    padding: 0 0.5rem;
-  }
-
-  .card-header {
-    padding: 0.75rem;
-  }
-
-  .card-body {
-    padding: 0.75rem;
-  }
-
-  .compact-list {
-    margin: 0 0.5rem;
-  }
-
-  .compact-item {
-    padding: 0.75rem;
-  }
-
-  .compact-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-  }
-
-  .pagination {
-    padding: 0 0.5rem;
-  }
-
-  .page-number {
-    padding: 0.375rem;
-    min-width: 32px;
-    font-size: 0.75rem;
-  }
-
-  .pagination-btn {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.75rem;
-  }
-
-  .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  .btn-small {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-  }
-
-  .icon-small {
-    width: 16px;
-    height: 16px;
-  }
-}
-
-/* Landscape orientation for mobile */
-@media (max-width: 768px) and (orientation: landscape) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stats-container {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .year-distribution {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .filters-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .filter-group {
-    flex: 1;
-    min-width: 150px;
-  }
-}
-
-/* Desktop and Tablet styles - show table, hide mobile cards */
-@media (min-width: 769px) {
-  .student-table {
-    display: table;
-  }
-
-  .mobile-cards-view {
-    display: none;
-  }
-}
-
-/* Tablet styles */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .year-distribution {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .filters-container {
-    flex-wrap: wrap;
-  }
-
-  .filter-group {
-    flex: 1;
-    min-width: 200px;
-  }
-}
-
-/* Filter Container Styles */
-.skills-filter-container,
-.affiliations-filter-container,
-.violations-filter-container {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-}
-
-.skills-header,
-.affiliations-header,
-.violations-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #f3f4f6;
-}
-
-.skills-header h3,
-.affiliations-header h3,
-.violations-header h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0;
-}
-
-.selected-skill-info,
-.selected-affiliation-info,
-.selected-violation-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: #f0f9ff;
-  border: 1px solid #0ea5e9;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.selected-skill-label,
-.selected-affiliation-label,
-.selected-violation-label {
-  color: #0369a1;
-  font-weight: 500;
-}
-
-.selected-skill-name,
-.selected-affiliation-name,
-.selected-violation-name {
-  color: #0c4a6e;
-  font-weight: 600;
-}
-
-.clear-skill-btn,
-.clear-affiliation-btn,
-.clear-violation-btn {
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.clear-skill-btn:hover,
-.clear-affiliation-btn:hover,
-.clear-violation-btn:hover {
-  background: #dc2626;
-}
-
-.skill-tags,
-.affiliation-tags,
-.violation-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.skill-tag,
-.affiliation-tag,
-.violation-tag {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  background: white;
-  color: #374151;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.skill-tag:hover,
-.affiliation-tag:hover,
-.violation-tag:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-  transform: translateY(-1px);
-}
-
-.skill-tag.active,
-.affiliation-tag.active,
-.violation-tag.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #2563eb;
-}
-
-.skill-tag.active:hover,
-.affiliation-tag.active:hover,
-.violation-tag.active:hover {
-  background: #2563eb;
-}
-
-.skill-count,
-.affiliation-count,
-.violation-count {
-  font-size: 0.75rem;
-  opacity: 0.7;
-  font-weight: 500;
-}
-
-.skill-tag.active .skill-count,
-.affiliation-tag.active .affiliation-count,
-.violation-tag.active .violation-count {
-  opacity: 0.9;
-}
-
-/* Responsive design for filter containers */
-@media (max-width: 768px) {
-  .skills-filter-container,
-  .affiliations-filter-container,
-  .violations-filter-container {
-    padding: 1rem;
-  }
-  
-  .skills-header,
-  .affiliations-header,
-  .violations-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-  
-  .selected-skill-info,
-  .selected-affiliation-info,
-  .selected-violation-info {
-    align-self: stretch;
-    justify-content: center;
-  }
-  
-  .skill-tags,
-  .affiliation-tags,
-  .violation-tags {
-    justify-content: center;
   }
 }
 </style>

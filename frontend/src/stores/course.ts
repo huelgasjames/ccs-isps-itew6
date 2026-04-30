@@ -352,38 +352,43 @@ export const useCourseStore = defineStore('course', () => {
       }
     ]
 
-    // Generate CCS 101 to CCS 112
-    for (let i = 4; i <= 12; i++) {
-      const courseNames = [
-        'Web Development Fundamentals',
-        'Database Management Systems',
-        'Software Engineering',
-        'Computer Networks',
-        'Operating Systems',
-        'Artificial Intelligence',
-        'Machine Learning',
-        'Cybersecurity Fundamentals',
-        'Mobile Application Development'
-      ]
-
+    // Generate 50 courses (CCS 101 to CCS 150) - IT-related only
+    const departments = ['Information Technology', 'Software Development', 'Network Administration', 'Information Security', 'Database Administration', 'Cloud Computing', 'IT Support', 'Systems Analysis']
+    const courseNames = [
+      'IT Fundamentals and Concepts', 'Programming Essentials for IT', 'Web Development for IT Professionals', 'Database Management for IT', 'Software Development Lifecycle',
+      'Network Infrastructure Management', 'IT Security Fundamentals', 'Cloud Computing for IT', 'IT Service Management', 'DevOps for IT Professionals',
+      'IT Project Coordination', 'Business Information Systems', 'Enterprise Resource Planning', 'IT Governance and Compliance', 'Digital Transformation Strategies',
+      'IT Architecture and Design', 'Systems Integration', 'IT Infrastructure Planning', 'Network Design and Implementation', 'IT Service Delivery',
+      'IT Quality Assurance', 'Agile Methodologies in IT', 'IT Risk Management', 'Technical Documentation for IT', 'Professional Ethics in IT',
+      'Emerging IT Technologies', 'IT Innovation Management', 'Digital Forensics and Security', 'IT Automation and Scripting', 'Virtualization Technologies',
+      'IT Analytics and Reporting', 'IT Performance Management', 'Capacity Planning for IT Systems', 'IT Disaster Recovery', 'IT Change Management',
+      'Mobile Device Management', 'IT Asset Management', 'IT Vendor Management', 'IT Contract Management', 'IT Budget Planning',
+      'IT Help Desk Operations', 'Remote IT Support', 'IT Training and Development', 'Knowledge Management Systems', 'IT Communication Systems',
+      'IT Data Analytics', 'IT Business Intelligence', 'IT Dashboard Development', 'IT Metrics and KPIs', 'IT Process Optimization',
+      'IT Compliance Management', 'IT Audit and Controls', 'IT Policy Development', 'IT Standards Implementation', 'IT Best Practices',
+      'IT Innovation Labs', 'IT Research Methods', 'IT Prototyping and Testing', 'IT Solution Design', 'IT Implementation Strategies',
+      'IT Customer Relationship Management', 'IT Service Catalog Management', 'IT Financial Management', 'IT Resource Allocation', 'IT Strategic Planning'
+    ]
+    
+    for (let i = 4; i <= 50; i++) {
       sampleCourses.push({
         id: i,
         courseCode: `CCS ${100 + i}`,
         courseName: courseNames[i - 4] || `Advanced Computer Science ${i}`,
-        description: `Advanced topics in computer science focusing on ${courseNames[i - 4]?.toLowerCase() || 'specialized areas'}`,
-        credits: 3 + (i % 2),
-        department: 'Computer Science',
+        description: `Comprehensive study of ${courseNames[i - 4]?.toLowerCase() || 'information technology'} with practical applications in modern business environments`,
+        credits: 3 + (i % 3),
+        department: departments[i % departments.length],
         semester: i % 2 === 0 ? 'First Semester' : 'Second Semester',
         academicYear: '2024-2025',
         instructor: `Prof. Instructor ${i}`,
         schedule: i % 2 === 0 ? 'TTH 9:00-10:30 AM' : 'MWF 1:00-2:30 PM',
         room: `Room ${100 + i}`,
-        maxStudents: 30 + (i % 3) * 5,
-        currentStudents: 25 + (i % 4) * 3,
-        status: i <= 8 ? 'active' : 'inactive',
-        prerequisites: i > 1 ? [`CCS ${99 + i}`] : [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        maxStudents: 50 + (i % 4) * 25,  // 50, 75, 100, 125, 150, 175, 200
+        currentStudents: Math.floor((50 + (i % 4) * 25) * 0.85),  // 85% capacity on average
+        status: i <= 40 ? 'active' : i <= 45 ? 'inactive' : 'archived',
+        prerequisites: i > 4 ? [`CCS ${99 + Math.floor(Math.random() * 3) + i - 4}`] : [],
+        createdAt: new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString()
       })
     }
 

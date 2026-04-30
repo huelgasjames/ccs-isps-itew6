@@ -6,15 +6,7 @@
     </div>
 
     <div class="actions">
-      <router-link to="/professors/list" class="btn btn-primary btn-small">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        View All Professors
-      </router-link>
+      
       <button @click="fetchProfessors" class="btn btn-info btn-small">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-small">
           <path d="M23 4v6h-6M1 20v-6h6"/>
@@ -31,6 +23,22 @@
       <router-link to="/professors/create" class="btn btn-success btn-small">
         Create New Professor
       </router-link>
+      <div class="export-dropdown">
+        <button @click="toggleExportMenu" class="btn btn-primary btn-small" :disabled="generatingPDF">
+          {{ generatingPDF ? '⏳ Generating...' : '📊 Export' }}
+        </button>
+        <div v-if="showExportMenu" class="export-menu">
+          <button @click="exportProfessorListPDF" class="export-item">
+            📄 Professor List PDF
+          </button>
+          <button @click="exportStatisticsPDF" class="export-item">
+            📈 Statistics Report PDF
+          </button>
+          <button @click="exportFilteredProfessorsPDF" class="export-item">
+            🔍 Filtered Professors PDF
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="stats-grid">
@@ -250,195 +258,169 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import axios from 'axios'
+  import jsPDF from 'jspdf'
+  import html2canvas from 'html2canvas'
 
-interface Professor {
-  id: number
-  first_name: string
-  last_name: string
-  email: string
-  department: string
-  employment_type: string
-  role: string
-  createdAt?: string
-}
+  interface Professor {
+    id: number
+    first_name: string
+    last_name: string
+    email: string
+    department: string
+    employment_type: string
+    role: string
+    createdAt?: string
+  }
 
-const professors = ref<Professor[]>([])
-const loading = ref(true)
-const error = ref('')
+  const professors = ref<Professor[]>([])
+  const loading = ref(true)
+  const error = ref('')
 
-// Filter state
-const searchQuery = ref('')
-const selectedDepartment = ref('')
-const selectedEmployment = ref('')
+  // Filter state
+  const searchQuery = ref('')
+  const selectedDepartment = ref('')
+  const selectedEmployment = ref('')
+  const showExportMenu = ref(false)
+  const generatingPDF = ref(false)
 
-// Computed properties
-const totalProfessors = computed(() => professors.value.length)
+  // Computed properties
+  const totalProfessors = computed(() => professors.value.length)
 
-const fullTimeProfessors = computed(() => 
-  professors.value.filter(p => p.employment_type === 'Full-time').length
-)
+  const fullTimeProfessors = computed(() => 
+    professors.value.filter(p => p.employment_type === 'Full-time').length
+  )
 
-const partTimeProfessors = computed(() => 
-  professors.value.filter(p => p.employment_type === 'Part-time').length
-)
+  const partTimeProfessors = computed(() => 
+    professors.value.filter(p => p.employment_type === 'Part-time').length
+  )
 
-const contractProfessors = computed(() => 
-  professors.value.filter(p => p.employment_type === 'Contract').length
-)
+  const contractProfessors = computed(() => 
+    professors.value.filter(p => p.employment_type === 'Contract').length
+  )
 
-const totalDepartments = computed(() => {
-  const departments = [...new Set(professors.value.map(p => p.department))]
-  return departments.length
-})
+  const totalDepartments = computed(() => {
+    const departments = [...new Set(professors.value.map(p => p.department))]
+    return departments.length
+  })
 
-const averageProfessorsPerDepartment = computed(() => {
-  return totalDepartments.value > 0 ? totalProfessors.value / totalDepartments.value : 0
-})
+  const averageProfessorsPerDepartment = computed(() => {
+    return totalDepartments.value > 0 ? totalProfessors.value / totalDepartments.value : 0
+  })
 
-const newProfessorsThisMonth = computed(() => {
-  const oneMonthAgo = new Date()
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-  return professors.value.filter(p => 
-    p.createdAt && new Date(p.createdAt) > oneMonthAgo
-  ).length
-})
+  const newProfessorsThisMonth = computed(() => {
+    const oneMonthAgo = new Date()
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+    return professors.value.filter(p => 
+      p.createdAt && new Date(p.createdAt) > oneMonthAgo
+    ).length
+  })
 
-// Department distribution
-const departmentDistribution = computed(() => {
-  const deptGroups = professors.value.reduce((groups: any, professor: Professor) => {
-    const dept = professor.department
-    if (!groups[dept]) {
-      groups[dept] = {
-        department: dept,
-        count: 0,
-        fullTime: 0,
-        partTime: 0,
-        contract: 0
+  // Department distribution
+  const departmentDistribution = computed(() => {
+    const deptGroups = professors.value.reduce((groups: any, professor: Professor) => {
+      const dept = professor.department
+      if (!groups[dept]) {
+        groups[dept] = {
+          department: dept,
+          count: 0,
+          fullTime: 0,
+          partTime: 0,
+          contract: 0
+        }
       }
+      groups[dept].count++
+      if (professor.employment_type === 'Full-time') groups[dept].fullTime++
+      else if (professor.employment_type === 'Part-time') groups[dept].partTime++
+      else if (professor.employment_type === 'Contract') groups[dept].contract++
+      return groups
+    }, {})
+
+    const total = professors.value.length
+    return Object.values(deptGroups)
+      .map((group: any) => ({
+        department: group.department,
+        count: group.count,
+        fullTime: group.fullTime,
+        partTime: group.partTime,
+        contract: group.contract,
+        percentage: total > 0 ? (group.count / total) * 100 : 0
+      }))
+      .sort((a: any, b: any) => b.count - a.count)
+  })
+
+  // Available departments for filter
+  const availableDepartments = computed(() => {
+    const departments = [...new Set(professors.value.map(p => p.department))].sort()
+    return departments
+  })
+
+  // Filtered professors
+  const filteredProfessors = computed(() => {
+    let filtered = professors.value
+
+    // Search filter
+    if (searchQuery.value) {
+      const query = searchQuery.value.toLowerCase()
+      filtered = filtered.filter(professor =>
+        professor.first_name.toLowerCase().includes(query) ||
+        professor.last_name.toLowerCase().includes(query) ||
+        professor.email.toLowerCase().includes(query)
+      )
     }
-    groups[dept].count++
-    if (professor.employment_type === 'Full-time') groups[dept].fullTime++
-    else if (professor.employment_type === 'Part-time') groups[dept].partTime++
-    else if (professor.employment_type === 'Contract') groups[dept].contract++
-    return groups
-  }, {})
 
-  const total = professors.value.length
-  return Object.values(deptGroups)
-    .map((group: any) => ({
-      department: group.department,
-      count: group.count,
-      fullTime: group.fullTime,
-      partTime: group.partTime,
-      contract: group.contract,
-      percentage: total > 0 ? (group.count / total) * 100 : 0
-    }))
-    .sort((a: any, b: any) => b.count - a.count)
-})
-
-// Available departments for filter
-const availableDepartments = computed(() => {
-  const departments = [...new Set(professors.value.map(p => p.department))].sort()
-  return departments
-})
-
-// Filtered professors
-const filteredProfessors = computed(() => {
-  let filtered = professors.value
-
-  // Search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(professor =>
-      professor.first_name.toLowerCase().includes(query) ||
-      professor.last_name.toLowerCase().includes(query) ||
-      professor.email.toLowerCase().includes(query)
-    )
-  }
-
-  // Department filter
-  if (selectedDepartment.value) {
-    filtered = filtered.filter(professor => professor.department === selectedDepartment.value)
-  }
-
-  // Employment filter
-  if (selectedEmployment.value) {
-    filtered = filtered.filter(professor => professor.employment_type === selectedEmployment.value)
-  }
-
-  return filtered
-})
-
-// Methods
-const fetchProfessors = async () => {
-  loading.value = true
-  error.value = ''
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/api/professors')
-    professors.value = response.data
-  } catch (err: any) {
-    error.value = err.response?.data?.message || 'Failed to fetch professors'
-  } finally {
-    loading.value = false
-  }
-}
-
-const generateSampleData = () => {
-  // Generate sample professor data
-  const sampleProfessors: Professor[] = [
-    {
-      id: 1,
-      first_name: 'John',
-      last_name: 'Smith',
-      email: 'john.smith@university.edu',
-      department: 'Computer Science',
-      employment_type: 'Full-time',
-      role: 'Professor',
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 2,
-      first_name: 'Jane',
-      last_name: 'Doe',
-      email: 'jane.doe@university.edu',
-      department: 'Mathematics',
-      employment_type: 'Full-time',
-      role: 'Associate Professor',
-      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 3,
-      first_name: 'Robert',
-      last_name: 'Johnson',
-      email: 'robert.johnson@university.edu',
-      department: 'Physics',
-      employment_type: 'Part-time',
-      role: 'Assistant Professor',
-      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 4,
-      first_name: 'Emily',
-      last_name: 'Brown',
-      email: 'emily.brown@university.edu',
-      department: 'Computer Science',
-      employment_type: 'Contract',
-      role: 'Lecturer',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 5,
-      first_name: 'Michael',
-      last_name: 'Davis',
-      email: 'michael.davis@university.edu',
-      department: 'Mathematics',
-      employment_type: 'Full-time',
-      role: 'Professor',
-      createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    // Department filter
+    if (selectedDepartment.value) {
+      filtered = filtered.filter(professor => professor.department === selectedDepartment.value)
     }
-  ]
+
+    // Employment filter
+    if (selectedEmployment.value) {
+      filtered = filtered.filter(professor => professor.employment_type === selectedEmployment.value)
+    }
+
+    return filtered
+  })
+
+  // Methods
+  const fetchProfessors = async () => {
+    loading.value = true
+    error.value = ''
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/professors')
+      professors.value = response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch professors'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const generateSampleData = () => {
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Jennifer', 'William', 'Jessica', 'Daniel', 'Ashley', 'Christopher', 'Sophia', 'Matthew', 'Olivia', 'Andrew', 'Emma', 'Joshua', 'Isabella', 'Ryan', 'Mia', 'Kevin', 'Charlotte', 'Tyler', 'Amelia', 'Jason', 'Harper', 'Ethan', 'Evelyn', 'Brandon', 'Abigail', 'Nathan', 'Alexander', 'Madison', 'Jacob', 'Sofia', 'Logan', 'Avery', 'Ethan', 'Aiden', 'Caleb', 'Jackson', 'Mason', 'Liam', 'Noah', 'Lucas', 'Henry', 'Sebastian', 'Ezra', 'Jack', 'Owen']
+  
+  const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards', 'Collins']
+  
+  const departments = ['Information Technology', 'Software Development', 'Computer Science', 'Network Administration', 'Information Security', 'Database Administration', 'Cloud Computing', 'IT Support', 'Systems Analysis', 'Web Development', 'Cybersecurity', 'Data Science', 'IT Project Management', 'Business Information Systems', 'Enterprise Architecture']
+  const employmentTypes = ['Full-time', 'Part-time', 'Contract']
+  const roles = ['IT Professor', 'Software Engineering Professor', 'Computer Science Professor', 'Network Systems Professor', 'Cybersecurity Professor', 'Data Science Professor', 'IT Lecturer', 'Software Development Instructor', 'Systems Analyst Professor', 'Cloud Computing Professor', 'Database Systems Professor', 'Web Technologies Professor', 'Information Systems Professor', 'IT Architecture Professor', 'Digital Technologies Professor']
+  
+  const sampleProfessors: Professor[] = []
+  
+  for (let i = 0; i < 50; i++) {
+    sampleProfessors.push({
+      id: i + 1,
+      first_name: firstNames[i % firstNames.length],
+      last_name: lastNames[i % lastNames.length],
+      email: `${firstNames[i % firstNames.length].toLowerCase()}.${lastNames[i % lastNames.length].toLowerCase()}@university.edu`,
+      department: departments[Math.floor(Math.random() * departments.length)],
+      employment_type: employmentTypes[Math.floor(Math.random() * employmentTypes.length)],
+      role: roles[Math.floor(Math.random() * roles.length)],
+      createdAt: new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString()
+    })
+  }
+  
   professors.value = sampleProfessors
 }
 
@@ -446,6 +428,255 @@ const resetFilters = () => {
   searchQuery.value = ''
   selectedDepartment.value = ''
   selectedEmployment.value = ''
+}
+
+// Export menu functions
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value
+}
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+  fetchProfessors()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// PDF Export Functions
+async function exportProfessorListPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Complete Professor List Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Total Professors: ${totalProfessors.value}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Table headers
+    const headers = ['ID', 'Name', 'Email', 'Department', 'Employment Type']
+    const startY = 50
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    professors.value.forEach((professor, index) => {
+      if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        professor.id.toString(),
+        `${professor.first_name} ${professor.last_name}`,
+        professor.email,
+        professor.department,
+        professor.employment_type
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        const text = data.length > 15 ? data.substring(0, 15) + '...' : data
+        pdf.text(text, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Professor Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`professor-list-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportStatisticsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Professor Statistics Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Statistics
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Overall Statistics', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const stats = [
+      { label: 'Total Professors', value: totalProfessors.value },
+      { label: 'Full-time Professors', value: fullTimeProfessors.value },
+      { label: 'Part-time Professors', value: partTimeProfessors.value },
+      { label: 'Contract Professors', value: contractProfessors.value },
+      { label: 'Total Departments', value: totalDepartments.value }
+    ]
+    
+    stats.forEach(stat => {
+      pdf.text(`${stat.label}: ${stat.value}`, 30, currentY)
+      currentY += 10
+    })
+    
+    // Department distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Department Distribution', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    departmentDistribution.value.forEach(dept => {
+      pdf.text(`${dept.department}: ${dept.count} professors (${dept.percentage.toFixed(1)}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Professor Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`professor-statistics-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating statistics PDF:', error)
+    alert('Failed to generate statistics PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportFilteredProfessorsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Filtered Professors Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Filtered Professors: ${filteredProfessors.value.length} of ${totalProfessors.value}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Active filters
+    let filterText = 'Active Filters: '
+    if (searchQuery.value) filterText += `Search: "${searchQuery.value}" `
+    if (selectedDepartment.value) filterText += `Department: ${selectedDepartment.value} `
+    if (selectedEmployment.value) filterText += `Employment: ${selectedEmployment.value} `
+    
+    if (filterText === 'Active Filters: ') filterText = 'No active filters'
+    
+    pdf.text(filterText, pageWidth / 2, 44, { align: 'center' })
+    
+    // Table
+    const headers = ['ID', 'Name', 'Email', 'Department', 'Employment Type']
+    const startY = 55
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    filteredProfessors.value.forEach((professor, index) => {
+      if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        professor.id.toString(),
+        `${professor.first_name} ${professor.last_name}`,
+        professor.email,
+        professor.department,
+        professor.employment_type
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        pdf.text(data, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    pdf.save(`filtered-professors-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating filtered professors PDF:', error)
+    alert('Failed to generate filtered professors PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
 }
 
 const archiveProfessor = async (professorId: number) => {
@@ -470,16 +701,13 @@ function getEmploymentClass(type: string) {
   if (type === 'Part-time') return 'part-time'
   return 'contract'
 }
-
-// Lifecycle
-onMounted(() => {
-  fetchProfessors()
-})
 </script>
 
 <style scoped>
 .professor-profiling-view {
   padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-header {
@@ -489,16 +717,19 @@ onMounted(() => {
 .page-header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
+  color: #1f2937;
 }
 
 .page-header p {
-  color: #666;
+  color: #6b7280;
+  margin: 0;
 }
 
 .actions {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .btn {

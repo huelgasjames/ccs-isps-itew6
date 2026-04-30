@@ -15,6 +15,22 @@
             </svg>
             Refresh
           </button>
+          <div class="export-dropdown">
+            <button @click="toggleExportMenu" class="btn btn-success btn-small" :disabled="generatingPDF">
+              {{ generatingPDF ? '⏳ Generating...' : '📊 Export' }}
+            </button>
+            <div v-if="showExportMenu" class="export-menu">
+              <button @click="exportScheduleListPDF" class="export-item">
+                📄 Schedule List PDF
+              </button>
+              <button @click="exportStatisticsPDF" class="export-item">
+                📈 Statistics Report PDF
+              </button>
+              <button @click="exportFilteredSchedulesPDF" class="export-item">
+                🔍 Filtered Schedules PDF
+              </button>
+            </div>
+          </div>
           <router-link 
             v-if="authStore.isAdmin" 
             to="/schedules/create" 
@@ -244,12 +260,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useScheduleStore } from '@/stores/schedule'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const authStore = useAuthStore()
 const scheduleStore = useScheduleStore()
+const showExportMenu = ref(false)
+const generatingPDF = ref(false)
 
 // Computed properties for statistics
 const activeSchedulesCount = computed(() => 
@@ -357,8 +377,257 @@ const removeSchedule = async (id: number) => {
   await scheduleStore.deleteSchedule(id)
 }
 
+// Export menu functions
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value
+}
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false
+  }
+}
+
+// PDF Export Functions
+async function exportScheduleListPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Complete Schedule List Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Total Schedules: ${scheduleStore.schedules.length}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Table headers
+    const headers = ['Course', 'Section', 'Professor', 'Room', 'Day', 'Time', 'Status']
+    const startY = 50
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    scheduleStore.schedules.forEach((schedule, index) => {
+      if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        schedule.course?.course_code || `Course ${schedule.course_id}`,
+        schedule.section,
+        schedule.professor ? `${schedule.professor.first_name} ${schedule.professor.last_name}` : `Professor ${schedule.professor_id}`,
+        schedule.room,
+        schedule.day_of_week,
+        `${schedule.start_time} - ${schedule.end_time}`,
+        schedule.status
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        const text = data.length > 15 ? data.substring(0, 15) + '...' : data
+        pdf.text(text, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Schedule Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`schedule-list-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportStatisticsPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Schedule Statistics Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    
+    // Statistics
+    let currentY = 50
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Overall Statistics', 20, currentY)
+    
+    currentY += 15
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    const stats = [
+      { label: 'Total Schedules', value: scheduleStore.schedules.length },
+      { label: 'Active Schedules', value: activeSchedulesCount.value },
+      { label: 'Unique Rooms', value: uniqueRoomsCount.value },
+      { label: 'Total Students', value: totalStudentsCount.value }
+    ]
+    
+    stats.forEach(stat => {
+      pdf.text(`${stat.label}: ${stat.value}`, 30, currentY)
+      currentY += 10
+    })
+    
+    // Day distribution
+    currentY += 15
+    pdf.setFontSize(14)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Schedule Distribution by Day', 20, currentY)
+    
+    currentY += 10
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    
+    analytics.value.schedulesByDay.forEach(dayData => {
+      pdf.text(`${dayData.day}: ${dayData.count} schedules (${dayData.percentage.toFixed(1)}%)`, 30, currentY)
+      currentY += 8
+    })
+    
+    // Footer
+    pdf.setFontSize(8)
+    pdf.text('CCS-ISPS Schedule Management System', 20, pdf.internal.pageSize.getHeight() - 10)
+    
+    pdf.save(`schedule-statistics-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating statistics PDF:', error)
+    alert('Failed to generate statistics PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
+async function exportFilteredSchedulesPDF() {
+  showExportMenu.value = false
+  generatingPDF.value = true
+  
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    
+    // Header
+    pdf.setFontSize(20)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Filtered Schedules Report', pageWidth / 2, 20, { align: 'center' })
+    
+    pdf.setFontSize(12)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: 'center' })
+    pdf.text(`Filtered Schedules: ${filteredSchedules.value.length} of ${scheduleStore.schedules.length}`, pageWidth / 2, 37, { align: 'center' })
+    
+    // Active filters
+    let filterText = 'Active Filters: '
+    if (filter.value.search) filterText += `Search: "${filter.value.search}" `
+    if (filter.value.day) filterText += `Day: ${filter.value.day} `
+    if (filter.value.room_type) filterText += `Room Type: ${filter.value.room_type} `
+    if (filter.value.status) filterText += `Status: ${filter.value.status} `
+    
+    if (filterText === 'Active Filters: ') filterText = 'No active filters'
+    
+    pdf.text(filterText, pageWidth / 2, 44, { align: 'center' })
+    
+    // Table
+    const headers = ['Course', 'Section', 'Professor', 'Room', 'Day', 'Time', 'Status']
+    const startY = 55
+    const rowHeight = 8
+    const colWidth = (pageWidth - 40) / headers.length
+    
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'bold')
+    headers.forEach((header, index) => {
+      pdf.text(header, 20 + (index * colWidth), startY)
+    })
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal')
+    let currentY = startY + rowHeight
+    
+    filteredSchedules.value.forEach((schedule, index) => {
+      if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage()
+        currentY = 20
+        
+        // Re-add headers on new page
+        pdf.setFont('helvetica', 'bold')
+        headers.forEach((header, headerIndex) => {
+          pdf.text(header, 20 + (headerIndex * colWidth), currentY)
+        })
+        pdf.setFont('helvetica', 'normal')
+        currentY += rowHeight
+      }
+      
+      const rowData = [
+        schedule.course?.course_code || `Course ${schedule.course_id}`,
+        schedule.section,
+        schedule.professor ? `${schedule.professor.first_name} ${schedule.professor.last_name}` : `Professor ${schedule.professor_id}`,
+        schedule.room,
+        schedule.day_of_week,
+        `${schedule.start_time} - ${schedule.end_time}`,
+        schedule.status
+      ]
+      
+      rowData.forEach((data, dataIndex) => {
+        pdf.text(data, 20 + (dataIndex * colWidth), currentY)
+      })
+      
+      currentY += rowHeight
+    })
+    
+    pdf.save(`filtered-schedules-${Date.now()}.pdf`)
+  } catch (error) {
+    console.error('Error generating filtered schedules PDF:', error)
+    alert('Failed to generate filtered schedules PDF. Please try again.')
+  } finally {
+    generatingPDF.value = false
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
   scheduleStore.fetchSchedules()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
