@@ -260,6 +260,20 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const authStore = useAuthStore()
   
+  // Wait a moment for auth to initialize if needed
+  if (!authStore.user && !authStore.token && to.path !== '/login') {
+    // Check if there's a token in localStorage that needs to be loaded
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      // Let initAuth handle it, then proceed
+      setTimeout(() => {
+        if (authStore.isAuthenticated) {
+          return true
+        }
+      }, 100)
+    }
+  }
+  
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return '/login'
   }

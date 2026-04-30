@@ -36,23 +36,23 @@
           <div class="filters-info">
             <h3>Current Filters Applied:</h3>
             <div v-if="hasActiveFilters" class="active-filters">
-              <div v-if="searchQuery" class="filter-tag">
-                Search: "{{ searchQuery }}"
+              <div v-if="props.filters.searchQuery" class="filter-tag">
+                Search: "{{ props.filters.searchQuery }}"
               </div>
-              <div v-if="selectedYear" class="filter-tag">
-                Year: {{ selectedYear }}
+              <div v-if="props.filters.selectedYear" class="filter-tag">
+                Year: {{ props.filters.selectedYear }}
               </div>
-              <div v-if="selectedStanding" class="filter-tag">
-                Standing: {{ formatStanding(selectedStanding) }}
+              <div v-if="props.filters.selectedStanding" class="filter-tag">
+                Standing: {{ formatStanding(props.filters.selectedStanding) }}
               </div>
-              <div v-if="selectedSkill" class="filter-tag">
-                Skill: {{ selectedSkill }}
+              <div v-if="props.filters.selectedSkill" class="filter-tag">
+                Skill: {{ props.filters.selectedSkill }}
               </div>
-              <div v-if="selectedAffiliation" class="filter-tag">
-                Affiliation: {{ selectedAffiliation }}
+              <div v-if="props.filters.selectedAffiliation" class="filter-tag">
+                Affiliation: {{ props.filters.selectedAffiliation }}
               </div>
-              <div v-if="selectedViolationStatus" class="filter-tag">
-                Violation Status: {{ selectedViolationStatus }}
+              <div v-if="props.filters.selectedViolationStatus" class="filter-tag">
+                Violation Status: {{ props.filters.selectedViolationStatus }}
               </div>
             </div>
             <div v-else class="no-filters">
@@ -149,11 +149,13 @@
 
 <script setup lang="ts">
 import { ref, computed, defineProps, defineEmits, withDefaults } from 'vue'
+import api from '@/services/api'
 
 // Props
 interface Props {
   data: any[]
   reportTitle: string
+  fetchFromAPI?: boolean
   filters?: {
     searchQuery?: string
     selectedYear?: string
@@ -165,7 +167,15 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  filters: () => ({})
+  fetchFromAPI: false,
+  filters: () => ({
+    searchQuery: '',
+    selectedYear: '',
+    selectedStanding: '',
+    selectedSkill: '',
+    selectedAffiliation: '',
+    selectedViolationStatus: ''
+  })
 })
 
 // Emits
@@ -210,6 +220,19 @@ const filteredData = computed(() => {
   return props.data
 })
 
+// Function to fetch real API data
+const fetchAPIData = async (reportType: string, filters: any) => {
+  try {
+    const response = await api.get(`/reports/${reportType}`, {
+      params: filters
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error fetching API data:', error)
+    throw error
+  }
+}
+
 // Methods
 const closeModal = () => {
   showReportModal.value = false
@@ -241,15 +264,51 @@ const generateReport = async () => {
   isGenerating.value = true
   
   try {
-    // Generate report data based on type and filters
-    const reportData = {
-      type: selectedReportType.value,
-      format: selectedFormat.value,
-      filters: props.filters,
-      data: filteredData.value,
-      customOptions: selectedCustomOptions.value,
-      timestamp: new Date().toISOString(),
-      title: props.reportTitle
+    let reportData: any
+    
+    // Try to fetch from API if not in demo mode
+    const token = localStorage.getItem('auth_token')
+    const isDemo = token ? token.startsWith('demo-') : false
+    
+    if (!isDemo && props.fetchFromAPI) {
+      try {
+        const apiData = await fetchAPIData(selectedReportType.value, props.filters)
+        reportData = {
+          type: selectedReportType.value,
+          format: selectedFormat.value,
+          filters: props.filters,
+          data: apiData,
+          customOptions: selectedCustomOptions.value,
+          timestamp: new Date().toISOString(),
+          title: props.reportTitle,
+          dataSource: 'API'
+        }
+      } catch (apiError) {
+        console.warn('API fetch failed, using local data:', apiError)
+        // Fallback to local data
+        reportData = {
+          type: selectedReportType.value,
+          format: selectedFormat.value,
+          filters: props.filters,
+          data: filteredData.value,
+          customOptions: selectedCustomOptions.value,
+          timestamp: new Date().toISOString(),
+          title: props.reportTitle,
+          dataSource: 'Local'
+        }
+      }
+    } else {
+      // Use local/demo data
+      reportData = {
+        type: selectedReportType.value,
+        format: selectedFormat.value,
+        filters: props.filters,
+        data: filteredData.value,
+        customOptions: selectedCustomOptions.value,
+        timestamp: new Date().toISOString(),
+        title: props.reportTitle,
+        dataSource: isDemo ? 'Demo' : 'Local'
+      }
     }
 
     // Generate preview

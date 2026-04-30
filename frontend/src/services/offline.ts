@@ -133,556 +133,83 @@ class OfflineService {
   }
 
   getDummyStudents(): any[] {
-    return [
-      {
-        id: 1,
+    const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Jennifer', 'Michael', 'Amanda', 'William', 'Jessica', 'Daniel', 'Ashley', 'Christopher', 'Sophia', 'Matthew', 'Olivia', 'Andrew', 'Emma', 'Joshua', 'Isabella', 'Ryan', 'Mia', 'Kevin', 'Charlotte', 'Tyler', 'Amelia', 'Jason', 'Harper', 'Ethan', 'Evelyn', 'Brandon', 'Abigail', 'Nathan', 'Emily', 'Alexander', 'Madison', 'Jacob', 'Sofia', 'Logan', 'Avery', 'Ethan', 'Aiden', 'Caleb', 'Jackson', 'Mason', 'Liam', 'Noah', 'Lucas', 'Henry', 'Alexander', 'Sebastian', 'Ezra', 'Jack', 'Owen', 'Daniel', 'Matthew', 'Joseph', 'David', 'Samuel', 'Carter', 'Wyatt', 'Jayden', 'John', 'Dylan', 'Luke', 'Gabriel', 'Anthony', 'Isaac', 'Lincoln', 'Christopher', 'Joshua', 'Andrew', 'Mateo', 'Ryan', 'Nathan', 'Aaron', 'Isaiah', 'Thomas', 'Charles', 'Caleb', 'Josiah', 'Christian', 'Jonathan', 'Landon', 'Evan', 'Gavin', 'Connor', 'Adrian', 'Asher', 'Jeremiah', 'Hudson', 'Robert', 'Nicholas', 'Brayden', 'Grayson', 'Eli', 'Ezekiel', 'Dominic', 'Oliver', 'Xavier', 'Jaxon', 'Maverick', 'Kai', 'Santiago', 'Leo', 'Aarav', 'Roman', 'Adam', 'Ronan', 'Emmett', 'Remington', 'Milo', 'Archer', 'Rowan', 'Karter', 'Wesley', 'Jaxson', 'Josiah', 'Elliot', 'Parker', 'Colton', 'Luca', 'Atlas', 'Jasper', 'Declan', 'Kayden', 'Maxwell', 'Ryker', 'Enzo', 'Kingston', 'Bennett', 'Carson', 'Raymond', 'Zion', 'Arlo', 'Theodore', 'Jude', 'Nolan', 'Antonio', 'Myles', 'Elliott', 'Gideon', 'Knox', 'Damon', 'Ace', 'Barrett', 'Amiri', 'Max', 'Javier', 'Silas', 'Cody', 'Beau', 'Amir', 'Adriel', 'Rory', 'Bodhi', 'Emiliano', 'Braxton', 'Khalil', 'Malachi', 'Makai', 'Ronin', 'Finn', 'Zayn', 'Kade', 'Rex', 'Cruz', 'Stellan', 'Joaquin', 'Koa', 'Lorenzo', 'Orion', 'Cassius', 'Armani', 'Frankie', 'Ermias', 'Kairo', 'Legend', 'Raphael', 'Zayne', 'Jesse', 'Sullivan', 'Cameron', 'Graham', 'Felix', 'August', 'River', 'Brooks', 'Bryce', 'Judah', 'Kellan', 'Abel', 'Colby', 'Hayes', 'Salvador', 'Kaden', 'Kamari', 'Solomon', 'Rhys', 'Jerry', 'Ricky', 'Tommy', 'Andre', 'Miguel', 'Hector', 'Sergio', 'Luis', 'Carlos', 'Juan', 'Jorge', 'Martin', 'Adrian', 'Diego', 'Ricardo', 'Antonio', 'Alejandro', 'Manuel', 'Pablo', 'Javier', 'Roberto', 'Pedro', 'Raul', 'Francisco', 'Angel', 'Gabriel', 'Miguel', 'Luis', 'Carlos', 'Jose', 'David', 'Daniel', 'Mario', 'Arturo', 'Rafael', 'Eduardo', 'Victor', 'Alberto', 'Oscar', 'Santiago', 'Andres', 'Marco', 'Fernando', 'Benjamin', 'Samuel', 'Isaac', 'Nathan', 'Caleb', 'Aaron', 'Lucas', 'Henry', 'Owen', 'Julian', 'Levi', 'Christian', 'Eli', 'Aaron', 'Evan', 'Parker', 'Adam', 'Ian', 'Connor', 'Leo', 'Xavier', 'Ryan', 'Colton', 'Angel', 'Adrian', 'Jonathan', 'Carson', 'Hunter', 'Brandon', 'Austin', 'Gavin', 'Nolan', 'Tyler', 'Caleb', 'Lucas', 'Henry', 'Owen', 'Julian', 'Levi', 'Christian', 'Eli', 'Aaron', 'Evan', 'Parker', 'Adam', 'Ian', 'Connor', 'Leo', 'Xavier', 'Ryan', 'Colton', 'Angel', 'Adrian', 'Jonathan', 'Carson', 'Hunter', 'Brandon', 'Austin', 'Gavin', 'Nolan', 'Tyler', 'Caleb']
+    
+    const lastNames = ['Doe', 'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards', 'Collins', 'Stewart', 'Sanchez', 'Morris', 'Rogers', 'Reed', 'Cook', 'Morgan', 'Bell', 'Murphy', 'Bailey', 'Rivera', 'Cooper', 'Richardson', 'Cox', 'Howard', 'Ward', 'Torres', 'Peterson', 'Gray', 'Ramirez', 'James', 'Watson', 'Brooks', 'Kelly', 'Sanders', 'Price', 'Bennett', 'Wood', 'Barnes', 'Ross', 'Henderson', 'Coleman', 'Jenkins', 'Perry', 'Powell', 'Long', 'Patterson', 'Hughes', 'Flores', 'Washington', 'Butler', 'Simmons', 'Foster', 'Gonzales', 'Bryant', 'Alexander', 'Russell', 'Griffin', 'Diaz', 'Hayes', 'Myers', 'Ford', 'Hamilton', 'Graham', 'Sullivan', 'Wallace', 'Woods', 'Cole', 'West', 'Jordan', 'Owens', 'Reynolds', 'Fisher', 'Ellis', 'Harrison', 'Gibson', 'Mcdonald', 'Cruz', 'Marshall', 'Ortiz', 'Gomez', 'Murray', 'Freeman', 'Wells', 'Webb', 'Simpson', 'Stevens', 'Tucker', 'Porter', 'Hunter', 'Hicks', 'Crawford', 'Henry', 'Boyd', 'Mason', 'Morales', 'Kennedy', 'Warren', 'Dixon', 'Ramos', 'Reyes', 'Burns', 'Gordon', 'Shaw', 'Holmes', 'Rice', 'Robertson', 'Hunt', 'Black', 'Daniels', 'Palmer', 'Mills', 'Nichols', 'Grant', 'Knight', 'Ferguson', 'Rose', 'Stone', 'Hawkins', 'Dunn', 'Perkins', 'Hudson', 'Spencer', 'Gardner', 'Stephens', 'Payne', 'Pierce', 'Berry', 'Matthews', 'Arnold', 'Wagner', 'Willis', 'Ray', 'Watkins', 'Olson', 'Carroll', 'Duncan', 'Snyder', 'Hart', 'Cunningham', 'Bradley', 'Lane', 'Andrews', 'Ruiz', 'Harper', 'Fox', 'Riley', 'Armstrong', 'Carpenter', 'Weaver', 'Greene', 'Lawrence', 'Elliott', 'Chavez', 'Sims', 'Austin', 'Peters', 'Kelley', 'Franklin', 'Lawson', 'Fields', 'Gutierrez', 'Ryan', 'Schmidt', 'Carr', 'Vasquez', 'Castillo', 'Wheeler', 'Chapman', 'Oliver', 'Montgomery', 'Richards', 'Williamson', 'Johnston', 'Banks', 'Meyer', 'Bauer', 'Fletcher', 'Giles', 'Floyd', 'Hogan', 'Luna', 'Phelps', 'McGuire', 'Allison', 'Bridges', 'Wilkerson', 'Stanley', 'Nguyen', 'George', 'Jacobs', 'Reid', 'Kim', 'Fuller', 'Lynch', 'Dean', 'Gilbert', 'Garza', 'Erickson', 'Vargas', 'Combs', 'Kramer', 'Molina', 'Huffman', 'Kelley', 'Dixon', 'Owens', 'Huffman', 'Kelley', 'Dixon', 'Owens', 'Huffman', 'Kelley', 'Dixon', 'Owens']
+    
+    const students = []
+    
+    // Generate 1000 students
+    for (let i = 0; i < 1000; i++) {
+      const firstName = firstNames[i % firstNames.length] || 'Student'
+      const lastName = lastNames[i % lastNames.length] || `Last${i}`
+      const year = Math.floor(Math.random() * 4) + 1
+      const standings = ['excellent', 'good', 'average', 'probation']
+      const standing = standings[Math.floor(Math.random() * standings.length)]
+      const gpa = Number((Math.random() * 2 + 2).toFixed(2))
+      
+      students.push({
+        id: i + 1,
         personalInfo: {
-          firstName: 'John',
-          lastName: 'Doe',
-          middleName: 'Michael',
-          studentId: '2021-001',
-          email: 'john.doe@university.edu',
-          phone: '+1-555-0123',
-          dateOfBirth: '2000-05-15',
-          age: 23,
-          gender: 'male',
-          address: '123 University Ave',
+          firstName: firstName,
+          lastName: lastName,
+          middleName: 'Generated',
+          studentId: `2024${String(i + 1).padStart(4, '0')}`,
+          email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@university.edu`,
+          phone: `+1-555-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}-${String(Math.floor(Math.random() * 9000) + 1000).padStart(4, '0')}`,
+          dateOfBirth: `${2000 + Math.floor(Math.random() * 5)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+          age: Math.floor(Math.random() * 10) + 18,
+          gender: Math.random() > 0.5 ? 'male' : 'female',
+          address: `${Math.floor(Math.random() * 9999) + 1} University Ave`,
           city: 'Academic City',
           province: 'Education State',
-          postalCode: '12345',
+          postalCode: String(Math.floor(Math.random() * 99999) + 10000),
           emergencyContact: {
-            name: 'Jane Doe',
-            relationship: 'Mother',
-            phone: '+1-555-0124'
+            name: 'Parent Name',
+            relationship: 'Parent',
+            phone: `+1-555-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}-${String(Math.floor(Math.random() * 9000) + 1000).padStart(4, '0')}`
           }
         },
         academicHistory: [
           {
-            id: 1,
+            id: i + 1,
             schoolName: 'High School of Science',
             degree: 'High School Diploma',
             major: 'General Studies',
             startDate: '2017-08-01',
             endDate: '2021-06-15',
-            gpa: 3.8,
-            honors: ['Honor Roll', 'Science Club President'],
+            gpa: gpa,
+            honors: Math.random() > 0.7 ? ['Honor Roll'] : [],
             status: 'completed'
           }
         ],
         academicStanding: {
-          currentYear: 3,
-          currentSemester: 'second',
-          currentGPA: 3.7,
-          totalUnits: 90,
-          standing: 'good',
-          advisor: 'Dr. Sarah Johnson'
+          currentYear: year,
+          currentSemester: Math.random() > 0.5 ? 'first' : 'second',
+          currentGPA: gpa,
+          totalUnits: Math.floor(Math.random() * 60) + 60,
+          standing: standing === 'excellent' || standing === 'good' ? 'good' : standing === 'average' ? 'warning' : 'probation',
+          advisor: `Dr. ${['Smith', 'Johnson', 'Williams', 'Brown', 'Jones'][Math.floor(Math.random() * 5)]}`
         },
-        activities: [
-          {
-            id: 1,
-            name: 'Computer Science Club',
-            type: 'organization',
-            role: 'Member',
-            startDate: '2021-09-01',
-            description: 'Active participant in coding competitions and workshops',
-            achievements: ['Hackathon Winner 2022'],
-            level: 'local'
-          }
-        ],
-        violations: [],
-        skills: [
-          {
-            id: 1,
-            name: 'JavaScript',
-            category: 'technical',
-            proficiency: 'advanced',
-            certifications: ['JavaScript Certification'],
-            yearsExperience: 3,
-            lastUsed: new Date().toISOString().split('T')[0]
-          },
-          {
-            id: 2,
-            name: 'Leadership',
-            category: 'soft',
-            proficiency: 'intermediate',
-            yearsExperience: 2
-          }
-        ],
-        affiliations: [
-          {
-            id: 1,
-            name: 'Student Government',
-            type: 'student_organization',
-            role: 'Class Representative',
-            startDate: '2022-01-01',
-            position: 'Representative',
-            description: 'Representing student interests in department meetings'
-          }
-        ],
+        activities: [],
+        violations: Math.random() > 0.8 ? [{
+          id: 1,
+          type: 'academic',
+          description: 'Late assignment submission',
+          date: '2023-10-15',
+          severity: 'minor',
+          status: 'resolved',
+          consequence: 'Warning'
+        }] : [],
+        skills: [],
+        affiliations: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isActive: true
-      },
-      {
-        id: 2,
-        personalInfo: {
-          firstName: 'Jane',
-          lastName: 'Smith',
-          middleName: 'Elizabeth',
-          studentId: '2021-002',
-          email: 'jane.smith@university.edu',
-          phone: '+1-555-0125',
-          dateOfBirth: '2000-08-22',
-          age: 23,
-          gender: 'female',
-          address: '456 College Blvd',
-          city: 'Scholar Town',
-          province: 'Learning Province',
-          postalCode: '67890',
-          emergencyContact: {
-            name: 'Robert Smith',
-            relationship: 'Father',
-            phone: '+1-555-0126'
-          }
-        },
-        academicHistory: [
-          {
-            id: 2,
-            schoolName: 'Arts Academy',
-            degree: 'High School Diploma',
-            major: 'Fine Arts',
-            startDate: '2017-08-01',
-            endDate: '2021-06-15',
-            gpa: 3.9,
-            honors: ['Valedictorian', 'Art Award'],
-            status: 'completed'
-          }
-        ],
-        academicStanding: {
-          currentYear: 3,
-          currentSemester: 'second',
-          currentGPA: 3.9,
-          totalUnits: 92,
-          standing: 'good',
-          advisor: 'Prof. Michael Brown'
-        },
-        activities: [
-          {
-            id: 2,
-            name: 'Drama Club',
-            type: 'organization',
-            role: 'President',
-            startDate: '2021-09-01',
-            description: 'Leading drama productions and performances',
-            achievements: ['Best Director 2023'],
-            level: 'regional'
-          }
-        ],
-        violations: [],
-        skills: [
-          {
-            id: 3,
-            name: 'Public Speaking',
-            category: 'soft',
-            proficiency: 'expert',
-            yearsExperience: 4
-          },
-          {
-            id: 4,
-            name: 'Digital Art',
-            category: 'creative',
-            proficiency: 'advanced',
-            yearsExperience: 3
-          }
-        ],
-        affiliations: [
-          {
-            id: 2,
-            name: 'Art Students Association',
-            type: 'student_organization',
-            role: 'Treasurer',
-            startDate: '2022-01-01',
-            position: 'Treasurer',
-            description: 'Managing association finances and events'
-          }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
-      },
-      {
-        id: 3,
-        personalInfo: {
-          firstName: 'Carlos',
-          lastName: 'Rodriguez',
-          middleName: 'Miguel',
-          studentId: '2020-003',
-          email: 'carlos.rodriguez@university.edu',
-          phone: '+1-555-0130',
-          dateOfBirth: '1999-12-10',
-          age: 24,
-          gender: 'male',
-          address: '789 Campus Drive',
-          city: 'Tech Valley',
-          province: 'Innovation State',
-          postalCode: '54321',
-          emergencyContact: {
-            name: 'Maria Rodriguez',
-            relationship: 'Sister',
-            phone: '+1-555-0131'
-          }
-        },
-        academicHistory: [
-          {
-            id: 3,
-            schoolName: 'STEM High School',
-            degree: 'High School Diploma',
-            major: 'Engineering',
-            startDate: '2016-08-01',
-            endDate: '2020-06-15',
-            gpa: 3.6,
-            honors: ['Math Olympiad', 'Robotics Team Captain'],
-            status: 'completed'
-          }
-        ],
-        academicStanding: {
-          currentYear: 4,
-          currentSemester: 'first',
-          currentGPA: 3.5,
-          totalUnits: 110,
-          standing: 'good',
-          advisor: 'Dr. Emily Chen'
-        },
-        activities: [
-          {
-            id: 3,
-            name: 'Robotics Club',
-            type: 'organization',
-            role: 'Vice President',
-            startDate: '2020-09-01',
-            description: 'Building and programming competition robots',
-            achievements: ['Regional Robotics Champion 2022'],
-            level: 'national'
-          }
-        ],
-        violations: [],
-        skills: [
-          {
-            id: 5,
-            name: 'Python',
-            category: 'technical',
-            proficiency: 'expert',
-            certifications: ['Python Professional Certification'],
-            yearsExperience: 4,
-            lastUsed: new Date().toISOString().split('T')[0]
-          },
-          {
-            id: 6,
-            name: 'Machine Learning',
-            category: 'technical',
-            proficiency: 'intermediate',
-            yearsExperience: 2
-          }
-        ],
-        affiliations: [
-          {
-            id: 3,
-            name: 'Engineering Society',
-            type: 'student_organization',
-            role: 'Member',
-            startDate: '2020-01-01',
-            position: 'Member',
-            description: 'Professional development and networking for engineering students'
-          }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
-      },
-      {
-        id: 4,
-        personalInfo: {
-          firstName: 'Aisha',
-          lastName: 'Patel',
-          middleName: 'Rani',
-          studentId: '2022-004',
-          email: 'aisha.patel@university.edu',
-          phone: '+1-555-0140',
-          dateOfBirth: '2003-03-25',
-          age: 21,
-          gender: 'female',
-          address: '321 Scholar Lane',
-          city: 'Knowledge Heights',
-          province: 'Academic District',
-          postalCode: '98765',
-          emergencyContact: {
-            name: 'Raj Patel',
-            relationship: 'Brother',
-            phone: '+1-555-0141'
-          }
-        },
-        academicHistory: [
-          {
-            id: 4,
-            schoolName: 'International Baccalaureate School',
-            degree: 'IB Diploma',
-            major: 'Business Studies',
-            startDate: '2019-08-01',
-            endDate: '2022-06-15',
-            gpa: 4.0,
-            honors: ['IB Full Diploma', 'Debate Team Captain'],
-            status: 'completed'
-          }
-        ],
-        academicStanding: {
-          currentYear: 2,
-          currentSemester: 'second',
-          currentGPA: 3.8,
-          totalUnits: 60,
-          standing: 'excellent',
-          advisor: 'Prof. David Lee'
-        },
-        activities: [
-          {
-            id: 4,
-            name: 'Business Club',
-            type: 'organization',
-            role: 'Secretary',
-            startDate: '2022-09-01',
-            description: 'Organizing business case competitions and workshops',
-            achievements: ['Business Plan Competition Winner 2023'],
-            level: 'international'
-          }
-        ],
-        violations: [],
-        skills: [
-          {
-            id: 7,
-            name: 'Financial Analysis',
-            category: 'business',
-            proficiency: 'advanced',
-            certifications: ['Financial Modeling Certificate'],
-            yearsExperience: 2,
-            lastUsed: new Date().toISOString().split('T')[0]
-          },
-          {
-            id: 8,
-            name: 'Public Speaking',
-            category: 'soft',
-            proficiency: 'advanced',
-            yearsExperience: 3
-          }
-        ],
-        affiliations: [
-          {
-            id: 4,
-            name: 'International Student Association',
-            type: 'student_organization',
-            role: 'Cultural Coordinator',
-            startDate: '2022-01-01',
-            position: 'Cultural Coordinator',
-            description: 'Promoting cultural diversity and international student support'
-          }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
-      },
-      {
-        id: 5,
-        personalInfo: {
-          firstName: 'Marcus',
-          lastName: 'Johnson',
-          middleName: 'James',
-          studentId: '2021-005',
-          email: 'marcus.johnson@university.edu',
-          phone: '+1-555-0150',
-          dateOfBirth: '2001-07-18',
-          age: 22,
-          gender: 'male',
-          address: '555 Athletic Ave',
-          city: 'Sports City',
-          province: 'Championship State',
-          postalCode: '13579',
-          emergencyContact: {
-            name: 'Linda Johnson',
-            relationship: 'Mother',
-            phone: '+1-555-0151'
-          }
-        },
-        academicHistory: [
-          {
-            id: 5,
-            schoolName: 'Sports Academy',
-            degree: 'High School Diploma',
-            major: 'Physical Education',
-            startDate: '2017-08-01',
-            endDate: '2021-06-15',
-            gpa: 3.2,
-            honors: ['Athletic Scholarship', 'Team MVP'],
-            status: 'completed'
-          }
-        ],
-        academicStanding: {
-          currentYear: 3,
-          currentSemester: 'second',
-          currentGPA: 3.3,
-          totalUnits: 88,
-          standing: 'average',
-          advisor: 'Dr. Susan Martinez'
-        },
-        activities: [
-          {
-            id: 5,
-            name: 'Basketball Team',
-            type: 'sports',
-            role: 'Team Captain',
-            startDate: '2021-09-01',
-            description: 'Leading the university basketball team',
-            achievements: ['League MVP 2023', 'Championship Team'],
-            level: 'national'
-          }
-        ],
-        violations: [
-          {
-            id: 1,
-            type: 'academic',
-            description: 'Late assignment submission',
-            date: '2023-10-15',
-            severity: 'minor',
-            status: 'resolved',
-            consequence: 'Warning'
-          }
-        ],
-        skills: [
-          {
-            id: 9,
-            name: 'Basketball',
-            category: 'sports',
-            proficiency: 'expert',
-            yearsExperience: 8,
-            lastUsed: new Date().toISOString().split('T')[0]
-          },
-          {
-            id: 10,
-            name: 'Team Leadership',
-            category: 'soft',
-            proficiency: 'advanced',
-            yearsExperience: 3
-          }
-        ],
-        affiliations: [
-          {
-            id: 5,
-            name: 'Athletic Department',
-            type: 'department',
-            role: 'Student Athlete Representative',
-            startDate: '2021-01-01',
-            position: 'Representative',
-            description: 'Representing student athletes in department meetings'
-          }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
-      },
-      {
-        id: 6,
-        personalInfo: {
-          firstName: 'Sophia',
-          lastName: 'Kim',
-          middleName: 'Min',
-          studentId: '2023-006',
-          email: 'sophia.kim@university.edu',
-          phone: '+1-555-0160',
-          dateOfBirth: '2004-11-30',
-          age: 19,
-          gender: 'female',
-          address: '888 Innovation Plaza',
-          city: 'Future Town',
-          province: 'Digital State',
-          postalCode: '24680',
-          emergencyContact: {
-            name: 'Jin Kim',
-            relationship: 'Father',
-            phone: '+1-555-0161'
-          }
-        },
-        academicHistory: [
-          {
-            id: 6,
-            schoolName: 'Digital Learning Academy',
-            degree: 'High School Diploma',
-            major: 'Computer Science',
-            startDate: '2019-08-01',
-            endDate: '2023-06-15',
-            gpa: 3.95,
-            honors: ['Valedictorian', 'Coding Competition Winner'],
-            status: 'completed'
-          }
-        ],
-        academicStanding: {
-          currentYear: 1,
-          currentSemester: 'second',
-          currentGPA: 3.85,
-          totalUnits: 30,
-          standing: 'excellent',
-          advisor: 'Dr. Alex Thompson'
-        },
-        activities: [
-          {
-            id: 6,
-            name: 'AI Research Group',
-            type: 'research',
-            role: 'Research Assistant',
-            startDate: '2023-09-01',
-            description: 'Assisting in artificial intelligence research projects',
-            achievements: ['Published Research Paper'],
-            level: 'international'
-          }
-        ],
-        violations: [],
-        skills: [
-          {
-            id: 11,
-            name: 'React',
-            category: 'technical',
-            proficiency: 'advanced',
-            certifications: ['React Developer Certificate'],
-            yearsExperience: 2,
-            lastUsed: new Date().toISOString().split('T')[0]
-          },
-          {
-            id: 12,
-            name: 'Data Science',
-            category: 'technical',
-            proficiency: 'intermediate',
-            yearsExperience: 1
-          },
-          {
-            id: 13,
-            name: 'Korean Language',
-            category: 'language',
-            proficiency: 'native',
-            yearsExperience: 19
-          }
-        ],
-        affiliations: [
-          {
-            id: 6,
-            name: 'Women in Tech',
-            type: 'student_organization',
-            role: 'Member',
-            startDate: '2023-01-01',
-            position: 'Member',
-            description: 'Supporting women in technology fields'
-          }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
-      }
-    ]
+      })
+    }
+    
+    return students
   }
 
   initializeDummyData(): void {
