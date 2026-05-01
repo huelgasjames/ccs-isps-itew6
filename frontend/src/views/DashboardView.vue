@@ -13,7 +13,7 @@
             <div class="welcome-chips">
               <span class="chip orange">{{ user?.role === 'admin' ? 'Administrator' : user?.role === 'professor' ? 'Professor' : 'Student' }}</span>
               <span class="chip gray">CCS Department</span>
-              <span v-if="isDemoMode" class="chip yellow">Demo Mode</span>
+              
             </div>
             <div class="welcome-time">{{ currentDate }}</div>
           </div>
