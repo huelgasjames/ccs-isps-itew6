@@ -356,6 +356,9 @@
             <div v-else class="ann-list">
               <div v-for="ann in announcements" :key="ann.id" class="ann-item" :class="{ unread: !ann.is_viewed }">
                 <div class="ann-dot"></div>
+                <div class="ann-image" v-if="ann.image_url || ann.image">
+                  <img :src="ann.image_url || ann.image" :alt="ann.title" @error="handleImageError" />
+                </div>
                 <div class="ann-body">
                   <div class="ann-title">{{ ann.title }}</div>
                   <div class="ann-excerpt">{{ ann.content?.substring(0, 90) }}…</div>
@@ -555,6 +558,11 @@ const fetchAnnouncements = async () => {
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 const getTargetLabel = (t: string) => ({ all: 'All', students: 'Students', professors: 'Professors', specific: 'Specific' }[t] ?? t)
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  img.style.display = 'none'
+}
 
 // ── Data fetching ──────────────────────────────────────
 const generateSampleAnalytics = () => {
@@ -1102,6 +1110,16 @@ onUnmounted(() => {
   width: 8px; height: 8px; border-radius: 50%;
   background: #f97316; flex-shrink: 0; margin-top: 5px;
 }
+.ann-image {
+  width: 60px; height: 60px; border-radius: 8px; overflow: hidden;
+  flex-shrink: 0; margin-right: 12px;
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+}
+.ann-image img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.2s;
+}
+.ann-image:hover img { transform: scale(1.05); }
 .ann-body { flex: 1; min-width: 0; }
 .ann-title { font-size: 0.875rem; font-weight: 600; color: #0f172a; margin-bottom: 3px; }
 .ann-excerpt { font-size: 0.75rem; color: #64748b; line-height: 1.4; margin-bottom: 6px; }

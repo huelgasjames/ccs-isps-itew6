@@ -3,7 +3,7 @@
     <div class="header-content">
       <!-- Logo/Brand -->
       <div class="header-brand">
-        <router-link to="/dashboard" class="brand-link">
+        <router-link :to="dashboardRoute" class="brand-link">
           <div class="brand-icon">
             <img src="/image-removebg-preview (1).png" alt="University Logo" class="brand-logo" />
           </div>
@@ -16,8 +16,8 @@
 
       <!-- Header Actions -->
       <div class="header-actions">
-        <!-- Search Bar -->
-        <div class="search-container">
+        <!-- Search Bar - Admin Only -->
+        <div v-if="!isStudent" class="search-container">
           <input 
             type="text" 
             v-model="searchQuery" 
@@ -33,8 +33,8 @@
           </button>
         </div>
 
-        <!-- Notifications -->
-        <button class="header-btn notification-btn" @click="toggleNotifications">
+        <!-- Notifications - Admin Only -->
+        <button v-if="!isStudent" class="header-btn notification-btn" @click="toggleNotifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -72,14 +72,14 @@
           </svg>
           
           <div class="user-dropdown">
-            <router-link to="/profile" class="dropdown-item">
+            <router-link :to="isStudent ? '/student/profile' : '/profile'" class="dropdown-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
               My Profile
             </router-link>
-            <router-link to="/settings" class="dropdown-item">
+            <router-link v-if="!isStudent" to="/settings" class="dropdown-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.07 4.93A10 10 0 0 0 2.93 19.07M4.93 4.93a10 10 0 0 0 14.14 14.14"/>
@@ -138,6 +138,12 @@ const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
 const user = computed(() => authStore.user)
+const isAdmin = computed(() => user.value?.role === 'admin')
+const isStudent = computed(() => user.value?.role === 'student')
+const dashboardRoute = computed(() => {
+  if (!user.value) return '/dashboard'
+  return user.value.role === 'student' ? '/student/dashboard' : '/dashboard'
+})
 const searchQuery = ref('')
 const userMenuOpen = ref(false)
 const showNotifications = ref(false)

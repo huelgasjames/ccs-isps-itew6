@@ -178,6 +178,69 @@
         </div>
       </div>
 
+      <!-- Enrolled Courses Section -->
+      <div class="panel mb-section">
+        <div class="panel-header">
+          <div class="panel-title">My Enrolled Courses</div>
+          <div class="header-actions">
+            <router-link to="/courses" class="text-sm text-blue-600 hover:text-blue-800">View All</router-link>
+          </div>
+        </div>
+        <div class="panel-body">
+          <!-- Loading State -->
+          <div v-if="loadingCourses" class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          </div>
+          
+          <!-- Courses Grid -->
+          <div v-else-if="enrolledCourses.length > 0" class="courses-grid">
+            <div 
+              v-for="course in enrolledCourses" 
+              :key="course.id"
+              class="course-card"
+              @click="viewCourseDetails(course.id)"
+            >
+              <div class="course-header">
+                <div class="course-code">{{ course.course_code }}</div>
+                <div class="course-status" :class="course.status">
+                  {{ course.status }}
+                </div>
+              </div>
+              <div class="course-title">{{ course.title }}</div>
+              <div class="course-instructor">{{ course.instructor }}</div>
+              <div class="course-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Students:</span>
+                  <span class="stat-value">{{ course.currentStudents }}/{{ course.maxStudents }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Schedule:</span>
+                  <span class="stat-value">{{ course.schedule }}</span>
+                </div>
+              </div>
+              <div class="course-progress">
+                <div class="progress-label">Progress</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" :style="`width: ${course.progress || 75}%`"></div>
+                </div>
+                <div class="progress-text">{{ course.progress || 75 }}%</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div v-else class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+            <p class="text-gray-500 text-sm">No enrolled courses found</p>
+            <router-link to="/courses" class="mt-2 inline-block text-blue-600 hover:text-blue-800 text-sm">
+              Browse Available Courses
+            </router-link>
+          </div>
+        </div>
+      </div>
+
       <!-- Recent Activities & Upcoming Events -->
       <div class="two-col-grid">
         <!-- Recent Activities -->
@@ -220,7 +283,11 @@
                 </div>
                 <div class="event-info">
                   <div class="event-title">{{ event.title }}</div>
-                  <div class="event-time">{{ event.time }}</div>
+                  <div class="event-details">
+                    <span class="event-time">{{ event.time }}</span>
+                    <span class="event-location">{{ event.location }}</span>
+                  </div>
+                  <div class="event-type" :class="`type-${event.type}`">{{ event.type }}</div>
                 </div>
               </div>
             </div>
@@ -276,11 +343,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
+import { useCourseStore } from '@/stores/course'
 import { announcementService, type Announcement } from '@/services/announcements'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+const courseStore = useCourseStore()
 const user = computed(() => authStore.user)
 const isDemoMode = computed(() => authStore.isDemoMode)
 
@@ -291,6 +360,9 @@ const currentDate = computed(() => now.value.toLocaleDateString('en-US', { weekd
 
 const announcements = ref<Announcement[]>([])
 const loadingAnnouncements = ref(true)
+
+const loadingCourses = ref(true)
+const enrolledCourses = ref<any[]>([])
 
 const studentInfo = ref({
   section: 'BSIT-3A',
@@ -328,29 +400,60 @@ const recentActivities = ref([
   }
 ])
 
-const upcomingEvents = ref([
-  {
-    id: 1,
-    title: 'Web Development Exam',
-    time: '9:00 AM',
-    day: '15',
-    month: 'Mar'
-  },
-  {
-    id: 2,
-    title: 'CCS Sports Fest',
-    time: 'All Day',
-    day: '20',
-    month: 'Mar'
-  },
-  {
-    id: 3,
-    title: 'Career Fair 2024',
-    time: '1:00 PM',
-    day: '25',
-    month: 'Mar'
+const upcomingEvents = ref<any[]>([])
+
+const generateSampleEvents = () => {
+  const eventTypes = [
+    { title: 'Web Development Exam', type: 'exam' },
+    { title: 'Database Management Quiz', type: 'quiz' },
+    { title: 'CCS Sports Fest', type: 'sports' },
+    { title: 'Career Fair 2024', type: 'career' },
+    { title: 'Programming Competition', type: 'competition' },
+    { title: 'IT Workshop: Cloud Computing', type: 'workshop' },
+    { title: 'Guest Lecture: AI in Education', type: 'lecture' },
+    { title: 'Student Council Meeting', type: 'meeting' },
+    { title: 'Hackathon 2024', type: 'hackathon' },
+    { title: 'Company Recruitment Drive', type: 'recruitment' }
+  ]
+  
+  const times = ['8:00 AM', '9:00 AM', '10:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', 'All Day']
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  
+  const sampleEvents = []
+  const today = new Date()
+  
+  // Generate 5-8 upcoming events within the next 3 months
+  const eventCount = Math.floor(Math.random() * 4) + 5
+  
+  for (let i = 0; i < eventCount; i++) {
+    const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)]
+    const daysFromNow = Math.floor(Math.random() * 90) + 1 // 1-90 days from now
+    const eventDate = new Date(today)
+    eventDate.setDate(today.getDate() + daysFromNow)
+    
+    sampleEvents.push({
+      id: i + 1,
+      title: eventType?.title || 'Event',
+      type: eventType?.type || 'general',
+      time: times[Math.floor(Math.random() * times.length)],
+      day: eventDate.getDate().toString(),
+      month: months[eventDate.getMonth()],
+      year: eventDate.getFullYear(),
+      location: ['Room 101', 'Computer Lab', 'Auditorium', 'Gym', 'Online'][Math.floor(Math.random() * 5)],
+      description: `Important ${eventType?.type || 'general'} event for CCS students`
+    })
   }
-])
+  
+  // Sort events by date
+  sampleEvents.sort((a, b) => {
+    const dateA = new Date(`${a.month} ${a.day}, ${a.year}`)
+    const dateB = new Date(`${b.month} ${b.day}, ${b.year}`)
+    return dateA.getTime() - dateB.getTime()
+  })
+  
+  upcomingEvents.value = sampleEvents
+  console.log(`Generated ${sampleEvents.length} sample events for student dashboard`)
+}
 
 const fetchAnnouncements = async () => {
   try {
@@ -414,8 +517,47 @@ const handleImageError = (event: Event) => {
   img.src = '/placeholder-announcement.jpg'
 }
 
+const fetchEnrolledCourses = async () => {
+  loadingCourses.value = true
+  try {
+    // Ensure course store has data
+    if (courseStore.courses.length === 0) {
+      await courseStore.fetchCourses()
+    }
+    
+    // For demo purposes, assign random courses to student
+    // In real app, this would come from API based on student ID
+    const allCourses = courseStore.courses
+    const studentCourseCount = Math.min(6, allCourses.length) // Student enrolled in max 6 courses
+    const shuffled = [...allCourses].sort(() => 0.5 - Math.random())
+    const selectedCourses = shuffled.slice(0, studentCourseCount)
+    
+    // Add student-specific data to courses
+    enrolledCourses.value = selectedCourses.map(course => ({
+      ...course,
+      progress: Math.floor(Math.random() * 40) + 60, // 60-100% progress
+      status: 'active',
+      schedule: 'MWF 10:00-11:00 AM', // Default schedule
+      instructor: `Prof. ${['Smith', 'Johnson', 'Williams', 'Brown', 'Jones'][Math.floor(Math.random() * 5)]}`
+    }))
+    
+    console.log(`Student enrolled in ${enrolledCourses.value.length} courses`)
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error)
+    enrolledCourses.value = []
+  } finally {
+    loadingCourses.value = false
+  }
+}
+
+const viewCourseDetails = (courseId: number) => {
+  router.push(`/courses/${courseId}`)
+}
+
 onMounted(() => {
   fetchAnnouncements()
+  fetchEnrolledCourses()
+  generateSampleEvents()
   timer = setInterval(() => { now.value = new Date() }, 1000)
 })
 
@@ -754,6 +896,142 @@ onUnmounted(() => clearInterval(timer))
   color: #9ca3af;
 }
 
+.event-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.event-location {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.dark .event-location {
+  color: #9ca3af;
+}
+
+.event-type {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+/* Event Type Colors */
+.type-exam {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.type-quiz {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.type-sports {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.type-career {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.type-competition {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.type-workshop {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.type-lecture {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.type-meeting {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.type-hackathon {
+  background: #fdf4ff;
+  color: #a21caf;
+}
+
+.type-recruitment {
+  background: #fefce8;
+  color: #854d0e;
+}
+
+.type-general {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Dark mode event types */
+.dark .type-exam {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.dark .type-quiz {
+  background: #78350f;
+  color: #fcd34d;
+}
+
+.dark .type-sports {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+.dark .type-career {
+  background: #1e3a8a;
+  color: #93c5fd;
+}
+
+.dark .type-competition {
+  background: #581c87;
+  color: #d8b4fe;
+}
+
+.dark .type-workshop {
+  background: #14532d;
+  color: #86efac;
+}
+
+.dark .type-lecture {
+  background: #9a3412;
+  color: #fdba74;
+}
+
+.dark .type-meeting {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.dark .type-hackathon {
+  background: #86198f;
+  color: #f9a8d4;
+}
+
+.dark .type-recruitment {
+  background: #713f12;
+  color: #fde047;
+}
+
+.dark .type-general {
+  background: #334155;
+  color: #cbd5e1;
+}
+
 /* Actions Grid */
 .actions-grid {
   display: grid;
@@ -905,5 +1183,187 @@ onUnmounted(() => clearInterval(timer))
 
 .mark-read-btn:hover {
   background: #2563eb;
+}
+
+/* Courses Section */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.course-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.dark .course-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.course-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.course-code {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.dark .course-code {
+  background: #374151;
+  color: #9ca3af;
+}
+
+.course-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.course-status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dark .course-status.active {
+  background: #14532d;
+  color: #86efac;
+}
+
+.course-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.dark .course-title {
+  color: #f9fafb;
+}
+
+.course-instructor {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.dark .course-instructor {
+  color: #9ca3af;
+}
+
+.course-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.dark .stat-label {
+  color: #9ca3af;
+}
+
+.stat-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.dark .stat-value {
+  color: #f9fafb;
+}
+
+.course-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  min-width: 50px;
+}
+
+.dark .progress-label {
+  color: #9ca3af;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dark .progress-bar {
+  background: #374151;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  min-width: 40px;
+  text-align: right;
+}
+
+.dark .progress-text {
+  color: #f9fafb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .course-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .course-progress {
+    flex-wrap: wrap;
+  }
 }
 </style>

@@ -4,7 +4,7 @@
       <h1>Students List</h1>
       <div class="header-actions">
         <button @click="generateSampleData" class="btn btn-secondary">
-          Generate Sample Data
+          Add Sample Students (+1000)
         </button>
         <div class="export-dropdown">
           <button @click="toggleExportMenu" class="btn btn-success" :disabled="generatingPDF">
@@ -362,25 +362,58 @@ const generateSampleData = () => {
     })
   }
   
-  students.value = sampleStudents
+  // Add to existing students instead of replacing
+  const currentMaxId = Math.max(...students.value.map(s => s.id), 0)
+  
+  // Assign new IDs to avoid conflicts
+  sampleStudents.forEach((student, index) => {
+    student.id = currentMaxId + index + 1
+  })
+  
+  students.value = [...students.value, ...sampleStudents]
+  console.log(`Added ${sampleStudents.length} new students. Total: ${students.value.length}`)
+  
   loading.value = false
 }
 
 onMounted(async () => {
+  let fetchedStudents: Student[] = []
+  let generatedStudents: Student[] = []
+  
   try {
+    // Try to fetch data from API
     const response = await axios.get('http://127.0.0.1:8000/api/students', {
       params: {
         include: 'skills,affiliations'
       }
     })
-    students.value = response.data
+    fetchedStudents = response.data || []
+    console.log(`Fetched ${fetchedStudents.length} students from API`)
   } catch (err: any) {
-    console.log('API failed, using sample data for testing')
-    generateSampleData()
+    console.log('API failed, will use generated data only')
     // error.value = err.response?.data?.message || 'Failed to fetch students'
-  } finally {
-    loading.value = false
   }
+  
+  // Always generate sample data (for demo purposes)
+  generateSampleData()
+  generatedStudents = [...students.value]
+  
+  // Combine fetched and generated data
+  const combinedStudents = [...fetchedStudents, ...generatedStudents]
+  
+  // Remove duplicates based on ID (keep generated if same ID)
+  const uniqueStudents = combinedStudents.reduce((acc, student) => {
+    const existingIndex = acc.findIndex(s => s.id === student.id)
+    if (existingIndex === -1) {
+      acc.push(student)
+    }
+    return acc
+  }, [] as Student[])
+  
+  students.value = uniqueStudents
+  console.log(`Total students: ${fetchedStudents.length} fetched + ${generatedStudents.length} generated = ${students.value.length} unique`)
+  
+  loading.value = false
 })
 
 // Computed properties for statistics

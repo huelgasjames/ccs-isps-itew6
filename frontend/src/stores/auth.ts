@@ -18,23 +18,15 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // Check if this is a demo login attempt
       const demoCredentials = [
-        'admin@ccsd.edu',
-        'faculty@ccsd.edu',
-        'student@ccsd.edu',
-        'registrar@ccsd.edu',
-        'counselor@ccsd.edu',
-        'parent@ccsd.edu',
-        'demo@ccsd.edu'
+        'admin@ccs.edu.ph',
+        'faculty@ccs.edu.ph',
+        'student@ccs.edu.ph'
       ]
       
       const demoPasswords: Record<string, string> = {
-        'admin@ccsd.edu': 'demopass',
-        'faculty@ccsd.edu': 'demopass',
-        'student@ccsd.edu': 'demopass',
-        'registrar@ccsd.edu': 'demopass',
-        'counselor@ccsd.edu': 'demopass',
-        'parent@ccsd.edu': 'demopass',
-        'demo@ccsd.edu': 'demopass'
+        'admin@ccs.edu.ph': 'admin123',
+        'faculty@ccs.edu.ph': 'faculty123',
+        'student@ccs.edu.ph': 'student123'
       }
       
       if (demoCredentials.includes(credentials.email) && demoPasswords[credentials.email] === credentials.password) {
@@ -42,27 +34,15 @@ export const useAuthStore = defineStore('auth', () => {
         let role = 'admin'
         let name = 'Demo User'
         
-        if (credentials.email === 'admin@ccsd.edu') {
+        if (credentials.email === 'admin@ccs.edu.ph') {
           role = 'admin'
           name = 'System Administrator'
-        } else if (credentials.email === 'faculty@ccsd.edu') {
+        } else if (credentials.email === 'faculty@ccs.edu.ph') {
           role = 'professor'
           name = 'Faculty Member'
-        } else if (credentials.email === 'student@ccsd.edu') {
+        } else if (credentials.email === 'student@ccs.edu.ph') {
           role = 'student'
           name = 'Student'
-        } else if (credentials.email === 'registrar@ccsd.edu') {
-          role = 'admin'
-          name = 'Registrar'
-        } else if (credentials.email === 'counselor@ccsd.edu') {
-          role = 'admin'
-          name = 'Counselor'
-        } else if (credentials.email === 'parent@ccsd.edu') {
-          role = 'student'
-          name = 'Parent'
-        } else if (credentials.email === 'demo@ccsd.edu') {
-          role = 'admin'
-          name = 'Demo User'
         }
         
         // Create demo token

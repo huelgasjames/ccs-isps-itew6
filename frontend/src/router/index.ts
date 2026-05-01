@@ -260,6 +260,15 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const authStore = useAuthStore()
   
+  // Debug logging
+  console.log('Route guard:', {
+    to: to.path,
+    userRole: authStore.user?.role,
+    isAuthenticated: authStore.isAuthenticated,
+    requiresAuth: to.meta.requiresAuth,
+    requiredRoles: to.meta.roles
+  })
+  
   // If there's a token in localStorage but no user state, try to initialize
   const token = localStorage.getItem('auth_token')
   if (token && !authStore.user && !authStore.token) {
@@ -267,6 +276,7 @@ router.beforeEach((to, from) => {
   }
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    console.log('Redirecting to login - not authenticated')
     return '/login'
   }
   
@@ -280,11 +290,23 @@ router.beforeEach((to, from) => {
   
   if (to.meta.roles && Array.isArray(to.meta.roles)) {
     const userRole = authStore.user?.role
+    console.log('Checking role access:', {
+      userRole,
+      requiredRoles: to.meta.roles,
+      hasAccess: userRole && (to.meta.roles as string[]).includes(userRole)
+    })
+    
     if (!userRole || !(to.meta.roles as string[]).includes(userRole)) {
-      return '/dashboard'
+      // Redirect to appropriate dashboard based on user role instead of always /dashboard
+      const fallbackRoute = userRole === 'admin' ? '/dashboard' : 
+                           userRole === 'professor' ? '/faculty/dashboard' : 
+                           '/student/dashboard'
+      console.log('Role mismatch, redirecting to:', fallbackRoute)
+      return fallbackRoute
     }
   }
   
+  console.log('Route access granted to:', to.path)
   return true
 })
 
